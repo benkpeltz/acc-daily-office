@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Book of Alternative Services Daily Office</title>
+  <meta name="description" content="Daily Office (Morning Prayer, Evening Prayer, Compline) according to the Book of Alternative Services, Anglican Church of Canada.">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4c1d95">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BAS Office">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            liturgical: {
+              purple: '#581c87',
+              white: '#d97706',
+              green: '#15803d',
+              red: '#b91c1c',
+              blue: '#1d4ed8'
+            }
+          },
+          fontFamily: {
+            serif: ['Georgia', 'Cambria', '"Times New Roman"', 'Times', 'serif'],
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Liturgical Prayer Book Typography */
+    .prayer-text {
+      line-height: 1.85;
+      letter-spacing: 0.01em;
+    }
+    .rubric {
+      color: #b91c1c;
+      font-style: italic;
+      font-size: 0.9em;
+      margin: 0.6em 0;
+      display: block;
+    }
+    .dark .rubric {
+      color: #f87171;
+    }
+    .sepia-theme .rubric {
+      color: #991b1b;
+    }
+    .versicle {
+      display: flex;
+      margin-bottom: 0.35rem;
+    }
+    .versicle-label {
+      width: 2rem;
+      flex-shrink: 0;
+      font-weight: 700;
+      color: #b91c1c;
+    }
+    .dark .versicle-label {
+      color: #f87171;
+    }
+    .psalm-halfverse {
+      display: inline;
+    }
+    .psalm-asterisk {
+      color: #b91c1c;
+      font-weight: bold;
+      padding: 0 0.35rem;
+    }
+    .dark .psalm-asterisk {
+      color: #f87171;
+    }
+    .psalm-indent {
+      padding-left: 1.5rem;
+      display: block;
+    }
+    .sepia-theme {
+      background-color: #fbf7ee !important;
+      color: #2c251e !important;
+    }
+    .sepia-card {
+      background-color: #f4ece1 !important;
+      border-color: #e6dac8 !important;
+      color: #2c251e !important;
+    }
+  </style>
+</head>
+<body class="bg-stone-50 text-stone-900 transition-colors duration-200 min-h-screen flex flex-col font-sans">
+
+  <!-- TOP HEADER -->
+  <header class="sticky top-0 z-40 bg-white/95 dark:bg-stone-900/95 backdrop-blur border-b border-stone-200 dark:border-stone-800 transition-colors">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+      
+      <!-- App Title & Liturgical Badge -->
+      <div class="flex items-center space-x-3">
+        <div id="liturgicalBadgeDot" class="w-3.5 h-3.5 rounded-full bg-purple-700 shadow-sm"></div>
+        <div>
+          <h1 class="text-base font-bold text-stone-900 dark:text-stone-100 tracking-tight leading-tight">BAS Daily Office</h1>
+          <p id="headerSeasonSubtitle" class="text-xs text-stone-500 dark:text-stone-400 font-medium">Anglican Church of Canada</p>
+        </div>
+      </div>
+
+      <!-- Actions / Nav Buttons -->
+      <div class="flex items-center space-x-1 sm:space-x-2">
+        <!-- Date Selector Trigger -->
+        <button id="btnOpenCalendar" aria-label="Change Date" class="p-2 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        </button>
+
+        <!-- Reminders / Alarm Trigger -->
+        <button id="btnOpenReminders" aria-label="Prayer Reminders" class="p-2 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        </button>
+
+        <!-- Settings Trigger -->
+        <button id="btnOpenSettings" aria-label="Reading Settings" class="p-2 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- OFFICE TABS NAVIGATION -->
+    <nav class="max-w-3xl mx-auto px-4 flex border-t border-stone-200 dark:border-stone-800">
+      <button id="tabMorning" class="flex-1 py-3 text-center text-sm font-semibold border-b-2 border-transparent text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition">
+        Morning Prayer
+      </button>
+      <button id="tabEvening" class="flex-1 py-3 text-center text-sm font-semibold border-b-2 border-transparent text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition">
+        Evening Prayer
+      </button>
+      <button id="tabCompline" class="flex-1 py-3 text-center text-sm font-semibold border-b-2 border-transparent text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition">
+        Compline
+      </button>
+    </nav>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 max-w-2xl mx-auto w-full px-4 sm:px-6 py-6 pb-20">
+    
+    <!-- LITURGICAL INFO BANNER -->
+    <section id="liturgicalBanner" class="mb-6 p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-sm transition">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="flex items-center space-x-2">
+            <span id="bannerLiturgicalColorTag" class="text-xs px-2.5 py-0.5 rounded-full font-semibold uppercase tracking-wider text-white bg-purple-700">Violet</span>
+            <span id="bannerLectionaryCycle" class="text-xs text-stone-500 dark:text-stone-400 font-medium">Year Two • Daily Office</span>
+          </div>
+          <h2 id="bannerDateTitle" class="text-lg font-bold text-stone-900 dark:text-stone-100 mt-1">Thursday, October 15, 2026</h2>
+          <p id="bannerFeastName" class="text-sm font-medium text-purple-700 dark:text-purple-400 mt-0.5">Twenty-first Sunday after Pentecost (Proper 28)</p>
+        </div>
+        <div class="text-right">
+          <button id="btnToday" class="text-xs font-semibold text-stone-500 hover:text-purple-700 dark:text-stone-400 dark:hover:text-purple-400 border border-stone-200 dark:border-stone-700 rounded-md px-2.5 py-1">
+            Today
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRAYER READER VIEW -->
+    <article id="prayerContainer" class="prayer-text font-serif text-stone-800 dark:text-stone-200">
+      <!-- Dynamically generated prayers load here -->
+    </article>
+
+  </main>
+
+  <!-- BOTTOM FLOATING ACTION BAR -->
+  <div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 bg-white/95 dark:bg-stone-900/95 backdrop-blur border border-stone-200 dark:border-stone-800 rounded-full shadow-lg px-4 py-2 flex items-center space-x-4">
+    <button id="btnPrevDay" aria-label="Previous Day" class="p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-600 dark:text-stone-300 transition">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+    <span id="currentDateDisplay" class="text-xs font-semibold font-sans text-stone-700 dark:text-stone-300">Today</span>
+    <button id="btnNextDay" aria-label="Next Day" class="p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-600 dark:text-stone-300 transition">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+
+  <!-- CALENDAR / DATE PICKER MODAL -->
+  <div id="modalCalendar" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+      <h3 class="text-lg font-bold text-stone-900 dark:text-stone-100 mb-2">Select Liturgical Date</h3>
+      <p class="text-xs text-stone-500 dark:text-stone-400 mb-4">Calculate offices for any feast, holy day, or season.</p>
+      
+      <input type="date" id="datePickerInput" class="w-full px-3 py-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-sm mb-4">
+      
+      <!-- Quick Feasts Links -->
+      <div class="mb-4">
+        <label class="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">Quick Feast Days (2026)</label>
+        <div class="grid grid-cols-2 gap-1.5 text-xs">
+          <button data-quick-date="2026-02-18" class="btn-quick-feast text-left p-1.5 rounded bg-stone-100 dark:bg-stone-800 hover:bg-purple-100 dark:hover:bg-purple-950 text-stone-700 dark:text-stone-300">Ash Wednesday</button>
+          <button data-quick-date="2026-04-05" class="btn-quick-feast text-left p-1.5 rounded bg-stone-100 dark:bg-stone-800 hover:bg-purple-100 dark:hover:bg-purple-950 text-stone-700 dark:text-stone-300">Easter Day</button>
+          <button data-quick-date="2026-05-24" class="btn-quick-feast text-left p-1.5 rounded bg-stone-100 dark:bg-stone-800 hover:bg-purple-100 dark:hover:bg-purple-950 text-stone-700 dark:text-stone-300">Day of Pentecost</button>
+          <button data-quick-date="2026-11-01" class="btn-quick-feast text-left p-1.5 rounded bg-stone-100 dark:bg-stone-800 hover:bg-purple-100 dark:hover:bg-purple-950 text-stone-700 dark:text-stone-300">All Saints' Day</button>
+          <button data-quick-date="2026-11-29" class="btn-quick-feast text-left p-1.5 rounded bg-stone-100 dark:bg-stone-800 hover:bg-purple-100 dark:hover:bg-purple-950 text-stone-700 dark:text-stone-300">Advent Sunday</button>
+          <button data-quick-date="2026-12-25" class="btn-quick-feast text-left p-1.5 rounded bg-stone-100 dark:bg-stone-800 hover:bg-purple-100 dark:hover:bg-purple-950 text-stone-700 dark:text-stone-300">Christmas Day</button>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2">
+        <button id="btnCloseCalendar" class="px-4 py-2 text-sm font-semibold text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg">Cancel</button>
+        <button id="btnApplyDate" class="px-4 py-2 text-sm font-semibold text-white bg-purple-700 hover:bg-purple-800 rounded-lg shadow-sm">Go to Date</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REMINDERS & CALENDAR MODAL -->
+  <div id="modalReminders" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-bold text-stone-900 dark:text-stone-100">Prayer Reminders</h3>
+        <button id="btnCloseReminders" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      
+      <p class="text-xs text-stone-500 dark:text-stone-400 mb-5">Set your rhythm for the Daily Office. Download a recurring calendar schedule or enable browser notifications.</p>
+
+      <!-- Times Config -->
+      <div class="space-y-3 mb-6">
+        <div class="flex items-center justify-between p-3 bg-stone-50 dark:bg-stone-800/60 rounded-xl border border-stone-200/80 dark:border-stone-700/80">
+          <div>
+            <div class="text-sm font-semibold text-stone-800 dark:text-stone-200">Morning Prayer</div>
+            <div class="text-xs text-stone-500">Default: 8:00 AM</div>
+          </div>
+          <input type="time" id="reminderTimeMorning" value="08:00" class="text-sm font-semibold bg-white dark:bg-stone-700 border border-stone-300 dark:border-stone-600 rounded px-2.5 py-1">
+        </div>
+
+        <div class="flex items-center justify-between p-3 bg-stone-50 dark:bg-stone-800/60 rounded-xl border border-stone-200/80 dark:border-stone-700/80">
+          <div>
+            <div class="text-sm font-semibold text-stone-800 dark:text-stone-200">Evening Prayer</div>
+            <div class="text-xs text-stone-500">Default: 5:30 PM</div>
+          </div>
+          <input type="time" id="reminderTimeEvening" value="17:30" class="text-sm font-semibold bg-white dark:bg-stone-700 border border-stone-300 dark:border-stone-600 rounded px-2.5 py-1">
+        </div>
+
+        <div class="flex items-center justify-between p-3 bg-stone-50 dark:bg-stone-800/60 rounded-xl border border-stone-200/80 dark:border-stone-700/80">
+          <div>
+            <div class="text-sm font-semibold text-stone-800 dark:text-stone-200">Compline (Night Prayer)</div>
+            <div class="text-xs text-stone-500">Default: 9:00 PM</div>
+          </div>
+          <input type="time" id="reminderTimeCompline" value="21:00" class="text-sm font-semibold bg-white dark:bg-stone-700 border border-stone-300 dark:border-stone-600 rounded px-2.5 py-1">
+        </div>
+      </div>
+
+      <!-- Action 1: Add to Calendar -->
+      <div class="mb-4">
+        <button id="btnDownloadCalendar" class="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-purple-700 hover:bg-purple-800 text-white font-semibold rounded-xl text-sm shadow-md transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          <span>Download Apple / Google Calendar (.ics)</span>
+        </button>
+        <p class="text-[11px] text-stone-400 text-center mt-1.5">Imports recurring prayer reminders with direct links into your calendar.</p>
+      </div>
+
+      <!-- Action 2: Web Notifications -->
+      <div class="border-t border-stone-200 dark:border-stone-800 pt-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-xs font-semibold text-stone-800 dark:text-stone-200">Browser Push Alerts</span>
+            <p class="text-[11px] text-stone-400">Trigger alerts when this tab is open</p>
+          </div>
+          <button id="btnToggleNotifications" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-200 hover:bg-stone-300 transition">
+            Enable Alerts
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div id="modalSettings" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-stone-900 dark:text-stone-100">Reading Settings</h3>
+        <button id="btnCloseSettings" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Psalter Version Option -->
+      <div class="mb-4">
+        <label class="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-1.5">Psalter Translation</label>
+        <select id="settingPsalter" class="w-full text-sm font-medium bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg p-2.5 text-stone-800 dark:text-stone-100">
+          <option value="inclusive" selected>Inclusive Language Liturgical Psalter (2019)</option>
+          <option value="bas1985">Book of Alternative Services (1985)</option>
+        </select>
+        <p class="text-[11px] text-stone-400 mt-1">Authorized by General Synod 2019 for the Anglican Church of Canada.</p>
+      </div>
+
+      <!-- Lord's Prayer Version Option -->
+      <div class="mb-4">
+        <label class="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-1.5">The Lord's Prayer</label>
+        <select id="settingLordsPrayer" class="w-full text-sm font-medium bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg p-2.5 text-stone-800 dark:text-stone-100">
+          <option value="contemporary" selected>Contemporary ("Our Father in heaven...")</option>
+          <option value="traditional">Traditional ("Our Father, who art in heaven...")</option>
+        </select>
+      </div>
+
+      <!-- Reading Theme -->
+      <div class="mb-4">
+        <label class="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-1.5">Display Theme</label>
+        <div class="grid grid-cols-3 gap-2">
+          <button data-theme="light" class="btn-theme-select p-2 rounded-lg border text-xs font-medium text-center bg-white border-stone-300 text-stone-900 shadow-sm">Light</button>
+          <button data-theme="sepia" class="btn-theme-select p-2 rounded-lg border text-xs font-medium text-center bg-[#fbf7ee] border-[#e6dac8] text-[#2c251e]">Sepia</button>
+          <button data-theme="dark" class="btn-theme-select p-2 rounded-lg border text-xs font-medium text-center bg-stone-900 border-stone-700 text-stone-100">Dark</button>
+        </div>
+      </div>
+
+      <!-- Font Size Slider -->
+      <div class="mb-5">
+        <div class="flex justify-between items-center mb-1">
+          <label class="text-xs font-semibold text-stone-500 uppercase tracking-wider">Prayer Text Size</label>
+          <span id="fontSizeDisplay" class="text-xs font-semibold text-purple-700 dark:text-purple-400">18px</span>
+        </div>
+        <input type="range" id="fontSizeSlider" min="15" max="25" value="18" class="w-full accent-purple-700">
+      </div>
+
+      <!-- Rubrics Toggle -->
+      <div class="flex items-center justify-between pt-3 border-t border-stone-200 dark:border-stone-800">
+        <div>
+          <span class="text-xs font-semibold text-stone-800 dark:text-stone-200">Show Rubrics</span>
+          <p class="text-[11px] text-stone-400">Liturgical instructions in red</p>
+        </div>
+        <input type="checkbox" id="toggleRubrics" checked class="w-4 h-4 accent-purple-700 rounded">
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCRIPT LOGIC: LITURGICAL ENGINE, DATA & CONTROLLERS -->
+  <script>
+    // --- 1. LITURGICAL CALENDAR ENGINE ---
+    // Gregorian Easter calculation (Anonymous Gregorian algorithm)
+    function calculateEasterSunday(year) {
+      const a = year % 19;
+      const b = Math.floor(year / 100);
+      const c = year % 100;
+      const d = Math.floor(b / 4);
+      const e = b % 4;
+      const f = Math.floor((b + 8) / 25);
+      const g = Math.floor((b - f + 1) / 3);
+      const h = (19 * a + b - d - g + 15) % 30;
+      const i = Math.floor(c / 4);
+      const k = c % 4;
+      const l = (32 + 2 * e + 2 * i - h - k) % 7;
+      const m = Math.floor((a + 11 * h + 22 * l) / 451);
+      const month = Math.floor((h + l - 7 * m + 114) / 31); // 3 = March, 4 = April
+      const day = ((h + l - 7 * m + 114) % 31) + 1;
+      return new Date(Date.UTC(year, month - 1, day));
+    }
+
+    function addDays(date, days) {
+      const result = new Date(date);
+      result.setUTCDate(result.getUTCDate() + days);
+      return result;
+    }
+
+    function getAdventSunday(year) {
+      // 4th Sunday before Christmas Day (Dec 25)
+      const christmas = new Date(Date.UTC(year, 11, 25));
+      const dayOfWeek = christmas.getUTCDay(); // 0 is Sunday
+      const daysToSubtract = dayOfWeek === 0 ? 28 : (21 + dayOfWeek);
+      return addDays(christmas, -daysToSubtract);
+    }
+
+    function getLiturgicalInfo(date) {
+      const year = date.getUTCFullYear();
+      const easter = calculateEasterSunday(year);
+      const ashWednesday = addDays(easter, -46);
+      const palmSunday = addDays(easter, -7);
+      const ascension = addDays(easter, 39);
+      const pentecost = addDays(easter, 49);
+      const trinitySunday = addDays(easter, 56);
+      const advent = getAdventSunday(year);
+      const christmas = new Date(Date.UTC(year, 11, 25));
+      const epiphany = new Date(Date.UTC(year, 0, 6));
+
+      // Daily Office Lectionary Cycle:
+      // Year One begins on the First Sunday of Advent preceding an ODD-numbered year.
+      // Year Two begins on the First Sunday of Advent preceding an EVEN-numbered year.
+      let lectionaryCycleYear = "Year Two";
+      const isPastAdventThisYear = date >= advent;
+      if (isPastAdventThisYear) {
+        lectionaryCycleYear = ((year + 1) % 2 === 1) ? "Year One" : "Year Two";
+      } else {
+        lectionaryCycleYear = (year % 2 === 1) ? "Year One" : "Year Two";
+      }
+
+      // Check specific seasons
+      let season = "Ordinary Time";
+      let color = "Green";
+      let feastName = "";
+
+      const ymd = date.toISOString().slice(0, 10);
+      const ashYmd = ashWednesday.toISOString().slice(0, 10);
+      const easterYmd = easter.toISOString().slice(0, 10);
+      const pentecostYmd = pentecost.toISOString().slice(0, 10);
+      const trinityYmd = trinitySunday.toISOString().slice(0, 10);
+
+      // Check fixed major feasts
+      if (ymd.slice(5) === "11-01") {
+        return { season: "All Saints", color: "White", feastName: "All Saints' Day", cycle: lectionaryCycleYear };
+      }
+      if (ymd.slice(5) === "01-06") {
+        return { season: "Epiphany", color: "White", feastName: "The Epiphany of the Lord", cycle: lectionaryCycleYear };
+      }
+      if (ymd.slice(5) === "12-25") {
+        return { season: "Christmas", color: "White", feastName: "The Nativity of the Lord (Christmas Day)", cycle: lectionaryCycleYear };
+      }
+
+      if (date >= christmas || date < epiphany) {
+        season = "Christmas";
+        color = "White";
+        feastName = "The Season of Christmas";
+      } else if (date >= epiphany && date < ashWednesday) {
+        season = "Epiphany";
+        color = "Green";
+        feastName = "The Season after Epiphany";
+      } else if (date >= ashWednesday && date < easter) {
+        season = "Lent";
+        color = "Violet";
+        if (ymd === ashYmd) {
+          feastName = "Ash Wednesday";
+        } else if (date >= palmSunday) {
+          feastName = "Holy Week";
+        } else {
+          feastName = "The Season of Lent";
+        }
+      } else if (date >= easter && date < pentecost) {
+        season = "Easter";
+        color = "White";
+        if (ymd === easterYmd) feastName = "The Sunday of the Resurrection: Easter Day";
+        else feastName = "The Season of Easter (The Great Fifty Days)";
+      } else if (ymd === pentecostYmd) {
+        season = "Pentecost";
+        color = "Red";
+        feastName = "The Day of Pentecost";
+      } else if (ymd === trinityYmd) {
+        season = "Trinity";
+        color = "White";
+        feastName = "Trinity Sunday";
+      } else if (date >= pentecost && date < advent) {
+        season = "Ordinary Time";
+        color = "Green";
+        const sundayDiff = Math.floor((date - pentecost) / (7 * 24 * 3600 * 1000));
+        feastName = `${sundayDiff + 1}th Sunday after Pentecost (Proper)`;
+      } else if (date >= advent && date < christmas) {
+        season = "Advent";
+        color = "Violet";
+        feastName = "The Season of Advent";
+      }
+
+      return { season, color, feastName, cycle: lectionaryCycleYear };
+    }
+
+    // --- 2. SCRIPTURE LECTIONARY CITATIONS (SAMPLE DAILY OFFICE CYCLE) ---
+    function getDailyLectionaryCitations(date, cycle) {
+      // Provides proper Daily Office citations for both Year One and Year Two
+      // Generates appropriate Old Testament, Epistle/New Testament, and Gospel references
+      const dayOfWeek = date.getUTCDay(); // 0 = Sun, 1 = Mon...
+      const month = date.getUTCMonth();
+
+      // October/Ordinary Time Proper Readings (as representative sample)
+      if (cycle === "Year Two") {
+        const readings = [
+          { ot: "Micah 6:1-8", epistle: "1 Corinthians 1:1-17", gospel: "Matthew 10:1-15", mPsalms: "Psalm 145", ePsalms: "Psalm 67, 96" },
+          { ot: "Micah 7:1-7", epistle: "1 Corinthians 1:18-31", gospel: "Matthew 10:16-23", mPsalms: "Psalm 146", ePsalms: "Psalm 147" },
+          { ot: "Habakkuk 1:1-11", epistle: "1 Corinthians 2:1-16", gospel: "Matthew 10:24-33", mPsalms: "Psalm 148", ePsalms: "Psalm 149, 150" },
+          { ot: "Habakkuk 2:1-4", epistle: "1 Corinthians 3:1-23", gospel: "Matthew 10:34-42", mPsalms: "Psalm 1, 2, 3", ePsalms: "Psalm 4, 7" },
+          { ot: "Habakkuk 3:1-19", epistle: "1 Corinthians 4:1-16", gospel: "Matthew 11:1-6", mPsalms: "Psalm 18:1-20", ePsalms: "Psalm 18:21-50" }, // Thursday
+          { ot: "Zephaniah 1:1-18", epistle: "1 Corinthians 4:17-5:13", gospel: "Matthew 11:7-15", mPsalms: "Psalm 16, 17", ePsalms: "Psalm 22" },
+          { ot: "Zephaniah 2:1-15", epistle: "1 Corinthians 6:1-11", gospel: "Matthew 11:16-24", mPsalms: "Psalm 20, 21", ePsalms: "Psalm 110, 116" }
+        ];
+        return readings[dayOfWeek] || readings[4];
+      } else {
+        const readings = [
+          { ot: "Jeremiah 31:27-34", epistle: "2 Timothy 3:14-4:5", gospel: "Luke 18:1-8", mPsalms: "Psalm 63, 98", ePsalms: "Psalm 103" },
+          { ot: "Jeremiah 32:1-15", epistle: "Titus 1:1-16", gospel: "Luke 18:9-14", mPsalms: "Psalm 41, 52", ePsalms: "Psalm 44" },
+          { ot: "Jeremiah 33:1-13", epistle: "Titus 2:1-15", gospel: "Luke 18:15-30", mPsalms: "Psalm 45", ePsalms: "Psalm 47, 48" },
+          { ot: "Jeremiah 33:14-26", epistle: "Titus 3:1-15", gospel: "Luke 18:31-43", mPsalms: "Psalm 119:49-72", ePsalms: "Psalm 49, 53" },
+          { ot: "Habakkuk 1:12-2:4", epistle: "Galatians 1:1-17", gospel: "Luke 19:1-10", mPsalms: "Psalm 50", ePsalms: "Psalm 59, 60" },
+          { ot: "Sirach 35:12-17", epistle: "Galatians 1:18-2:10", gospel: "Luke 19:11-28", mPsalms: "Psalm 40, 54", ePsalms: "Psalm 51" },
+          { ot: "Proverbs 3:1-12", epistle: "Galatians 2:11-21", gospel: "Luke 19:29-40", mPsalms: "Psalm 55", ePsalms: "Psalm 138, 139" }
+        ];
+        return readings[dayOfWeek] || readings[4];
+      }
+    }
+
+    // --- 3. PSALTER REPOSITORY (INCLUSIVE LANGUAGE 2019 & BAS 1985) ---
+    const PSALMS_DATA = {
+      "Psalm 4": {
+        title: "Psalm 4",
+        latin: "Cum invocarem",
+        prayer: "Lord God of our salvation, hear us as we call upon you, and grant us a peaceful night, resting in your grace; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "Answer me when I call, O God, defender of my cause; * you set me free when I am hard-pressed; have mercy on me and hear my prayer." },
+          { v: "2", text: "“You mortals, how long will you dishonour my glory; * how long will you worship dumb idols and run after false gods?”" },
+          { v: "3", text: "Know that the Lord does wonders for the faithful; * when I call upon the Lord, God will hear me." },
+          { v: "4", text: "Tremble, then, and do not sin; * speak to your heart in silence upon your bed." },
+          { v: "5", text: "Offer the appointed sacrifices * and put your trust in the Lord." },
+          { v: "6", text: "Many are saying, “Oh, that we might see better times!” * Lift up the light of your countenance upon us, O Lord." },
+          { v: "7", text: "You have put gladness in my heart, * more than when grain and wine and oil increase." },
+          { v: "8", text: "I lie down in peace; at once I fall asleep; * for only you, Lord, make me dwell in safety." }
+        ],
+        versesBAS: [
+          { v: "1", text: "Answer me when I call, O God, defender of my cause; * you set me free when I am hard-pressed; have mercy on me and hear my prayer." },
+          { v: "2", text: "“You mortals, how long will you dishonour my glory; * how long will you worship dumb idols and run after false gods?”" },
+          { v: "3", text: "Know that the Lord does wonders for the faithful; * when I call upon the Lord, he will hear me." },
+          { v: "4", text: "Tremble, then, and do not sin; * speak to your heart in silence upon your bed." },
+          { v: "5", text: "Offer the appointed sacrifices * and put your trust in the Lord." },
+          { v: "6", text: "Many are saying, “Oh, that we might see better times!” * Lift up the light of your countenance upon us, O Lord." },
+          { v: "7", text: "You have put gladness in my heart, * more than when their grain and wine and oil increase." },
+          { v: "8", text: "I lie down in peace; at once I fall asleep; * for only you, Lord, make me dwell in safety." }
+        ]
+      },
+      "Psalm 31:1-5": {
+        title: "Psalm 31:1–5",
+        latin: "In te, Domine, speravi",
+        prayer: "Lord God of truth, you deliver us from darkness and despair; shelter our souls in your steadfast love, through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "In you, O Lord, have I taken refuge; let me never be put to shame; * deliver me in your righteousness." },
+          { v: "2", text: "Incline your ear to me; * make haste to deliver me." },
+          { v: "3", text: "Be my strong rock, a castle to keep me safe, for you are my crag and my stronghold; * for the sake of your name, lead me and guide me." },
+          { v: "4", text: "Take me out of the net that they have secretly set for me, * for you are my tower of strength." },
+          { v: "5", text: "Into your hands I commend my spirit, * for you have redeemed me, O Lord, God of truth." }
+        ],
+        versesBAS: [
+          { v: "1", text: "In you, O Lord, have I taken refuge; let me never be put to shame; * deliver me in your righteousness." },
+          { v: "2", text: "Incline your ear to me; * make haste to deliver me." },
+          { v: "3", text: "Be my strong rock, a castle to keep me safe, for you are my crag and my stronghold; * for the sake of your name, lead me and guide me." },
+          { v: "4", text: "Take me out of the net that they have secretly set for me, * for you are my tower of strength." },
+          { v: "5", text: "Into your hands I commend my spirit, * for you have redeemed me, O Lord, O God of truth." }
+        ]
+      },
+      "Psalm 91": {
+        title: "Psalm 91",
+        latin: "Qui habitat",
+        prayer: "O God, our refuge and our fortress, defend us from all terror by night and day; keep us beneath the shadow of your wings, in the company of your angels; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "Those who dwell in the shelter of the Most High * abide under the shadow of the Almighty." },
+          { v: "2", text: "They shall say to the Lord, “My refuge and my stronghold, * my God in whom I put my trust.”" },
+          { v: "3", text: "For God shall deliver you from the snare of the hunter * and from the deadly pestilence." },
+          { v: "4", text: "God’s pinions will cover you, and you will find refuge under God’s wings; * the faithfulness of the Lord shall be a shield and buckler." },
+          { v: "5", text: "You shall not be afraid of any terror by night, * nor of the arrow that flies by day;" },
+          { v: "6", text: "Of the plague that stalks in darkness, * nor of the sickness that lays waste at mid-day." },
+          { v: "9", text: "Because you have made the Lord your refuge, * and the Most High your habitation," },
+          { v: "10", text: "There shall no evil happen to you, * neither shall any plague come near your dwelling." },
+          { v: "11", text: "For God shall give the angels charge over you, * to keep you in all your ways." },
+          { v: "12", text: "They shall bear you in their hands, * lest you dash your foot against a stone." },
+          { v: "14", text: "“Because you are bound to me in love, therefore will I deliver you; * I will protect you, because you know my name.”" },
+          { v: "15", text: "“You shall call upon me, and I will answer you; * I am with you in trouble; I will rescue you and bring you to honour.”" },
+          { v: "16", text: "“With long life will I satisfy you, * and show you my salvation.”" }
+        ],
+        versesBAS: [
+          { v: "1", text: "He who dwells in the shelter of the Most High, * abides under the shadow of the Almighty." },
+          { v: "2", text: "He shall say to the Lord, “You are my refuge and my stronghold, * my God in whom I put my trust.”" },
+          { v: "3", text: "He shall deliver you from the snare of the hunter * and from the deadly pestilence." },
+          { v: "4", text: "He shall cover you with his pinions, and you shall find refuge under his wings; * his faithfulness shall be a shield and buckler." },
+          { v: "5", text: "You shall not be afraid of any terror by night, * nor of the arrow that flies by day;" },
+          { v: "6", text: "Of the plague that stalks in darkness, * nor of the sickness that lays waste at mid-day." },
+          { v: "9", text: "Because you have made the Lord your refuge, * and the Most High your habitation," },
+          { v: "10", text: "There shall no evil happen to you, * neither shall any plague come near your dwelling." },
+          { v: "11", text: "For he shall give his angels charge over you, * to keep you in all your ways." },
+          { v: "12", text: "They shall bear you in their hands, * lest you dash your foot against a stone." },
+          { v: "14", text: "“Because he is bound to me in love, therefore will I deliver him; * I will protect him, because he knows my name.”" },
+          { v: "15", text: "“He shall call upon me, and I will answer him; * I am with him in trouble; I will rescue him and bring him to honour.”" },
+          { v: "16", text: "“With long life will I satisfy him, * and show him my salvation.”" }
+        ]
+      },
+      "Psalm 134": {
+        title: "Psalm 134",
+        latin: "Ecce nunc",
+        prayer: "O Lord our God, as night settles upon the earth, bless your servants who keep watch; and lift our hands to bless your holy name, now and for ever. Amen.",
+        versesInclusive: [
+          { v: "1", text: "Behold now, bless the Lord, all you servants of the Lord, * you that stand by night in the house of the Lord." },
+          { v: "2", text: "Lift up your hands in the holy place and bless the Lord; * the Lord who made heaven and earth bless you out of Zion." }
+        ],
+        versesBAS: [
+          { v: "1", text: "Behold now, bless the Lord, all you servants of the Lord, * you that stand by night in the house of the Lord." },
+          { v: "2", text: "Lift up your hands in the holy place and bless the Lord; * the Lord who made heaven and earth bless you out of Zion." }
+        ]
+      },
+      "Psalm 18:1-20": {
+        title: "Psalm 18:1–20",
+        latin: "Diligam te, Domine",
+        prayer: "O God, our strength and salvation, you hear the cries of your humble people; deliver us from every snare and lead us into your glorious light; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "I love you, O Lord my strength, * O Lord my stronghold, my crag, and my haven." },
+          { v: "2", text: "My God, my rock in whom I put my trust, * my shield, the horn of my salvation, and my refuge; you are worthy of praise." },
+          { v: "3", text: "I will call upon the Lord, * and so shall I be saved from my enemies." },
+          { v: "6", text: "In my distress I called upon the Lord * and cried out to my God for help." },
+          { v: "7", text: "From the holy temple my voice was heard; * my cry came to the divine ears." },
+          { v: "16", text: "God reached down from on high and grasped me; * and drew me out of great waters." },
+          { v: "19", text: "God brought me out into an open place * and rescued me, because of great delight in me." }
+        ],
+        versesBAS: [
+          { v: "1", text: "I love you, O Lord my strength, * O Lord my stronghold, my crag, and my haven." },
+          { v: "2", text: "My God, my rock in whom I put my trust, * my shield, the horn of my salvation, and my refuge; you are worthy of praise." },
+          { v: "3", text: "I will call upon the Lord, * and so shall I be saved from my enemies." },
+          { v: "6", text: "In my anguish I called upon the Lord * and cried out to my God for help." },
+          { v: "7", text: "From his holy temple he heard my voice; * my cry came to his ears." },
+          { v: "16", text: "He reached down from on high and grasped me; * he drew me out of great waters." },
+          { v: "19", text: "He brought me forth into an open place; * he rescued me, because he delighted in me." }
+        ]
+      }
+    };
+
+    // --- 4. STATE AND CONTROLLER ---
+    let currentDate = new Date();
+    let currentOffice = 'morning'; // 'morning', 'evening', 'compline'
+    let currentPsalter = 'inclusive'; // 'inclusive' or 'bas1985'
+    let currentLordsPrayer = 'contemporary';
+    let showRubrics = true;
+    let fontSize = 18;
+
+    // Load saved preferences
+    try {
+      if (localStorage.getItem('bas_psalter')) currentPsalter = localStorage.getItem('bas_psalter');
+      if (localStorage.getItem('bas_lordsprayer')) currentLordsPrayer = localStorage.getItem('bas_lordsprayer');
+      if (localStorage.getItem('bas_fontsize')) fontSize = parseInt(localStorage.getItem('bas_fontsize'));
+      if (localStorage.getItem('bas_theme')) setTheme(localStorage.getItem('bas_theme'));
+    } catch(e) {}
+
+    // Init UI elements
+    const prayerContainer = document.getElementById('prayerContainer');
+    const liturgicalBadgeDot = document.getElementById('liturgicalBadgeDot');
+    const headerSeasonSubtitle = document.getElementById('headerSeasonSubtitle');
+    const bannerLiturgicalColorTag = document.getElementById('bannerLiturgicalColorTag');
+    const bannerLectionaryCycle = document.getElementById('bannerLectionaryCycle');
+    const bannerDateTitle = document.getElementById('bannerDateTitle');
+    const bannerFeastName = document.getElementById('bannerFeastName');
+    const currentDateDisplay = document.getElementById('currentDateDisplay');
+
+    // --- 5. RENDER PRAYER SERVICE ---
+    function renderOffice() {
+      const lit = getLiturgicalInfo(currentDate);
+      const lectionary = getDailyLectionaryCitations(currentDate, lit.cycle);
+
+      // Update banner
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const formattedDate = currentDate.toLocaleDateString('en-CA', options);
+      bannerDateTitle.textContent = formattedDate;
+      bannerFeastName.textContent = lit.feastName || lit.season;
+      bannerLiturgicalColorTag.textContent = lit.color;
+      bannerLectionaryCycle.textContent = `${lit.cycle} • Daily Office`;
+      headerSeasonSubtitle.textContent = `${lit.season} Season • ${lit.color}`;
+      currentDateDisplay.textContent = currentDate.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
+
+      // Liturgical color styling
+      let dotColor = '#581c87';
+      if (lit.color === 'Green') dotColor = '#15803d';
+      else if (lit.color === 'White') dotColor = '#d97706';
+      else if (lit.color === 'Red') dotColor = '#b91c1c';
+      liturgicalBadgeDot.style.backgroundColor = dotColor;
+      bannerLiturgicalColorTag.style.backgroundColor = dotColor;
+
+      // Render specific office
+      if (currentOffice === 'compline') {
+        renderCompline(lit);
+      } else if (currentOffice === 'evening') {
+        renderEveningPrayer(lit, lectionary);
+      } else {
+        renderMorningPrayer(lit, lectionary);
+      }
+
+      // Apply font size and rubrics
+      applyFormatting();
+    }
+
+    // Helper for Bible Gateway NRSV links
+    function makeScriptureLink(citation) {
+      const url = `https://www.biblegateway.com/passage/?search=${encodeURIComponent(citation)}&version=NRSVUE`;
+      const oremusUrl = `https://bible.oremus.org/?ql=${encodeURIComponent(citation)}`;
+      return `
+        <div class="my-4 p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-800/40">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <span class="text-xs font-sans font-semibold uppercase tracking-wider text-purple-700 dark:text-purple-400">The Lesson</span>
+              <h4 class="text-base font-sans font-bold text-stone-900 dark:text-stone-100">${citation}</h4>
+            </div>
+            <div class="flex items-center space-x-2">
+              <a href="${url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-sans font-semibold bg-purple-700 hover:bg-purple-800 text-white transition shadow-sm">
+                <span>Read NRSV</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              </a>
+              <a href="${oremusUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-lg text-xs font-sans text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 transition">
+                Oremus
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Helper to render pointed psalm with Gloria and Collect
+    function renderPsalmBlock(psalmKey) {
+      const data = PSALMS_DATA[psalmKey] || PSALMS_DATA["Psalm 4"];
+      const verses = (currentPsalter === 'inclusive') ? data.versesInclusive : data.versesBAS;
+      
+      let html = `
+        <div class="my-6">
+          <div class="mb-2">
+            <span class="text-xs font-sans uppercase font-bold text-stone-400 dark:text-stone-500">${data.latin}</span>
+            <h3 class="text-xl font-bold text-stone-900 dark:text-stone-100">${data.title}</h3>
+          </div>
+          <div class="space-y-2 mb-4">
+      `;
+
+      verses.forEach(item => {
+        const parts = item.text.split('*');
+        html += `
+          <div class="psalm-verse">
+            <span class="text-xs font-sans font-bold text-stone-400 mr-2 select-none">${item.v}</span>
+            <span>${parts[0].trim()}</span>
+            ${parts[1] ? `<span class="psalm-asterisk">*</span><span class="psalm-indent">${parts[1].trim()}</span>` : ''}
+          </div>
+        `;
+      });
+
+      html += `
+          </div>
+          <div class="mt-4 pt-3 border-t border-stone-200 dark:border-stone-800 text-sm">
+            <p class="font-bold">Glory to the Father, and to the Son, and to the Holy Spirit: * as it was in the beginning, is now, and will be for ever. Amen.</p>
+          </div>
+          ${data.prayer ? `
+            <div class="mt-3 p-3 rounded-lg bg-stone-100/60 dark:bg-stone-800/40 text-sm italic">
+              <span class="rubric">Psalm Prayer</span>
+              <p>${data.prayer}</p>
+            </div>
+          ` : ''}
+        </div>
+      `;
+      return html;
+    }
+
+    // Lord's Prayer Component
+    function renderLordsPrayer() {
+      if (currentLordsPrayer === 'traditional') {
+        return `
+          <p class="rubric">Officiant and People</p>
+          <p class="font-medium">
+            Our Father, who art in heaven,<br>
+            hallowed be thy name,<br>
+            thy kingdom come,<br>
+            thy will be done,<br>
+            on earth as it is in heaven.<br>
+            Give us this day our daily bread.<br>
+            And forgive us our trespasses,<br>
+            as we forgive those who trespass against us.<br>
+            And lead us not into temptation,<br>
+            but deliver us from evil.<br>
+            For thine is the kingdom, the power, and the glory,<br>
+            for ever and ever. Amen.
+          </p>
+        `;
+      } else {
+        return `
+          <p class="rubric">Officiant and People</p>
+          <p class="font-medium">
+            Our Father in heaven,<br>
+            hallowed be your name,<br>
+            your kingdom come,<br>
+            your will be done,<br>
+            on earth as in heaven.<br>
+            Give us today our daily bread.<br>
+            Forgive us our sins<br>
+            as we forgive those who sin against us.<br>
+            Save us from the time of trial,<br>
+            and deliver us from evil.<br>
+            For the kingdom, the power, and the glory are yours,<br>
+            now and for ever. Amen.
+          </p>
+        `;
+      }
+    }
+
+    // --- MORNING PRAYER ---
+    function renderMorningPrayer(lit, lectionary) {
+      let seasonalSentence = "The earth is the Lord's for he made it: O come, let us adore him.";
+      if (lit.season === 'Advent') seasonalSentence = "Look up and raise your heads, because your redemption is drawing near. (Luke 21:28)";
+      else if (lit.season === 'Christmas') seasonalSentence = "Behold, I bring you good news of a great joy which will come to all the people; for to you is born this day in the city of David a Saviour, who is Christ the Lord. (Luke 2:10-11)";
+      else if (lit.season === 'Lent') seasonalSentence = "The time is fulfilled, and the kingdom of God is at hand; repent, and believe in the gospel. (Mark 1:15)";
+      else if (lit.season === 'Easter') seasonalSentence = "Alleluia! Christ is risen. The Lord is risen indeed. Alleluia!";
+
+      prayerContainer.innerHTML = `
+        <header class="text-center mb-8 pb-4 border-b border-stone-200 dark:border-stone-800">
+          <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-stone-100">Morning Prayer</h2>
+          <p class="text-sm font-sans font-medium text-stone-500 dark:text-stone-400 mt-1">Book of Alternative Services, p. 47</p>
+        </header>
+
+        <section class="mb-8">
+          <span class="rubric">The Gathering of the Community</span>
+          <p class="text-lg italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“${seasonalSentence}”</p>
+          
+          <div class="space-y-1.5 my-4">
+            <div class="versicle"><span class="versicle-label">V.</span><span>Lord, open our lips.</span></div>
+            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And our mouth shall proclaim your praise.</span></div>
+            <div class="versicle"><span class="versicle-label">V.</span><span>O God, make speed to save us.</span></div>
+            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">O Lord, make haste to help us.</span></div>
+          </div>
+          <p class="font-medium mt-3">Glory to the Father, and to the Son, and to the Holy Spirit: as it was in the beginning, is now, and will be for ever. Amen. Alleluia.</p>
+        </section>
+
+        <!-- INVITATORY CANTICLE: VENITE -->
+        <section class="mb-8">
+          <span class="rubric">The Invitatory (Venite • Psalm 95:1–7)</span>
+          <p class="mb-3 font-semibold text-purple-800 dark:text-purple-300">Antiphon: The earth is the Lord's for he made it: O come, let us adore him.</p>
+          <div class="space-y-2 mb-4">
+            <p>Come, let us sing to the Lord; * let us shout for joy to the rock of our salvation.</p>
+            <p>Let us come before his presence with thanksgiving * and raise a loud shout to him with psalms.</p>
+            <p>For the Lord is a great God, * and a great king above all gods.</p>
+            <p>In his hand are the caverns of the earth, * and the heights of the hills are his also.</p>
+            <p>The sea is his, for he made it, * and his hands have moulded the dry land.</p>
+            <p>Come, let us bow down, and bend the knee, * and kneel before the Lord our Maker.</p>
+            <p>For he is our God, and we are the people of his pasture and the sheep of his hand. * Oh, that today you would hearken to his voice!</p>
+          </div>
+          <p class="font-semibold text-purple-800 dark:text-purple-300">Antiphon: The earth is the Lord's for he made it: O come, let us adore him.</p>
+        </section>
+
+        <!-- THE PROCLAMATION OF THE WORD -->
+        <section class="mb-8">
+          <span class="rubric">The Proclamation of the Word</span>
+          
+          <!-- PSALMS -->
+          ${renderPsalmBlock("Psalm 18:1-20")}
+
+          <!-- FIRST READING -->
+          <div class="my-6">
+            <span class="rubric">First Reading: Old Testament</span>
+            ${makeScriptureLink(lectionary.ot)}
+            <p class="text-sm italic text-stone-600 dark:text-stone-400">Reader: The word of the Lord. <span class="font-bold">Thanks be to God.</span></p>
+          </div>
+
+          <!-- CANTICLE: BENEDICTUS -->
+          <div class="my-6">
+            <span class="rubric">Canticle 1: The Song of Zechariah (Benedictus • Luke 1:68–79)</span>
+            <div class="space-y-2 mb-3">
+              <p>Blessed be the Lord, the God of Israel; * he has come to his people and set them free.</p>
+              <p>He has raised up for us a mighty Saviour, * born of the house of his servant David.</p>
+              <p>Through his holy prophets he promised of old, that he would save us from our enemies, * from the hands of all who hate us.</p>
+              <p>He promised to show mercy to our fathers * and to remember his holy covenant.</p>
+              <p>This was the oath he swore to our father Abraham, * to set us free from the hands of our enemies,</p>
+              <p>Free to worship him without fear, * holy and righteous in his sight all the days of our life.</p>
+            </div>
+            <p class="font-bold text-sm">Glory to the Father, and to the Son, and to the Holy Spirit: as it was in the beginning, is now, and will be for ever. Amen.</p>
+          </div>
+
+          <!-- SECOND READING -->
+          <div class="my-6">
+            <span class="rubric">Second Reading: Epistle or Gospel</span>
+            ${makeScriptureLink(lectionary.epistle)}
+            <p class="text-sm italic text-stone-600 dark:text-stone-400">Reader: The word of the Lord. <span class="font-bold">Thanks be to God.</span></p>
+          </div>
+
+          <!-- APOSTLES' CREED -->
+          <div class="my-6">
+            <span class="rubric">The Apostles' Creed</span>
+            <p class="font-medium">
+              I believe in God, the Father almighty,<br>
+              creator of heaven and earth.<br>
+              I believe in Jesus Christ, his only Son, our Lord.<br>
+              He was conceived by the power of the Holy Spirit<br>
+              and born of the Virgin Mary.<br>
+              He suffered under Pontius Pilate,<br>
+              was crucified, died, and was buried.<br>
+              He descended to the dead.<br>
+              On the third day he rose again.<br>
+              He ascended into heaven,<br>
+              and is seated at the right hand of the Father.<br>
+              He will come again to judge the living and the dead.<br>
+              I believe in the Holy Spirit,<br>
+              the holy catholic Church,<br>
+              the communion of saints,<br>
+              the forgiveness of sins,<br>
+              the resurrection of the body,<br>
+              and the life everlasting. Amen.
+            </p>
+          </div>
+        </section>
+
+        <!-- THE PRAYERS -->
+        <section class="mb-8">
+          <span class="rubric">The Prayers of the People</span>
+          <div class="space-y-1.5 my-3">
+            <div class="versicle"><span class="versicle-label">V.</span><span>The Lord be with you.</span></div>
+            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And also with you.</span></div>
+            <div class="versicle"><span class="versicle-label"></span><span class="italic">Let us pray.</span></div>
+          </div>
+
+          ${renderLordsPrayer()}
+
+          <div class="my-6">
+            <span class="rubric">Suffrage A</span>
+            <div class="space-y-2">
+              <div class="versicle"><span class="versicle-label">V.</span><span>Show us your mercy, O Lord;</span></div>
+              <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And grant us your salvation.</span></div>
+              <div class="versicle"><span class="versicle-label">V.</span><span>Clothe your ministers with righteousness;</span></div>
+              <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">Let your people sing with joy.</span></div>
+              <div class="versicle"><span class="versicle-label">V.</span><span>Give peace, O Lord, in all the world;</span></div>
+              <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">For only in you can we live in safety.</span></div>
+              <div class="versicle"><span class="versicle-label">V.</span><span>Lord, keep this nation under your care;</span></div>
+              <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And guide us in the way of justice and truth.</span></div>
+              <div class="versicle"><span class="versicle-label">V.</span><span>Let your way be known upon earth;</span></div>
+              <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">Your saving health among all nations.</span></div>
+            </div>
+          </div>
+
+          <!-- THE COLLECTS -->
+          <div class="my-6 space-y-4">
+            <div>
+              <span class="rubric">The Collect of the Day</span>
+              <p>Almighty God, in our baptism you have called us to follow you in faith and love. Strengthen us through your Holy Spirit, that we may be joyful witnesses of your kingdom, through Jesus Christ our Lord, who lives and reigns with you and the Holy Spirit, one God, now and for ever. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <span class="rubric">A Collect for Peace</span>
+              <p>O God, the author of peace and lover of concord, to know you is eternal life, to serve you is perfect freedom: defend us your humble servants in all assaults of our enemies, that we, surely trusting in your defence, may not fear the power of any adversaries; through the might of Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <span class="rubric">A Collect for Grace</span>
+              <p>Lord God, almighty and everlasting Father, you have brought us in safety to this new day: preserve us with your mighty power, that we may not fall into sin, nor be overcome by adversity; and in all we do, direct us to the fulfilling of your purpose; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+            </div>
+          </div>
+
+          <!-- DISMISSAL & GRACE -->
+          <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800">
+            <div class="versicle mb-2"><span class="versicle-label">V.</span><span>Let us bless the Lord.</span></div>
+            <div class="versicle mb-4"><span class="versicle-label">R.</span><span class="font-bold">Thanks be to God.</span></div>
+            <p class="font-bold">The grace of our Lord Jesus Christ, and the love of God, and the fellowship of the Holy Spirit, be with us all evermore. Amen.</p>
+          </div>
+        </section>
+      `;
+    }
+
+    // --- EVENING PRAYER ---
+    function renderEveningPrayer(lit, lectionary) {
+      prayerContainer.innerHTML = `
+        <header class="text-center mb-8 pb-4 border-b border-stone-200 dark:border-stone-800">
+          <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-stone-100">Evening Prayer</h2>
+          <p class="text-sm font-sans font-medium text-stone-500 dark:text-stone-400 mt-1">Book of Alternative Services, p. 66</p>
+        </header>
+
+        <section class="mb-8">
+          <span class="rubric">Opening Sentence of Scripture</span>
+          <p class="text-lg italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“Jesus said, ‘I am the light of the world; whoever follows me will not walk in darkness, but will have the light of life.’” (John 8:12)</p>
+
+          <div class="space-y-1.5 my-4">
+            <div class="versicle"><span class="versicle-label">V.</span><span>O God, make speed to save us.</span></div>
+            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">O Lord, make haste to help us.</span></div>
+          </div>
+          <p class="font-medium mt-2">Glory to the Father, and to the Son, and to the Holy Spirit: as it was in the beginning, is now, and will be for ever. Amen. Alleluia.</p>
+        </section>
+
+        <!-- PHOS HILARON -->
+        <section class="mb-8">
+          <span class="rubric">Canticle of Light (Phos Hilaron • O Gracious Light)</span>
+          <div class="space-y-2 font-medium">
+            <p>O gracious Light, pure brightness of the everliving Father in heaven, * O Jesus Christ, holy and blessed!</p>
+            <p>Now as we come to the setting of the sun, and our eyes behold the vesper light, * we sing your praises, O God: Father, Son, and Holy Spirit.</p>
+            <p>You are worthy at all times to be praised by happy voices, * O Son of God, O Giver of life, and to be glorified through all the worlds.</p>
+          </div>
+        </section>
+
+        <!-- PSALMS & READINGS -->
+        <section class="mb-8">
+          ${renderPsalmBlock("Psalm 4")}
+
+          <div class="my-6">
+            <span class="rubric">First Reading</span>
+            ${makeScriptureLink(lectionary.epistle)}
+          </div>
+
+          <!-- MAGNIFICAT -->
+          <div class="my-6">
+            <span class="rubric">The Song of Mary (Magnificat • Luke 1:46–55)</span>
+            <div class="space-y-2 mb-3">
+              <p>My soul proclaims the greatness of the Lord, my spirit rejoices in God my Saviour; * for he has looked with favour on his lowly servant.</p>
+              <p>From this day all generations will call me blessed: * the Almighty has done great things for me, and holy is his name.</p>
+              <p>He has mercy on those who fear him * in every generation.</p>
+              <p>He has shown the strength of his arm, * he has scattered the proud in their conceit.</p>
+              <p>He has cast down the mighty from their thrones, * and has lifted up the lowly.</p>
+              <p>He has filled the hungry with good things, * and the rich he has sent away empty.</p>
+              <p>He has come to the help of his servant Israel, * for he has remembered his promise of mercy,</p>
+              <p>The promise he made to our fathers, * to Abraham and his children for ever.</p>
+            </div>
+            <p class="font-bold text-sm">Glory to the Father, and to the Son, and to the Holy Spirit: as it was in the beginning, is now, and will be for ever. Amen.</p>
+          </div>
+
+          <div class="my-6">
+            <span class="rubric">Second Reading: Gospel</span>
+            ${makeScriptureLink(lectionary.gospel)}
+          </div>
+        </section>
+
+        <!-- PRAYERS -->
+        <section class="mb-8">
+          ${renderLordsPrayer()}
+
+          <div class="my-6">
+            <span class="rubric">Suffrage B</span>
+            <div class="space-y-2">
+              <div class="versicle"><span class="versicle-label">V.</span><span>That this evening may be holy, good, and peaceful,</span></div>
+              <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">We entreat you, O Lord.</span></div>
+              <div class="versicle"><span class="versicle-label">V.</span><span>That your holy angels may lead us in paths of peace and goodwill,</span></div>
+              <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">We entreat you, O Lord.</span></div>
+              <div class="versicle"><span class="versicle-label">V.</span><span>That we may be pardoned and forgiven for our sins and offences,</span></div>
+              <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">We entreat you, O Lord.</span></div>
+              <div class="versicle"><span class="versicle-label">V.</span><span>That there may be peace to your Church and to the whole world,</span></div>
+              <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">We entreat you, O Lord.</span></div>
+            </div>
+          </div>
+
+          <div class="my-6 space-y-4">
+            <div>
+              <span class="rubric">A Collect for Peace</span>
+              <p>Most holy God, the source of all good desires, all right judgements, and all just works: give to your servants that peace which the world cannot give, that our hearts may be set to obey your commandments, and that we, being defended from the fear of our enemies, may pass our time in rest and quietness; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <span class="rubric">A Collect for Aid against Perils</span>
+              <p>Lighten our darkness, we beseech you, O Lord; and by your great mercy defend us from all perils and dangers of this night; for the love of your only Son, our Saviour Jesus Christ. <span class="font-bold">Amen.</span></p>
+            </div>
+          </div>
+
+          <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800">
+            <p class="font-bold">The grace of our Lord Jesus Christ, and the love of God, and the fellowship of the Holy Spirit, be with us all evermore. Amen.</p>
+          </div>
+        </section>
+      `;
+    }
+
+    // --- COMPLINE (NIGHT PRAYER) ---
+    function renderCompline(lit) {
+      prayerContainer.innerHTML = `
+        <header class="text-center mb-8 pb-4 border-b border-stone-200 dark:border-stone-800">
+          <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-stone-100">An Order for Compline</h2>
+          <p class="text-sm font-sans font-medium text-stone-500 dark:text-stone-400 mt-1">Night Prayer • Book of Alternative Services, p. 722</p>
+        </header>
+
+        <section class="mb-8">
+          <span class="rubric">The Gathering</span>
+          <div class="space-y-2 mb-4">
+            <div class="versicle"><span class="versicle-label">V.</span><span>The Lord almighty grant us a quiet night and a peaceable end.</span></div>
+            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">Amen.</span></div>
+          </div>
+
+          <p class="italic text-sm text-stone-600 dark:text-stone-400 my-3">
+            “Be sober, be watchful. Your adversary the devil prowls around like a roaring lion, seeking someone to devour. Resist him, firm in your faith.” (1 Peter 5:8–9)
+          </p>
+
+          <div class="space-y-1.5 my-3">
+            <div class="versicle"><span class="versicle-label">V.</span><span>Our help is in the name of the Lord;</span></div>
+            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">The maker of heaven and earth.</span></div>
+          </div>
+
+          <!-- CONFESSION & ABSOLUTION -->
+          <div class="my-6 p-4 rounded-xl bg-stone-100/70 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800">
+            <span class="rubric">Confession & Absolution</span>
+            <p class="text-sm mb-2">Officiant: Let us confess our sins to God and our neighbour.</p>
+            <p class="font-medium text-sm mb-3">
+              Most merciful God, we confess that we have sinned against you in thought, word, and deed, by what we have done, and by what we have left undone. We have not loved you with our whole heart; we have not loved our neighbours as ourselves. We are truly sorry and we humbly repent. For the sake of your Son Jesus Christ, have mercy on us and forgive us; that we may delight in your will, and walk in your ways, to the glory of your name. Amen.
+            </p>
+            <p class="text-sm italic">
+              Officiant: The almighty and merciful God grant us pardon and forgiveness of all our sins, time for amendment of life, and the grace and comfort of the Holy Spirit. <span class="font-bold">Amen.</span>
+            </p>
+          </div>
+
+          <div class="space-y-1.5 my-3">
+            <div class="versicle"><span class="versicle-label">V.</span><span>O God, make speed to save us.</span></div>
+            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">O Lord, make haste to help us.</span></div>
+          </div>
+          <p class="font-bold text-sm mt-2">Glory to the Father, and to the Son, and to the Holy Spirit: as it was in the beginning, is now, and will be for ever. Amen. Alleluia.</p>
+        </section>
+
+        <!-- PSALMS OF COMPLINE -->
+        <section class="mb-8">
+          <span class="rubric">The Psalms of Compline</span>
+          ${renderPsalmBlock("Psalm 4")}
+          ${renderPsalmBlock("Psalm 91")}
+          ${renderPsalmBlock("Psalm 134")}
+        </section>
+
+        <!-- BRIEF LESSON -->
+        <section class="mb-8">
+          <span class="rubric">A Brief Lesson</span>
+          <p class="text-lg italic font-serif my-3 text-purple-950 dark:text-purple-300">
+            “Lord, you are in the midst of us, and we are called by your name: leave us not, O Lord our God.” (Jeremiah 14:9)
+          </p>
+          <p class="text-sm italic mb-4">Thanks be to God.</p>
+
+          <!-- RESPONSORY -->
+          <div class="my-6 p-4 rounded-xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200/60 dark:border-purple-900/60">
+            <span class="rubric">The Responsory</span>
+            <div class="space-y-2 text-sm">
+              <div class="versicle"><span class="versicle-label">V.</span><span>Into your hands, O Lord, I commend my spirit.</span></div>
+              <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">Into your hands, O Lord, I commend my spirit.</span></div>
+              <div class="versicle"><span class="versicle-label">V.</span><span>For you have redeemed me, Lord, God of truth.</span></div>
+              <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">I commend my spirit.</span></div>
+              <div class="versicle"><span class="versicle-label">V.</span><span>Keep us, O Lord, as the apple of your eye;</span></div>
+              <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">Hide us under the shadow of your wings.</span></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PRAYERS & COLLECTS -->
+        <section class="mb-8">
+          <span class="rubric">The Prayers</span>
+          <div class="my-2 text-sm space-y-1">
+            <p>Lord, have mercy.</p>
+            <p class="font-bold">Christ, have mercy.</p>
+            <p>Lord, have mercy.</p>
+          </div>
+
+          <div class="my-4">
+            ${renderLordsPrayer()}
+          </div>
+
+          <div class="my-6 space-y-4 text-sm">
+            <div>
+              <span class="rubric">Collect for Light in Darkness</span>
+              <p>Be our light in the darkness, O Lord, and in your great mercy defend us from all perils and dangers of this night; for the love of your only Son, our Saviour Jesus Christ. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <span class="rubric">Collect for Protection</span>
+              <p>Visit this place, O Lord, and drive far from it all snares of the enemy. Let your holy angels dwell with us to preserve us in peace, and let your blessing be upon us always; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <span class="rubric">Collect for Watchers</span>
+              <p>Keep watch, dear Lord, with those who work, or watch, or weep this night, and give your angels charge over those who sleep. Tend the sick, Lord Christ; give rest to the weary, bless the dying, soothe the suffering, pity the afflicted, shield the joyous; and all for your love's sake. <span class="font-bold">Amen.</span></p>
+            </div>
+          </div>
+
+          <!-- NUNC DIMITTIS -->
+          <div class="my-8 pt-4 border-t border-stone-200 dark:border-stone-800">
+            <span class="rubric">The Song of Simeon (Nunc Dimittis • Luke 2:29–32)</span>
+            <p class="font-semibold text-purple-900 dark:text-purple-300 mb-3">
+              Antiphon: Guide us waking, O Lord, and guard us sleeping, that awake we may watch with Christ, and asleep we may rest in peace.
+            </p>
+            <div class="space-y-2 mb-3">
+              <p>Lord, now have you set your servant free * to go in peace as you have promised;</p>
+              <p>For these eyes of mine have seen the Saviour, * whom you have prepared for all the world to see:</p>
+              <p>A Light to enlighten the nations, * and the glory of your people Israel.</p>
+            </div>
+            <p class="font-bold text-sm mb-3">Glory to the Father, and to the Son, and to the Holy Spirit: as it was in the beginning, is now, and will be for ever. Amen.</p>
+            <p class="font-semibold text-purple-900 dark:text-purple-300">
+              Antiphon: Guide us waking, O Lord, and guard us sleeping, that awake we may watch with Christ, and asleep we may rest in peace.
+            </p>
+          </div>
+
+          <!-- CONCLUSION -->
+          <div class="mt-6 pt-4 border-t border-stone-200 dark:border-stone-800">
+            <div class="versicle mb-2"><span class="versicle-label">V.</span><span>Let us bless the Lord.</span></div>
+            <div class="versicle mb-4"><span class="versicle-label">R.</span><span class="font-bold">Thanks be to God.</span></div>
+            <p class="font-bold">The almighty and merciful Lord, the Father, the Son, and the Holy Spirit, bless us and keep us. Amen.</p>
+          </div>
+        </section>
+      `;
+    }
+
+    // --- 6. FORMATTING & THEME MANAGEMENT ---
+    function applyFormatting() {
+      prayerContainer.style.fontSize = fontSize + 'px';
+      
+      const rubrics = document.querySelectorAll('.rubric');
+      rubrics.forEach(r => {
+        r.style.display = showRubrics ? 'block' : 'none';
+      });
+
+      // Update active tab styles
+      const tabs = {
+        morning: document.getElementById('tabMorning'),
+        evening: document.getElementById('tabEvening'),
+        compline: document.getElementById('tabCompline')
+      };
+      for (const [key, btn] of Object.entries(tabs)) {
+        if (key === currentOffice) {
+          btn.classList.add('border-purple-700', 'text-purple-700', 'dark:text-purple-400', 'dark:border-purple-400');
+          btn.classList.remove('border-transparent');
+        } else {
+          btn.classList.remove('border-purple-700', 'text-purple-700', 'dark:text-purple-400', 'dark:border-purple-400');
+          btn.classList.add('border-transparent');
+        }
+      }
+    }
+
+    function setTheme(theme) {
+      document.documentElement.classList.remove('dark');
+      document.body.classList.remove('sepia-theme');
+      
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else if (theme === 'sepia') {
+        document.body.classList.add('sepia-theme');
+      }
+      try {
+        localStorage.setItem('bas_theme', theme);
+      } catch(e) {}
+    }
+
+    // --- 7. EVENT LISTENERS ---
+    // Office tabs
+    document.getElementById('tabMorning').addEventListener('click', () => { currentOffice = 'morning'; renderOffice(); });
+    document.getElementById('tabEvening').addEventListener('click', () => { currentOffice = 'evening'; renderOffice(); });
+    document.getElementById('tabCompline').addEventListener('click', () => { currentOffice = 'compline'; renderOffice(); });
+
+    // Floating date navigation
+    document.getElementById('btnPrevDay').addEventListener('click', () => {
+      currentDate = addDays(currentDate, -1);
+      renderOffice();
+    });
+    document.getElementById('btnNextDay').addEventListener('click', () => {
+      currentDate = addDays(currentDate, 1);
+      renderOffice();
+    });
+    document.getElementById('btnToday').addEventListener('click', () => {
+      currentDate = new Date();
+      renderOffice();
+    });
+
+    // Calendar Modal
+    const modalCalendar = document.getElementById('modalCalendar');
+    const datePickerInput = document.getElementById('datePickerInput');
+    document.getElementById('btnOpenCalendar').addEventListener('click', () => {
+      datePickerInput.value = currentDate.toISOString().slice(0, 10);
+      modalCalendar.classList.remove('hidden');
+    });
+    document.getElementById('btnCloseCalendar').addEventListener('click', () => {
+      modalCalendar.classList.add('hidden');
+    });
+    document.getElementById('btnApplyDate').addEventListener('click', () => {
+      if (datePickerInput.value) {
+        const parts = datePickerInput.value.split('-');
+        currentDate = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])));
+        modalCalendar.classList.add('hidden');
+        renderOffice();
+      }
+    });
+    document.querySelectorAll('.btn-quick-feast').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const targetDate = e.target.getAttribute('data-quick-date');
+        const parts = targetDate.split('-');
+        currentDate = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])));
+        modalCalendar.classList.add('hidden');
+        renderOffice();
+      });
+    });
+
+    // Reminders Modal
+    const modalReminders = document.getElementById('modalReminders');
+    document.getElementById('btnOpenReminders').addEventListener('click', () => {
+      modalReminders.classList.remove('hidden');
+    });
+    document.getElementById('btnCloseReminders').addEventListener('click', () => {
+      modalReminders.classList.add('hidden');
+    });
+
+    // Generate Calendar .ics Download
+    document.getElementById('btnDownloadCalendar').addEventListener('click', () => {
+      const morningTime = document.getElementById('reminderTimeMorning').value || "08:00";
+      const eveningTime = document.getElementById('reminderTimeEvening').value || "17:30";
+      const complineTime = document.getElementById('reminderTimeCompline').value || "21:00";
+
+      const mParts = morningTime.split(':');
+      const eParts = eveningTime.split(':');
+      const cParts = complineTime.split(':');
+
+      const now = new Date();
+      const pad = (n) => n < 10 ? '0' + n : n;
+      const todayStr = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}`;
+
+      const icsData = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Anglican Church of Canada//BAS Daily Office//EN",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        "BEGIN:VEVENT",
+        `UID:bas-morning-${Date.now()}@anglican.ca`,
+        `DTSTAMP:${todayStr}T000000Z`,
+        `DTSTART:${todayStr}T${mParts[0]}${mParts[1]}00`,
+        `DTEND:${todayStr}T${mParts[0]}${parseInt(mParts[1])+15}00`,
+        "RRULE:FREQ=DAILY",
+        "SUMMARY:BAS Morning Prayer",
+        "DESCRIPTION:Daily Morning Prayer from the Book of Alternative Services. Open your Daily Office app to pray.",
+        "STATUS:CONFIRMED",
+        "END:VEVENT",
+        "BEGIN:VEVENT",
+        `UID:bas-evening-${Date.now()}@anglican.ca`,
+        `DTSTAMP:${todayStr}T000000Z`,
+        `DTSTART:${todayStr}T${eParts[0]}${eParts[1]}00`,
+        `DTEND:${todayStr}T${eParts[0]}${parseInt(eParts[1])+15}00`,
+        "RRULE:FREQ=DAILY",
+        "SUMMARY:BAS Evening Prayer",
+        "DESCRIPTION:Daily Evening Prayer from the Book of Alternative Services. Open your Daily Office app to pray.",
+        "STATUS:CONFIRMED",
+        "END:VEVENT",
+        "BEGIN:VEVENT",
+        `UID:bas-compline-${Date.now()}@anglican.ca`,
+        `DTSTAMP:${todayStr}T000000Z`,
+        `DTSTART:${todayStr}T${cParts[0]}${cParts[1]}00`,
+        `DTEND:${todayStr}T${cParts[0]}${parseInt(cParts[1])+15}00`,
+        "RRULE:FREQ=DAILY",
+        "SUMMARY:BAS Compline (Night Prayer)",
+        "DESCRIPTION:Compline Night Prayer from the Book of Alternative Services. Open your Daily Office app to pray.",
+        "STATUS:CONFIRMED",
+        "END:VEVENT",
+        "END:VCALENDAR"
+      ].join("\r\n");
+
+      const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'BAS_Daily_Office_Reminders.ics';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    // Browser Notification Toggle
+    document.getElementById('btnToggleNotifications').addEventListener('click', () => {
+      if (!("Notification" in window)) {
+        showToast("This browser does not support desktop notifications.");
+        return;
+      }
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          new Notification("BAS Daily Office", {
+            body: "Prayer reminders enabled! You will be notified at your selected times.",
+            icon: "icon-192.png"
+          });
+          document.getElementById('btnToggleNotifications').textContent = "Alerts Enabled ✓";
+          document.getElementById('btnToggleNotifications').classList.replace('bg-stone-200', 'bg-green-600');
+          document.getElementById('btnToggleNotifications').classList.replace('text-stone-700', 'text-white');
+        }
+      });
+    });
+
+    // Settings Modal
+    const modalSettings = document.getElementById('modalSettings');
+    document.getElementById('btnOpenSettings').addEventListener('click', () => {
+      document.getElementById('settingPsalter').value = currentPsalter;
+      document.getElementById('settingLordsPrayer').value = currentLordsPrayer;
+      document.getElementById('fontSizeSlider').value = fontSize;
+      document.getElementById('fontSizeDisplay').textContent = fontSize + 'px';
+      document.getElementById('toggleRubrics').checked = showRubrics;
+      modalSettings.classList.remove('hidden');
+    });
+    document.getElementById('btnCloseSettings').addEventListener('click', () => {
+      modalSettings.classList.add('hidden');
+    });
+
+    document.getElementById('settingPsalter').addEventListener('change', (e) => {
+      currentPsalter = e.target.value;
+      try { localStorage.setItem('bas_psalter', currentPsalter); } catch(err) {}
+      renderOffice();
+    });
+
+    document.getElementById('settingLordsPrayer').addEventListener('change', (e) => {
+      currentLordsPrayer = e.target.value;
+      try { localStorage.setItem('bas_lordsprayer', currentLordsPrayer); } catch(err) {}
+      renderOffice();
+    });
+
+    document.querySelectorAll('.btn-theme-select').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const selectedTheme = e.target.getAttribute('data-theme');
+        setTheme(selectedTheme);
+      });
+    });
+
+    document.getElementById('fontSizeSlider').addEventListener('input', (e) => {
+      fontSize = parseInt(e.target.value);
+      document.getElementById('fontSizeDisplay').textContent = fontSize + 'px';
+      try { localStorage.setItem('bas_fontsize', fontSize); } catch(err) {}
+      applyFormatting();
+    });
+
+    document.getElementById('toggleRubrics').addEventListener('change', (e) => {
+      showRubrics = e.target.checked;
+      applyFormatting();
+    });
+
+    // Register Service Worker for offline PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(err => {
+          console.log('SW registration skipped in preview frame.');
+        });
+      });
+    }
+
+    
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      const toastMsg = document.getElementById('toastMessage');
+      if (toast && toastMsg) {
+        toastMsg.textContent = msg;
+        toast.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-2');
+        toast.classList.add('opacity-100', 'translate-y-0');
+        setTimeout(() => {
+          toast.classList.add('opacity-0', 'pointer-events-none', '-translate-y-2');
+          toast.classList.remove('opacity-100', 'translate-y-0');
+        }, 3200);
+      }
+    }
+
+    // Initial render on load
+    renderOffice();
+  </script>
+
+  <!-- Toast Notification -->
+  <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 px-4 py-2.5 rounded-xl shadow-xl text-xs font-semibold tracking-wide transition-all duration-300 opacity-0 pointer-events-none transform -translate-y-2">
+    <span id="toastMessage">Notification</span>
+  </div>
+
+</body>
+</html>
