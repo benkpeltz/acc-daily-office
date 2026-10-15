@@ -1,4 +1,4 @@
-# Book of Alternative Services (BAS) Daily Office Web App
+# ACC Daily Office (Anglican Church of Canada)
 
 A responsive, offline-capable Progressive Web App (PWA) for the **Book of Alternative Services Daily Office** (Morning Prayer, Evening Prayer, and Compline), designed for the Anglican Church of Canada.
 

@@ -1,7 +1,7 @@
 {
-  "name": "Book of Alternative Services Daily Office",
-  "short_name": "BAS Daily Office",
-  "description": "Daily Prayer (Morning Prayer, Evening Prayer, Compline) for the Anglican Church of Canada.",
+  "name": "ACC Daily Office",
+  "short_name": "ACC Office",
+  "description": "Daily Prayer (Morning Prayer/Mattins, Evening Prayer/Evensong, Compline) for the Anglican Church of Canada (BAS & BCP).",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#18181b",
