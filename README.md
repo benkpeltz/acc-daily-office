@@ -3,7 +3,7 @@
 > **Daily Prayer for the Anglican Church of Canada**  
 > Featuring both the **Book of Alternative Services (1985)** and the **Book of Common Prayer (1962 Canada)**.
 
-**Live Web Application:** [https://nebcanuck.github.io/acc-daily-office/](https://nebcanuck.github.io/acc-daily-office/)
+**Live Web Application:** [https://benkpeltz.github.io/acc-daily-office/](https://benkpeltz.github.io/acc-daily-office/)
 
 ---
 
@@ -49,13 +49,13 @@ It brings together Canada's two authorized liturgical traditions into a single, 
 This app is built as a Progressive Web App (PWA). You can install it on your device for a full-screen, native app experience that works **100% offline**:
 
 ### iPhone & iPad (iOS)
-1. Open **[https://nebcanuck.github.io/acc-daily-office/](https://nebcanuck.github.io/acc-daily-office/)** in **Safari**.
+1. Open **[https://benkpeltz.github.io/acc-daily-office/](https://benkpeltz.github.io/acc-daily-office/)** in **Safari**.
 2. Tap the **Share** button (the square icon with the upward arrow at the bottom).
 3. Scroll down and tap **Add to Home Screen**.
 4. Confirm the name (**ACC Office**) and tap **Add**. The app icon will appear on your home screen.
 
 ### Android
-1. Open **[https://nebcanuck.github.io/acc-daily-office/](https://nebcanuck.github.io/acc-daily-office/)** in **Chrome**.
+1. Open **[https://benkpeltz.github.io/acc-daily-office/](https://benkpeltz.github.io/acc-daily-office/)** in **Chrome**.
 2. Tap the three-dot menu in the top-right corner (or tap the **Install App** / **Add to Home screen** banner).
 3. Tap **Install** to add the app icon to your home screen or app drawer.
 

@@ -38,29 +38,57 @@
   </script>
 
   <style>
-    .prayer-text {
-      line-height: 1.85;
+    /* Unified scalable typography system */
+    .scalable-content {
+      font-size: 18px;
+      line-height: 1.8;
       letter-spacing: 0.01em;
     }
-    .rubric {
-      color: #b91c1c;
-      font-style: italic;
-      font-size: 0.9em;
-      margin: 0.6em 0;
+    /* All non-header text inside scalable-content is strictly 1em */
+    .scalable-content p,
+    .scalable-content div,
+    .scalable-content span,
+    .scalable-content a,
+    .scalable-content button {
+      font-size: 1em;
+    }
+    /* Main Office Title Header (scales proportionally with base font size) */
+    .scalable-content .office-title {
+      font-size: 1.45em !important;
+      line-height: 1.25;
+      font-weight: 700;
+      margin-bottom: 0.25em;
+    }
+    /* Section Headers (scales proportionally with base font size) */
+    .scalable-content .section-header {
+      font-size: 1.2em !important;
+      line-height: 1.35;
+      font-weight: 700;
+      margin-top: 1.2em;
+      margin-bottom: 0.4em;
       display: block;
     }
-    .dark .rubric {
+    /* Liturgical Rubrics (same font size as body text, distinguished by red italics) */
+    .scalable-content .rubric {
+      color: #b91c1c;
+      font-style: italic;
+      font-size: 1em !important;
+      margin: 0.6em 0;
+      display: block;
+      font-weight: 400;
+    }
+    .dark .scalable-content .rubric {
       color: #f87171;
     }
-    .sepia-theme .rubric {
+    .sepia-theme .scalable-content .rubric {
       color: #991b1b;
     }
     .versicle {
       display: flex;
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.35em;
     }
     .versicle-label {
-      width: 2rem;
+      width: 2.2em;
       flex-shrink: 0;
       font-weight: 700;
       color: #b91c1c;
@@ -71,13 +99,13 @@
     .psalm-colon {
       color: #b91c1c;
       font-weight: bold;
-      padding: 0 0.35rem;
+      padding: 0 0.35em;
     }
     .dark .psalm-colon {
       color: #f87171;
     }
     .psalm-indent {
-      padding-left: 1.5rem;
+      padding-left: 1.5em;
       display: block;
     }
     .sepia-theme {
@@ -151,20 +179,20 @@
   <!-- MAIN CONTENT CONTAINER -->
   <main class="flex-1 max-w-2xl mx-auto w-full px-4 sm:px-6 py-6 pb-20">
     
-    <!-- LITURGICAL INFO BANNER -->
-    <section id="liturgicalBanner" class="mb-6 p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-sm transition">
-      <div class="flex items-start justify-between">
+    <!-- LITURGICAL INFO BANNER (Also scales with fontSize) -->
+    <section id="liturgicalBanner" class="scalable-content mb-6 p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-sm transition">
+      <div class="flex items-start justify-between gap-2">
         <div>
-          <div class="flex items-center space-x-2 flex-wrap gap-1">
-            <span id="bannerLiturgicalColorTag" class="text-xs px-2.5 py-0.5 rounded-full font-semibold uppercase tracking-wider text-white bg-purple-700">Violet</span>
-            <span id="bannerLectionaryCycle" class="text-xs text-stone-500 dark:text-stone-400 font-medium">Year Two • Daily Office</span>
-            <span id="bannerBookBadge" class="text-xs px-2 py-0.5 rounded-md font-medium bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300">BAS (1985)</span>
+          <div class="flex items-center flex-wrap gap-2 mb-1">
+            <span id="bannerLiturgicalColorTag" class="px-2.5 py-0.5 rounded-full font-semibold uppercase tracking-wider text-white bg-purple-700">Violet</span>
+            <span id="bannerLectionaryCycle" class="text-stone-500 dark:text-stone-400 font-medium">Year Two • Daily Office</span>
+            <span id="bannerBookBadge" class="px-2 py-0.5 rounded-md font-medium bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300">BAS (1985)</span>
           </div>
-          <h2 id="bannerDateTitle" class="text-lg font-bold text-stone-900 dark:text-stone-100 mt-1.5">Thursday, October 15, 2026</h2>
-          <p id="bannerFeastName" class="text-sm font-medium text-purple-700 dark:text-purple-400 mt-0.5">Twenty-first Sunday after Pentecost (Proper 28)</p>
+          <h2 id="bannerDateTitle" class="section-header text-stone-900 dark:text-stone-100" style="margin-top:0.25em; margin-bottom:0.15em;">Thursday, October 15, 2026</h2>
+          <p id="bannerFeastName" class="font-medium text-purple-700 dark:text-purple-400">Twenty-first Sunday after Pentecost (Proper 28)</p>
         </div>
-        <div class="text-right">
-          <button id="btnToday" class="text-xs font-semibold text-stone-500 hover:text-purple-700 dark:text-stone-400 dark:hover:text-purple-400 border border-stone-200 dark:border-stone-700 rounded-md px-2.5 py-1">
+        <div class="text-right flex-shrink-0">
+          <button id="btnToday" class="font-semibold text-stone-500 hover:text-purple-700 dark:text-stone-400 dark:hover:text-purple-400 border border-stone-200 dark:border-stone-700 rounded-md px-2.5 py-1">
             Today
           </button>
         </div>
@@ -172,7 +200,7 @@
     </section>
 
     <!-- PRAYER READER VIEW -->
-    <article id="prayerContainer" class="prayer-text font-serif text-stone-800 dark:text-stone-200">
+    <article id="prayerContainer" class="scalable-content font-serif text-stone-800 dark:text-stone-200">
       <!-- Dynamically generated prayers load here -->
     </article>
 
@@ -320,10 +348,11 @@
       <!-- Font Size Slider -->
       <div class="mb-5">
         <div class="flex justify-between items-center mb-1">
-          <label class="text-xs font-semibold text-stone-500 uppercase tracking-wider">Prayer Text Size</label>
+          <label class="text-xs font-semibold text-stone-500 uppercase tracking-wider">Text & Header Size</label>
           <span id="fontSizeDisplay" class="text-xs font-semibold text-purple-700 dark:text-purple-400">18px</span>
         </div>
-        <input type="range" id="fontSizeSlider" min="15" max="25" value="18" class="w-full accent-purple-700">
+        <input type="range" id="fontSizeSlider" min="14" max="28" value="18" class="w-full accent-purple-700">
+        <p class="text-[11px] text-stone-400 mt-1">Scales all prayers, psalms, rubrics, and section headers together.</p>
       </div>
 
       <!-- Rubrics Toggle -->
@@ -619,6 +648,7 @@
     } catch(e) {}
 
     const prayerContainer = document.getElementById('prayerContainer');
+    const liturgicalBanner = document.getElementById('liturgicalBanner');
     const liturgicalBadgeDot = document.getElementById('liturgicalBadgeDot');
     const headerAppTitle = document.getElementById('headerAppTitle');
     const headerSeasonSubtitle = document.getElementById('headerSeasonSubtitle');
@@ -636,9 +666,8 @@
     const groupBasLanguage = document.getElementById('groupBasLanguage');
 
     function updateBookModeUI() {
-      headerAppTitle.textContent = "ACC Daily Office";
       if (currentBookMode === 'bcp') {
-        headerSeasonSubtitle.textContent = "Book of Common Prayer (1962)";
+        headerAppTitle.textContent = "BCP Daily Office (1962)";
         bannerBookBadge.textContent = "BCP 1962 • Coverdale";
         tabMorning.textContent = "Mattins";
         tabEvening.textContent = "Evensong";
@@ -648,7 +677,7 @@
         document.getElementById('remindLabelEvening').textContent = "Evensong (Evening Prayer)";
         groupBasLanguage.style.display = 'none';
       } else {
-        headerSeasonSubtitle.textContent = "Book of Alternative Services (1985)";
+        headerAppTitle.textContent = "ACC Daily Office";
         bannerBookBadge.textContent = (currentPsalter === 'inclusive') ? "BAS • Inclusive (2019)" : "BAS (1985)";
         tabMorning.textContent = "Morning Prayer";
         tabEvening.textContent = "Evening Prayer";
@@ -672,7 +701,7 @@
       bannerFeastName.textContent = lit.feastName || lit.season;
       bannerLiturgicalColorTag.textContent = lit.color;
       bannerLectionaryCycle.textContent = `${lit.cycle} • Daily Office`;
-      /* Season displayed in banner */
+      headerSeasonSubtitle.textContent = `${lit.season} Season • ${lit.color}`;
       currentDateDisplay.textContent = currentDate.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
 
       let dotColor = '#581c87';
@@ -695,22 +724,22 @@
       applyFormatting();
     }
 
-    function makeScriptureLink(citation) {
+    function makeScriptureLink(citation, headingLabel) {
       const url = `https://www.biblegateway.com/passage/?search=${encodeURIComponent(citation)}&version=NRSVUE`;
       const oremusUrl = `https://bible.oremus.org/?ql=${encodeURIComponent(citation)}`;
       return `
-        <div class="my-4 p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-800/40">
-          <div class="flex items-center justify-between flex-wrap gap-2">
+        <div class="my-5 p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-800/40">
+          <div class="flex items-center justify-between flex-wrap gap-3">
             <div>
-              <span class="text-xs font-sans font-semibold uppercase tracking-wider text-purple-700 dark:text-purple-400">The Scripture Lesson</span>
-              <h4 class="text-base font-sans font-bold text-stone-900 dark:text-stone-100">${citation}</h4>
+              <h3 class="section-header text-stone-900 dark:text-stone-100" style="margin-top:0; margin-bottom:0.2em;">${headingLabel || 'The Scripture Lesson'}</h3>
+              <p class="font-sans font-semibold text-purple-800 dark:text-purple-300">${citation}</p>
             </div>
             <div class="flex items-center space-x-2">
-              <a href="${url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-sans font-semibold bg-purple-700 hover:bg-purple-800 text-white transition shadow-sm">
+              <a href="${url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-sans font-semibold bg-purple-700 hover:bg-purple-800 text-white transition shadow-sm">
                 <span>Read NRSV</span>
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
               </a>
-              <a href="${oremusUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-lg text-xs font-sans text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 transition">
+              <a href="${oremusUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-lg font-sans text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 transition">
                 Oremus
               </a>
             </div>
@@ -737,12 +766,11 @@
       
       let html = `
         <div class="my-6">
-          <div class="mb-2 flex items-baseline justify-between flex-wrap gap-1">
+          <div class="mb-3 flex items-baseline justify-between flex-wrap gap-2">
             <div>
-              <span class="text-xs font-sans uppercase font-bold text-stone-400 dark:text-stone-500">${data.latin}</span>
-              <h3 class="text-xl font-bold text-stone-900 dark:text-stone-100">${data.title}</h3>
+              <h3 class="section-header text-stone-900 dark:text-stone-100" style="margin-top:0; margin-bottom:0.1em;">${data.title} (${data.latin})</h3>
             </div>
-            <span class="text-[11px] font-sans px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 font-medium">${editionLabel}</span>
+            <span class="font-sans px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400">${editionLabel}</span>
           </div>
           <div class="space-y-2 mb-4">
       `;
@@ -752,7 +780,7 @@
         const parts = item.text.split(separator);
         html += `
           <div class="psalm-verse">
-            <span class="text-xs font-sans font-bold text-stone-400 mr-2 select-none">${item.v}</span>
+            <span class="font-sans font-bold text-stone-400 mr-2 select-none">${item.v}</span>
             <span>${parts[0].trim()}</span>
             ${parts[1] ? `<span class="psalm-colon">${separator}</span><span class="psalm-indent">${parts[1].trim()}</span>` : ''}
           </div>
@@ -761,12 +789,12 @@
 
       html += `
           </div>
-          <div class="mt-4 pt-3 border-t border-stone-200 dark:border-stone-800 text-sm">
+          <div class="mt-4 pt-3 border-t border-stone-200 dark:border-stone-800">
             <p>${gloria}</p>
           </div>
           ${(currentBookMode === 'bas' && data.prayer) ? `
-            <div class="mt-3 p-3 rounded-lg bg-stone-100/60 dark:bg-stone-800/40 text-sm italic">
-              <span class="rubric">Psalm Prayer</span>
+            <div class="mt-3 p-3 rounded-lg bg-stone-100/60 dark:bg-stone-800/40 italic">
+              <span class="rubric" style="margin-top:0;">Psalm Prayer</span>
               <p>${data.prayer}</p>
             </div>
           ` : ''}
@@ -781,40 +809,41 @@
     function renderBcpMattins(lit, lectionary) {
       prayerContainer.innerHTML = `
         <header class="text-center mb-8 pb-4 border-b border-stone-200 dark:border-stone-800">
-          <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-stone-100">The Order for Morning Prayer</h2>
-          <p class="text-sm font-sans font-medium text-stone-500 dark:text-stone-400 mt-1">Daily throughout the year • Book of Common Prayer (1962 Canada), p. 1</p>
+          <h2 class="office-title tracking-tight text-stone-900 dark:text-stone-100">The Order for Morning Prayer</h2>
+          <p class="font-sans font-medium text-stone-500 dark:text-stone-400">Daily throughout the year • Book of Common Prayer (1962 Canada), p. 1</p>
         </header>
 
         <section class="mb-8">
+          <h3 class="section-header text-stone-900 dark:text-stone-100">Opening Sentence & Confession</h3>
           <span class="rubric">At the beginning of Morning Prayer the Minister shall read with a loud voice some one or more of these Sentences of the Scriptures.</span>
-          <p class="text-lg italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“The Lord is in his holy temple: let all the earth keep silence before him.” (Habakkuk 2. 20)</p>
+          <p class="italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“The Lord is in his holy temple: let all the earth keep silence before him.” (Habakkuk 2. 20)</p>
 
           <span class="rubric">A General Confession (To be said of the whole Congregation after the Minister, all kneeling).</span>
-          <div class="my-4 p-4 rounded-xl bg-stone-100/70 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 text-sm">
+          <div class="my-4 p-4 rounded-xl bg-stone-100/70 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800">
             <p class="font-medium">
               ALMIGHTY and most merciful Father, We have erred and strayed from thy ways like lost sheep, We have followed too much the devices and desires of our own hearts, We have offended against thy holy laws, We have left undone those things which we ought to have done, And we have done those things which we ought not to have done; And there is no health in us. But thou, O Lord, have mercy upon us, miserable offenders. Spare thou them, O God, which confess their faults. Restore thou them that are penitent; According to thy promises declared unto mankind in Christ Jesu our Lord. And grant, O most merciful Father, for his sake, That we may hereafter live a godly, righteous, and sober life, To the glory of thy holy Name. Amen.
             </p>
           </div>
 
           <span class="rubric">The Absolution or Remission of sins (To be pronounced by the Priest alone, standing).</span>
-          <p class="text-sm italic mb-4">
+          <p class="italic mb-4">
             THE Almighty and merciful Lord grant you Absolution and Remission of all your sins, true repentance, amendment of life, and the grace and consolation of his Holy Spirit. <span class="font-bold">Amen.</span>
           </p>
 
-          <span class="rubric">The Preces</span>
-          <div class="space-y-1.5 my-3 text-sm">
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Preces</h3>
+          <div class="space-y-1.5 my-3">
             <div class="versicle"><span class="versicle-label">V.</span><span>O Lord, open thou our lips;</span></div>
             <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And our mouth shall shew forth thy praise.</span></div>
             <div class="versicle"><span class="versicle-label">V.</span><span>O God, make speed to save us;</span></div>
             <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">O Lord, make haste to help us.</span></div>
           </div>
 
-          <div class="my-3 text-sm">
+          <div class="my-3">
             <p>Glory be to the Father, and to the Son : and to the Holy Ghost;</p>
             <p class="font-bold">As it was in the beginning, is now, and ever shall be : world without end. Amen.</p>
           </div>
 
-          <div class="space-y-1.5 my-3 text-sm">
+          <div class="space-y-1.5 my-3">
             <div class="versicle"><span class="versicle-label">V.</span><span>Praise ye the Lord;</span></div>
             <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">The Lord's Name be praised.</span></div>
           </div>
@@ -822,8 +851,8 @@
 
         <!-- VENITE -->
         <section class="mb-8">
-          <span class="rubric">Venite, Exultemus Domino (Psalm 95 • Coverdale)</span>
-          <div class="space-y-2 mb-4 text-sm">
+          <h3 class="section-header text-stone-900 dark:text-stone-100">Venite, Exultemus Domino (Psalm 95)</h3>
+          <div class="space-y-2 mb-4">
             <p>O COME, let us sing unto the Lord : let us heartily rejoice in the strength of our salvation.</p>
             <p>Let us come before his presence with thanksgiving : and shew ourselves glad in him with psalms.</p>
             <p>For the Lord is a great God : and a great King above all gods.</p>
@@ -837,16 +866,14 @@
 
         <!-- PSALMS & LESSONS -->
         <section class="mb-8">
-          <span class="rubric">The Psalms Appointed</span>
           ${renderPsalmBlock("Psalm 18:1-20")}
 
-          <span class="rubric">The First Lesson (from the Old Testament)</span>
-          ${makeScriptureLink(lectionary.ot)}
+          ${makeScriptureLink(lectionary.ot, "The First Lesson (Old Testament)")}
 
           <!-- TE DEUM -->
           <div class="my-6">
-            <span class="rubric">Te Deum Laudamus (We praise thee, O God)</span>
-            <div class="space-y-2 text-sm mb-3">
+            <h3 class="section-header text-stone-900 dark:text-stone-100">Te Deum Laudamus</h3>
+            <div class="space-y-2 mb-3">
               <p>WE praise thee, O God : we acknowledge thee to be the Lord.</p>
               <p>All the earth doth worship thee : the Father everlasting.</p>
               <p>To thee all Angels cry aloud : the Heavens, and all the Powers therein.</p>
@@ -864,13 +891,12 @@
             </div>
           </div>
 
-          <span class="rubric">The Second Lesson (from the New Testament)</span>
-          ${makeScriptureLink(lectionary.epistle)}
+          ${makeScriptureLink(lectionary.epistle, "The Second Lesson (New Testament)")}
 
           <!-- BENEDICTUS -->
           <div class="my-6">
-            <span class="rubric">Benedictus (The Song of Zacharias • St. Luke 1. 68)</span>
-            <div class="space-y-2 text-sm mb-3">
+            <h3 class="section-header text-stone-900 dark:text-stone-100">Benedictus (St. Luke 1. 68)</h3>
+            <div class="space-y-2 mb-3">
               <p>BLESSED be the Lord God of Israel : for he hath visited, and redeemed his people;</p>
               <p>And hath raised up a mighty salvation for us : in the house of his servant David;</p>
               <p>As he spake by the mouth of his holy Prophets : which have been since the world began;</p>
@@ -882,8 +908,9 @@
 
           <!-- THE CREED -->
           <div class="my-6">
-            <span class="rubric">The Apostles' Creed (All standing)</span>
-            <p class="text-sm font-medium">
+            <h3 class="section-header text-stone-900 dark:text-stone-100">The Apostles' Creed</h3>
+            <span class="rubric">All standing.</span>
+            <p class="font-medium">
               I BELIEVE in God the Father Almighty, Maker of heaven and earth:<br>
               And in Jesus Christ his only Son our Lord, Who was conceived by the Holy Ghost, Born of the Virgin Mary, Suffered under Pontius Pilate, Was crucified, dead, and buried: He descended into hell; The third day he rose again from the dead; He ascended into heaven, And sitteth on the right hand of God the Father Almighty; From thence he shall come to judge the quick and the dead.<br>
               I believe in the Holy Ghost; The holy Catholic Church; The Communion of Saints; The Forgiveness of sins; The Resurrection of the body, And the Life everlasting. Amen.
@@ -893,8 +920,9 @@
 
         <!-- THE PRAYERS -->
         <section class="mb-8">
-          <span class="rubric">The Prayers (All devoutly kneeling)</span>
-          <div class="space-y-1.5 my-3 text-sm">
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Prayers & Suffrages</h3>
+          <span class="rubric">All devoutly kneeling.</span>
+          <div class="space-y-1.5 my-3">
             <div class="versicle"><span class="versicle-label">V.</span><span>The Lord be with you;</span></div>
             <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And with thy spirit.</span></div>
             <div class="versicle"><span class="versicle-label"></span><span class="italic">Let us pray.</span></div>
@@ -903,15 +931,14 @@
             <div class="versicle"><span class="versicle-label"></span><span>Lord, have mercy upon us.</span></div>
           </div>
 
-          <div class="my-4 text-sm font-medium">
-            <p class="rubric">The Lord's Prayer</p>
+          <div class="my-4 font-medium">
+            <h3 class="section-header text-stone-900 dark:text-stone-100">The Lord's Prayer</h3>
             <p>
               OUR Father which art in heaven, Hallowed be thy Name, Thy kingdom come, Thy will be done, in earth as it is in heaven. Give us this day our daily bread; And forgive us our trespasses, As we forgive them that trespass against us; And lead us not into temptation, But deliver us from evil. Amen.
             </p>
           </div>
 
-          <span class="rubric">The Suffrages</span>
-          <div class="space-y-2 text-sm my-4">
+          <div class="space-y-2 my-4">
             <div class="versicle"><span class="versicle-label">V.</span><span>O Lord, shew thy mercy upon us;</span></div>
             <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And grant us thy salvation.</span></div>
             <div class="versicle"><span class="versicle-label">V.</span><span>O Lord, save the King;</span></div>
@@ -927,22 +954,22 @@
           </div>
 
           <!-- THE COLLECTS -->
-          <div class="my-6 space-y-4 text-sm">
+          <div class="my-6 space-y-4">
             <div>
-              <span class="rubric">The Second Collect, for Peace</span>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">The Second Collect, for Peace</h3>
               <p>O GOD, who art the author of peace and lover of concord, in knowledge of whom standeth our eternal life, whose service is perfect freedom: Defend us thy humble servants in all assaults of our enemies; that we, surely trusting in thy defence, may not fear the power of any adversaries; through the might of Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
             </div>
             <div>
-              <span class="rubric">The Third Collect, for Grace</span>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">The Third Collect, for Grace</h3>
               <p>O LORD, our heavenly Father, Almighty and everlasting God, who hast safely brought us to the beginning of this day: Defend us in the same with thy mighty power; and grant that this day we fall into no sin, neither run into any kind of danger; but that all our doings may be ordered by thy governance, to do always that is righteous in thy sight; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
             </div>
             <div>
-              <span class="rubric">A Prayer of Saint Chrysostom</span>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer of Saint Chrysostom</h3>
               <p>ALMIGHTY God, who hast given us grace at this time with one accord to make our common supplications unto thee; and dost promise that when two or three are gathered together in thy Name thou wilt grant their requests: Fulfil now, O Lord, the desires and petitions of thy servants, as may be most expedient for them; granting us in this world knowledge of thy truth, and in the world to come life everlasting. <span class="font-bold">Amen.</span></p>
             </div>
           </div>
 
-          <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800 text-sm">
+          <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800">
             <p class="font-bold">THE grace of our Lord Jesus Christ, and the love of God, and the fellowship of the Holy Ghost, be with us all evermore. Amen. (2 Cor. 13. 14)</p>
           </div>
         </section>
@@ -952,28 +979,27 @@
     function renderBcpEvensong(lit, lectionary) {
       prayerContainer.innerHTML = `
         <header class="text-center mb-8 pb-4 border-b border-stone-200 dark:border-stone-800">
-          <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-stone-100">The Order for Evening Prayer</h2>
-          <p class="text-sm font-sans font-medium text-stone-500 dark:text-stone-400 mt-1">Evensong • Book of Common Prayer (1962 Canada), p. 17</p>
+          <h2 class="office-title tracking-tight text-stone-900 dark:text-stone-100">The Order for Evening Prayer</h2>
+          <p class="font-sans font-medium text-stone-500 dark:text-stone-400">Evensong • Book of Common Prayer (1962 Canada), p. 17</p>
         </header>
 
         <section class="mb-8">
-          <span class="rubric">Opening Sentence</span>
-          <p class="text-lg italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“O worship the Lord in the beauty of holiness: let the whole earth stand in awe of him.” (Psalm 96. 9)</p>
+          <h3 class="section-header text-stone-900 dark:text-stone-100">Opening Sentence & Preces</h3>
+          <p class="italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“O worship the Lord in the beauty of holiness: let the whole earth stand in awe of him.” (Psalm 96. 9)</p>
 
-          <span class="rubric">The Preces</span>
-          <div class="space-y-1.5 my-3 text-sm">
+          <div class="space-y-1.5 my-3">
             <div class="versicle"><span class="versicle-label">V.</span><span>O Lord, open thou our lips;</span></div>
             <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And our mouth shall shew forth thy praise.</span></div>
             <div class="versicle"><span class="versicle-label">V.</span><span>O God, make speed to save us;</span></div>
             <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">O Lord, make haste to help us.</span></div>
           </div>
 
-          <div class="my-3 text-sm">
+          <div class="my-3">
             <p>Glory be to the Father, and to the Son : and to the Holy Ghost;</p>
             <p class="font-bold">As it was in the beginning, is now, and ever shall be : world without end. Amen.</p>
           </div>
 
-          <div class="space-y-1.5 my-3 text-sm">
+          <div class="space-y-1.5 my-3">
             <div class="versicle"><span class="versicle-label">V.</span><span>Praise ye the Lord;</span></div>
             <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">The Lord's Name be praised.</span></div>
           </div>
@@ -983,13 +1009,12 @@
         <section class="mb-8">
           ${renderPsalmBlock("Psalm 4")}
 
-          <span class="rubric">The First Lesson</span>
-          ${makeScriptureLink(lectionary.epistle)}
+          ${makeScriptureLink(lectionary.epistle, "The First Lesson")}
 
           <!-- MAGNIFICAT -->
           <div class="my-6">
-            <span class="rubric">Magnificat (The Song of the Blessed Virgin Mary • St. Luke 1. 46)</span>
-            <div class="space-y-2 text-sm mb-3">
+            <h3 class="section-header text-stone-900 dark:text-stone-100">Magnificat (St. Luke 1. 46)</h3>
+            <div class="space-y-2 mb-3">
               <p>MY soul doth magnify the Lord : and my spirit hath rejoiced in God my Saviour.</p>
               <p>For he hath regarded : the lowliness of his hand-maiden.</p>
               <p>For behold, from henceforth : all generations shall call me blessed.</p>
@@ -1003,13 +1028,12 @@
             </div>
           </div>
 
-          <span class="rubric">The Second Lesson</span>
-          ${makeScriptureLink(lectionary.gospel)}
+          ${makeScriptureLink(lectionary.gospel, "The Second Lesson")}
 
           <!-- NUNC DIMITTIS -->
           <div class="my-6">
-            <span class="rubric">Nunc Dimittis (The Song of Simeon • St. Luke 2. 29)</span>
-            <div class="space-y-2 text-sm mb-3">
+            <h3 class="section-header text-stone-900 dark:text-stone-100">Nunc Dimittis (St. Luke 2. 29)</h3>
+            <div class="space-y-2 mb-3">
               <p>LORD, now lettest thou thy servant depart in peace : according to thy word.</p>
               <p>For mine eyes have seen : thy salvation,</p>
               <p>Which thou hast prepared : before the face of all people;</p>
@@ -1020,8 +1044,8 @@
 
           <!-- THE CREED -->
           <div class="my-6">
-            <span class="rubric">The Apostles' Creed</span>
-            <p class="text-sm font-medium">
+            <h3 class="section-header text-stone-900 dark:text-stone-100">The Apostles' Creed</h3>
+            <p class="font-medium">
               I BELIEVE in God the Father Almighty, Maker of heaven and earth...
             </p>
           </div>
@@ -1029,7 +1053,8 @@
 
         <!-- THE PRAYERS -->
         <section class="mb-8">
-          <div class="space-y-1.5 my-3 text-sm">
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Prayers & Collects</h3>
+          <div class="space-y-1.5 my-3">
             <div class="versicle"><span class="versicle-label">V.</span><span>The Lord be with you;</span></div>
             <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And with thy spirit.</span></div>
             <div class="versicle"><span class="versicle-label"></span><span class="italic">Let us pray.</span></div>
@@ -1038,22 +1063,22 @@
             <div class="versicle"><span class="versicle-label"></span><span>Lord, have mercy upon us.</span></div>
           </div>
 
-          <div class="my-4 text-sm font-medium">
+          <div class="my-4 font-medium">
             <p>OUR Father which art in heaven, Hallowed be thy Name, Thy kingdom come, Thy will be done, in earth as it is in heaven. Give us this day our daily bread; And forgive us our trespasses, As we forgive them that trespass against us; And lead us not into temptation, But deliver us from evil. Amen.</p>
           </div>
 
-          <div class="my-6 space-y-4 text-sm">
+          <div class="my-6 space-y-4">
             <div>
-              <span class="rubric">The Second Collect at Evening Prayer (for Peace)</span>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">The Second Collect at Evening Prayer (for Peace)</h3>
               <p>O GOD, from whom all holy desires, all good counsels, and all just works do proceed: Give unto thy servants that peace which the world cannot give; that both our hearts may be set to obey thy commandments, and also that by thee we being defended from the fear of our enemies may pass our time in rest and quietness; through the merits of Jesus Christ our Saviour. <span class="font-bold">Amen.</span></p>
             </div>
             <div>
-              <span class="rubric">The Third Collect, for Aid against all Perils</span>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">The Third Collect, for Aid against all Perils</h3>
               <p>LIGHTEN our darkness, we beseech thee, O Lord; and by thy great mercy defend us from all perils and dangers of this night; for the love of thy only Son, our Saviour Jesus Christ. <span class="font-bold">Amen.</span></p>
             </div>
           </div>
 
-          <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800 text-sm">
+          <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800">
             <p class="font-bold">THE grace of our Lord Jesus Christ, and the love of God, and the fellowship of the Holy Ghost, be with us all evermore. Amen.</p>
           </div>
         </section>
@@ -1063,13 +1088,13 @@
     function renderBcpCompline(lit) {
       prayerContainer.innerHTML = `
         <header class="text-center mb-8 pb-4 border-b border-stone-200 dark:border-stone-800">
-          <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-stone-100">An Order for Compline</h2>
-          <p class="text-sm font-sans font-medium text-stone-500 dark:text-stone-400 mt-1">Night Prayer • Book of Common Prayer (1962 Canada), p. 722</p>
+          <h2 class="office-title tracking-tight text-stone-900 dark:text-stone-100">An Order for Compline</h2>
+          <p class="font-sans font-medium text-stone-500 dark:text-stone-400">Night Prayer • Book of Common Prayer (1962 Canada), p. 722</p>
         </header>
 
         <section class="mb-8">
-          <span class="rubric">The Gathering</span>
-          <div class="space-y-1.5 my-3 text-sm">
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Gathering</h3>
+          <div class="space-y-1.5 my-3">
             <div class="versicle"><span class="versicle-label">V.</span><span>The Lord Almighty grant us a quiet night and a perfect end.</span></div>
             <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">Amen.</span></div>
             <div class="versicle"><span class="versicle-label">V.</span><span>Turn us then, O God our Saviour;</span></div>
@@ -1078,7 +1103,7 @@
             <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">O Lord, make haste to help us.</span></div>
           </div>
 
-          <div class="my-3 text-sm">
+          <div class="my-3">
             <p>Glory be to the Father, and to the Son : and to the Holy Ghost;</p>
             <p class="font-bold">As it was in the beginning, is now, and ever shall be : world without end. Amen.</p>
           </div>
@@ -1086,7 +1111,6 @@
 
         <!-- PSALMS -->
         <section class="mb-8">
-          <span class="rubric">The Psalms of Compline</span>
           ${renderPsalmBlock("Psalm 4")}
           ${renderPsalmBlock("Psalm 91")}
           ${renderPsalmBlock("Psalm 134")}
@@ -1094,21 +1118,22 @@
 
         <!-- PRAYERS -->
         <section class="mb-8">
-          <div class="space-y-2 text-sm my-4">
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Prayers</h3>
+          <div class="space-y-2 my-4">
             <div class="versicle"><span class="versicle-label">V.</span><span>Into thy hands, O Lord, I commend my spirit;</span></div>
             <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">For thou hast redeemed me, O Lord, thou God of truth.</span></div>
             <div class="versicle"><span class="versicle-label">V.</span><span>Keep me as the apple of an eye;</span></div>
             <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">Hide me under the shadow of thy wings.</span></div>
           </div>
 
-          <div class="my-6 space-y-4 text-sm">
+          <div class="my-6 space-y-4">
             <div>
-              <span class="rubric">The Collect</span>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">The Collect</h3>
               <p>VISIT, we beseech thee, O Lord, this place, and drive from it all the snares of the enemy; let thy holy angels dwell herein to preserve us in peace; and may thy blessing be upon us evermore; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
             </div>
           </div>
 
-          <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800 text-sm">
+          <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800">
             <p class="font-bold">THE Almighty and merciful Lord, the Father, the Son, and the Holy Ghost, bless us and keep us. Amen.</p>
           </div>
         </section>
@@ -1198,13 +1223,13 @@
 
       prayerContainer.innerHTML = `
         <header class="text-center mb-8 pb-4 border-b border-stone-200 dark:border-stone-800">
-          <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-stone-100">Morning Prayer</h2>
-          <p class="text-sm font-sans font-medium text-stone-500 dark:text-stone-400 mt-1">Book of Alternative Services, p. 47</p>
+          <h2 class="office-title tracking-tight text-stone-900 dark:text-stone-100">Morning Prayer</h2>
+          <p class="font-sans font-medium text-stone-500 dark:text-stone-400">Book of Alternative Services, p. 47</p>
         </header>
 
         <section class="mb-8">
-          <span class="rubric">The Gathering of the Community</span>
-          <p class="text-lg italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“${seasonalSentence}”</p>
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Gathering of the Community</h3>
+          <p class="italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“${seasonalSentence}”</p>
           
           <div class="space-y-1.5 my-4">
             <div class="versicle"><span class="versicle-label">V.</span><span>Lord, open our lips.</span></div>
@@ -1216,9 +1241,9 @@
         </section>
 
         <section class="mb-8">
-          <div class="flex items-baseline justify-between flex-wrap gap-1 mb-2">
-            <span class="rubric">The Invitatory (Venite • Psalm 95:1–7)</span>
-            <span class="text-[11px] font-sans px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 font-medium">${editionLabel}</span>
+          <div class="flex items-baseline justify-between flex-wrap gap-2 mb-2">
+            <h3 class="section-header text-stone-900 dark:text-stone-100" style="margin-top:0; margin-bottom:0;">The Invitatory (Venite • Psalm 95:1–7)</h3>
+            <span class="font-sans px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400">${editionLabel}</span>
           </div>
           <p class="mb-3 font-semibold text-purple-800 dark:text-purple-300">Antiphon: ${vAntiphon}</p>
           <div class="space-y-2 mb-4">
@@ -1228,58 +1253,57 @@
         </section>
 
         <section class="mb-8">
-          <span class="rubric">The Proclamation of the Word</span>
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Proclamation of the Word</h3>
           ${renderPsalmBlock("Psalm 18:1-20")}
 
-          <span class="rubric">First Reading: Old Testament</span>
-          ${makeScriptureLink(lectionary.ot)}
+          ${makeScriptureLink(lectionary.ot, "First Reading: Old Testament")}
 
           <div class="my-6">
-            <div class="flex items-baseline justify-between flex-wrap gap-1 mb-2">
-              <span class="rubric">Canticle 1: The Song of Zechariah (Benedictus • Luke 1:68–79)</span>
-              <span class="text-[11px] font-sans px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 font-medium">${editionLabel}</span>
+            <div class="flex items-baseline justify-between flex-wrap gap-2 mb-2">
+              <h3 class="section-header text-stone-900 dark:text-stone-100" style="margin-top:0; margin-bottom:0;">Canticle: The Song of Zechariah (Luke 1:68–79)</h3>
+              <span class="font-sans px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400">${editionLabel}</span>
             </div>
             <div class="space-y-2 mb-3">
               ${bText.map(line => `<p>${line}</p>`).join('')}
             </div>
-            <p class="font-bold text-sm">Glory to the Father, and to the Son, and to the Holy Spirit: as it was in the beginning, is now, and will be for ever. Amen.</p>
+            <p class="font-bold">Glory to the Father, and to the Son, and to the Holy Spirit: as it was in the beginning, is now, and will be for ever. Amen.</p>
           </div>
 
-          <span class="rubric">Second Reading: Epistle or Gospel</span>
-          ${makeScriptureLink(lectionary.epistle)}
+          ${makeScriptureLink(lectionary.epistle, "Second Reading: Epistle or Gospel")}
 
           <div class="my-6">
-            <span class="rubric">The Apostles' Creed</span>
-            <p class="font-medium text-sm">
+            <h3 class="section-header text-stone-900 dark:text-stone-100">The Apostles' Creed</h3>
+            <p class="font-medium">
               I believe in God, the Father almighty, creator of heaven and earth. I believe in Jesus Christ, his only Son, our Lord...
             </p>
           </div>
         </section>
 
         <section class="mb-8">
-          <span class="rubric">The Prayers of the People</span>
-          <div class="space-y-1.5 my-3 text-sm">
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Prayers of the People</h3>
+          <div class="space-y-1.5 my-3">
             <div class="versicle"><span class="versicle-label">V.</span><span>The Lord be with you.</span></div>
             <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And also with you.</span></div>
             <div class="versicle"><span class="versicle-label"></span><span class="italic">Let us pray.</span></div>
           </div>
 
-          <div class="my-4 text-sm font-medium">
+          <div class="my-4 font-medium">
+            <h3 class="section-header text-stone-900 dark:text-stone-100">The Lord's Prayer</h3>
             <p>Our Father in heaven, hallowed be your name, your kingdom come, your will be done, on earth as in heaven. Give us today our daily bread. Forgive us our sins as we forgive those who sin against us. Save us from the time of trial, and deliver us from evil. For the kingdom, the power, and the glory are yours, now and for ever. Amen.</p>
           </div>
 
-          <div class="my-6 space-y-4 text-sm">
+          <div class="my-6 space-y-4">
             <div>
-              <span class="rubric">A Collect for Peace</span>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">A Collect for Peace</h3>
               <p>O God, the author of peace and lover of concord, to know you is eternal life, to serve you is perfect freedom: defend us your humble servants in all assaults of our enemies, that we, surely trusting in your defence, may not fear the power of any adversaries; through the might of Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
             </div>
             <div>
-              <span class="rubric">A Collect for Grace</span>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">A Collect for Grace</h3>
               <p>Lord God, almighty and everlasting Father, you have brought us in safety to this new day: preserve us with your mighty power, that we may not fall into sin, nor be overcome by adversity; and in all we do, direct us to the fulfilling of your purpose; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
             </div>
           </div>
 
-          <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800 text-sm">
+          <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800">
             <p class="font-bold">The grace of our Lord Jesus Christ, and the love of God, and the fellowship of the Holy Spirit, be with us all evermore. Amen.</p>
           </div>
         </section>
@@ -1293,16 +1317,17 @@
 
       prayerContainer.innerHTML = `
         <header class="text-center mb-8 pb-4 border-b border-stone-200 dark:border-stone-800">
-          <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-stone-100">Evening Prayer</h2>
-          <p class="text-sm font-sans font-medium text-stone-500 dark:text-stone-400 mt-1">Book of Alternative Services, p. 66</p>
+          <h2 class="office-title tracking-tight text-stone-900 dark:text-stone-100">Evening Prayer</h2>
+          <p class="font-sans font-medium text-stone-500 dark:text-stone-400">Book of Alternative Services, p. 66</p>
         </header>
 
         <section class="mb-8">
+          <h3 class="section-header text-stone-900 dark:text-stone-100">Service of Light</h3>
           <span class="rubric">Opening Sentence</span>
-          <p class="text-lg italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“Jesus said, ‘I am the light of the world; whoever follows me will not walk in darkness, but will have the light of life.’” (John 8:12)</p>
+          <p class="italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“Jesus said, ‘I am the light of the world; whoever follows me will not walk in darkness, but will have the light of life.’” (John 8:12)</p>
 
-          <span class="rubric">Canticle of Light (Phos Hilaron • O Gracious Light)</span>
-          <div class="space-y-2 font-medium text-sm">
+          <h3 class="section-header text-stone-900 dark:text-stone-100">Canticle of Light (Phos Hilaron)</h3>
+          <div class="space-y-2 font-medium">
             <p>O gracious Light, pure brightness of the everliving Father in heaven, * O Jesus Christ, holy and blessed!</p>
             <p>Now as we come to the setting of the sun, and our eyes behold the vesper light, * we sing your praises, O God: Father, Son, and Holy Spirit.</p>
           </div>
@@ -1311,37 +1336,35 @@
         <section class="mb-8">
           ${renderPsalmBlock("Psalm 4")}
 
-          <span class="rubric">First Reading</span>
-          ${makeScriptureLink(lectionary.epistle)}
+          ${makeScriptureLink(lectionary.epistle, "First Reading")}
 
           <div class="my-6">
-            <div class="flex items-baseline justify-between flex-wrap gap-1 mb-2">
-              <span class="rubric">The Song of Mary (Magnificat • Luke 1:46–55)</span>
-              <span class="text-[11px] font-sans px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 font-medium">${editionLabel}</span>
+            <div class="flex items-baseline justify-between flex-wrap gap-2 mb-2">
+              <h3 class="section-header text-stone-900 dark:text-stone-100" style="margin-top:0; margin-bottom:0;">The Song of Mary (Magnificat • Luke 1:46–55)</h3>
+              <span class="font-sans px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400">${editionLabel}</span>
             </div>
-            <div class="space-y-2 mb-3 text-sm">
+            <div class="space-y-2 mb-3">
               ${mText.map(line => `<p>${line}</p>`).join('')}
             </div>
-            <p class="font-bold text-sm">Glory to the Father, and to the Son, and to the Holy Spirit: as it was in the beginning, is now, and will be for ever. Amen.</p>
+            <p class="font-bold">Glory to the Father, and to the Son, and to the Holy Spirit: as it was in the beginning, is now, and will be for ever. Amen.</p>
           </div>
 
-          <span class="rubric">Second Reading</span>
-          ${makeScriptureLink(lectionary.gospel)}
+          ${makeScriptureLink(lectionary.gospel, "Second Reading")}
         </section>
 
         <section class="mb-8">
-          <div class="my-6 space-y-4 text-sm">
+          <div class="my-6 space-y-4">
             <div>
-              <span class="rubric">A Collect for Peace</span>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">A Collect for Peace</h3>
               <p>Most holy God, the source of all good desires, all right judgements, and all just works: give to your servants that peace which the world cannot give, that our hearts may be set to obey your commandments, and that we, being defended from the fear of our enemies, may pass our time in rest and quietness; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
             </div>
             <div>
-              <span class="rubric">A Collect for Aid against Perils</span>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">A Collect for Aid against Perils</h3>
               <p>Lighten our darkness, we beseech you, O Lord; and by your great mercy defend us from all perils and dangers of this night; for the love of your only Son, our Saviour Jesus Christ. <span class="font-bold">Amen.</span></p>
             </div>
           </div>
 
-          <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800 text-sm">
+          <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800">
             <p class="font-bold">The grace of our Lord Jesus Christ, and the love of God, and the fellowship of the Holy Spirit, be with us all evermore. Amen.</p>
           </div>
         </section>
@@ -1351,27 +1374,27 @@
     function renderBasCompline(lit) {
       prayerContainer.innerHTML = `
         <header class="text-center mb-8 pb-4 border-b border-stone-200 dark:border-stone-800">
-          <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-stone-100">An Order for Compline</h2>
-          <p class="text-sm font-sans font-medium text-stone-500 dark:text-stone-400 mt-1">Night Prayer • Book of Alternative Services, p. 722</p>
+          <h2 class="office-title tracking-tight text-stone-900 dark:text-stone-100">An Order for Compline</h2>
+          <p class="font-sans font-medium text-stone-500 dark:text-stone-400">Night Prayer • Book of Alternative Services, p. 722</p>
         </header>
 
         <section class="mb-8">
-          <span class="rubric">The Gathering</span>
-          <div class="space-y-2 mb-4 text-sm">
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Gathering</h3>
+          <div class="space-y-2 mb-4">
             <div class="versicle"><span class="versicle-label">V.</span><span>The Lord almighty grant us a quiet night and a peaceable end.</span></div>
             <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">Amen.</span></div>
           </div>
 
-          <p class="italic text-sm text-stone-600 dark:text-stone-400 my-3">
+          <p class="italic text-stone-600 dark:text-stone-400 my-3">
             “Be sober, be watchful. Your adversary the devil prowls around like a roaring lion, seeking someone to devour. Resist him, firm in your faith.” (1 Peter 5:8–9)
           </p>
 
-          <div class="my-6 p-4 rounded-xl bg-stone-100/70 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 text-sm">
-            <span class="rubric">Confession & Absolution</span>
-            <p class="font-medium text-sm mb-3">
+          <div class="my-6 p-4 rounded-xl bg-stone-100/70 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800">
+            <h3 class="section-header text-stone-900 dark:text-stone-100" style="margin-top:0;">Confession & Absolution</h3>
+            <p class="font-medium mb-3">
               Most merciful God, we confess that we have sinned against you in thought, word, and deed, by what we have done, and by what we have left undone. We have not loved you with our whole heart; we have not loved our neighbours as ourselves. We are truly sorry and we humbly repent. For the sake of your Son Jesus Christ, have mercy on us and forgive us; that we may delight in your will, and walk in your ways, to the glory of your name. Amen.
             </p>
-            <p class="text-sm italic">
+            <p class="italic">
               Officiant: The almighty and merciful God grant us pardon and forgiveness of all our sins, time for amendment of life, and the grace and comfort of the Holy Spirit. <span class="font-bold">Amen.</span>
             </p>
           </div>
@@ -1379,7 +1402,6 @@
 
         <!-- PSALMS OF COMPLINE -->
         <section class="mb-8">
-          <span class="rubric">The Psalms of Compline</span>
           ${renderPsalmBlock("Psalm 4")}
           ${renderPsalmBlock("Psalm 91")}
           ${renderPsalmBlock("Psalm 134")}
@@ -1387,32 +1409,32 @@
 
         <!-- PRAYERS -->
         <section class="mb-8">
-          <div class="my-6 space-y-4 text-sm">
+          <div class="my-6 space-y-4">
             <div>
-              <span class="rubric">Collect for Light in Darkness</span>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">Collect for Light in Darkness</h3>
               <p>Be our light in the darkness, O Lord, and in your great mercy defend us from all perils and dangers of this night; for the love of your only Son, our Saviour Jesus Christ. <span class="font-bold">Amen.</span></p>
             </div>
             <div>
-              <span class="rubric">Collect for Watchers</span>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">Collect for Watchers</h3>
               <p>Keep watch, dear Lord, with those who work, or watch, or weep this night, and give your angels charge over those who sleep. Tend the sick, Lord Christ; give rest to the weary, bless the dying, soothe the suffering, pity the afflicted, shield the joyous; and all for your love's sake. <span class="font-bold">Amen.</span></p>
             </div>
           </div>
 
           <!-- NUNC DIMITTIS -->
           <div class="my-8 pt-4 border-t border-stone-200 dark:border-stone-800">
-            <span class="rubric">The Song of Simeon (Nunc Dimittis • Luke 2:29–32)</span>
-            <p class="font-semibold text-purple-900 dark:text-purple-300 mb-3 text-sm">
+            <h3 class="section-header text-stone-900 dark:text-stone-100">The Song of Simeon (Nunc Dimittis • Luke 2:29–32)</h3>
+            <p class="font-semibold text-purple-900 dark:text-purple-300 mb-3">
               Antiphon: Guide us waking, O Lord, and guard us sleeping, that awake we may watch with Christ, and asleep we may rest in peace.
             </p>
-            <div class="space-y-2 mb-3 text-sm">
+            <div class="space-y-2 mb-3">
               <p>Lord, now have you set your servant free * to go in peace as you have promised;</p>
               <p>For these eyes of mine have seen the Saviour, * whom you have prepared for all the world to see:</p>
               <p>A Light to enlighten the nations, * and the glory of your people Israel.</p>
             </div>
-            <p class="font-bold text-sm mb-3">Glory to the Father, and to the Son, and to the Holy Spirit: as it was in the beginning, is now, and will be for ever. Amen.</p>
+            <p class="font-bold mb-3">Glory to the Father, and to the Son, and to the Holy Spirit: as it was in the beginning, is now, and will be for ever. Amen.</p>
           </div>
 
-          <div class="mt-6 pt-4 border-t border-stone-200 dark:border-stone-800 text-sm">
+          <div class="mt-6 pt-4 border-t border-stone-200 dark:border-stone-800">
             <p class="font-bold">The almighty and merciful Lord, the Father, the Son, and the Holy Spirit, bless us and keep us. Amen.</p>
           </div>
         </section>
@@ -1422,6 +1444,9 @@
     // --- 7. FORMATTING & EVENT HANDLERS ---
     function applyFormatting() {
       prayerContainer.style.fontSize = fontSize + 'px';
+      if (liturgicalBanner) {
+        liturgicalBanner.style.fontSize = fontSize + 'px';
+      }
       const rubrics = document.querySelectorAll('.rubric');
       rubrics.forEach(r => r.style.display = showRubrics ? 'block' : 'none');
 

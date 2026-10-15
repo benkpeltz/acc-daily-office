@@ -1,5 +1,5 @@
-// BAS Daily Office Service Worker for Offline Functionality
-const CACHE_NAME = 'bas-daily-office-v1';
+// ACC Daily Office Service Worker for Offline Functionality
+const CACHE_NAME = 'acc-daily-office-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -31,15 +31,18 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Try network first, fall back to cache for offline support
   event.respondWith(
-    fetch(event.request).catch(() => {
-      return caches.match(event.request).then((cachedResponse) => {
-        if (cachedResponse) return cachedResponse;
-        if (event.request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
-      });
-    })
+    fetch(event.request)
+      .then((networkResponse) => {
+        return networkResponse;
+      })
+      .catch(() => {
+        return caches.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) return cachedResponse;
+          if (event.request.mode === 'navigate') {
+            return caches.match('./index.html');
+          }
+        });
+      })
   );
 });
