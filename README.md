@@ -69,4 +69,3 @@ This app is built as a Progressive Web App (PWA). You can install it on your dev
 
 * Liturgical texts from *The Book of Alternative Services* (1985), *The Book of Common Prayer* (1962), and *The Inclusive Language Liturgical Psalter* (2019) are authorized by the General Synod of the Anglican Church of Canada.
 * Scripture citations are linked to the New Revised Standard Version (NRSVue) under Fair Use guidelines.
-* 

@@ -636,8 +636,9 @@
     const groupBasLanguage = document.getElementById('groupBasLanguage');
 
     function updateBookModeUI() {
+      headerAppTitle.textContent = "ACC Daily Office";
       if (currentBookMode === 'bcp') {
-        headerAppTitle.textContent = "BCP Daily Office (1962)";
+        headerSeasonSubtitle.textContent = "Book of Common Prayer (1962)";
         bannerBookBadge.textContent = "BCP 1962 • Coverdale";
         tabMorning.textContent = "Mattins";
         tabEvening.textContent = "Evensong";
@@ -647,7 +648,7 @@
         document.getElementById('remindLabelEvening').textContent = "Evensong (Evening Prayer)";
         groupBasLanguage.style.display = 'none';
       } else {
-        headerAppTitle.textContent = "ACC Daily Office";
+        headerSeasonSubtitle.textContent = "Book of Alternative Services (1985)";
         bannerBookBadge.textContent = (currentPsalter === 'inclusive') ? "BAS • Inclusive (2019)" : "BAS (1985)";
         tabMorning.textContent = "Morning Prayer";
         tabEvening.textContent = "Evening Prayer";
@@ -671,7 +672,7 @@
       bannerFeastName.textContent = lit.feastName || lit.season;
       bannerLiturgicalColorTag.textContent = lit.color;
       bannerLectionaryCycle.textContent = `${lit.cycle} • Daily Office`;
-      headerSeasonSubtitle.textContent = `${lit.season} Season • ${lit.color}`;
+      /* Season displayed in banner */
       currentDateDisplay.textContent = currentDate.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
 
       let dotColor = '#581c87';
