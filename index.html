@@ -179,17 +179,18 @@
   <!-- MAIN CONTENT CONTAINER -->
   <main class="flex-1 max-w-2xl mx-auto w-full px-4 sm:px-6 py-6 pb-20">
     
-    <!-- LITURGICAL INFO BANNER (Also scales with fontSize) -->
+    <!-- LITURGICAL INFO BANNER (Scales with fontSize) -->
     <section id="liturgicalBanner" class="scalable-content mb-6 p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-sm transition">
       <div class="flex items-start justify-between gap-2">
         <div>
           <div class="flex items-center flex-wrap gap-2 mb-1">
-            <span id="bannerLiturgicalColorTag" class="px-2.5 py-0.5 rounded-full font-semibold uppercase tracking-wider text-white bg-purple-700">Violet</span>
+            <span id="bannerLiturgicalColorTag" class="px-2.5 py-0.5 rounded-full font-semibold uppercase tracking-wider text-white bg-purple-700">Green</span>
             <span id="bannerLectionaryCycle" class="text-stone-500 dark:text-stone-400 font-medium">Year Two • Daily Office</span>
             <span id="bannerBookBadge" class="px-2 py-0.5 rounded-md font-medium bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300">BAS (1985)</span>
           </div>
           <h2 id="bannerDateTitle" class="section-header text-stone-900 dark:text-stone-100" style="margin-top:0.25em; margin-bottom:0.15em;">Thursday, October 15, 2026</h2>
-          <p id="bannerFeastName" class="font-medium text-purple-700 dark:text-purple-400">Twenty-first Sunday after Pentecost (Proper 28)</p>
+          <p id="bannerFeastName" class="font-medium text-purple-700 dark:text-purple-400">Weekday in Ordinary Time</p>
+          <p id="bannerCommemoration" class="italic text-stone-600 dark:text-stone-400 mt-0.5"></p>
         </div>
         <div class="text-right flex-shrink-0">
           <button id="btnToday" class="font-semibold text-stone-500 hover:text-purple-700 dark:text-stone-400 dark:hover:text-purple-400 border border-stone-200 dark:border-stone-700 rounded-md px-2.5 py-1">
@@ -221,7 +222,7 @@
   <div id="modalCalendar" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
       <h3 class="text-lg font-bold text-stone-900 dark:text-stone-100 mb-2">Select Liturgical Date</h3>
-      <p class="text-xs text-stone-500 dark:text-stone-400 mb-4">Calculate offices for any feast, holy day, or season.</p>
+      <p class="text-xs text-stone-500 dark:text-stone-400 mb-4">Calculate offices, psalms, lessons, and collects for any date.</p>
       
       <input type="date" id="datePickerInput" class="w-full px-3 py-2 border border-stone-300 dark:border-stone-700 rounded-lg bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-sm mb-4">
       
@@ -231,6 +232,7 @@
           <button data-quick-date="2026-02-18" class="btn-quick-feast text-left p-1.5 rounded bg-stone-100 dark:bg-stone-800 hover:bg-purple-100 dark:hover:bg-purple-950 text-stone-700 dark:text-stone-300">Ash Wednesday</button>
           <button data-quick-date="2026-04-05" class="btn-quick-feast text-left p-1.5 rounded bg-stone-100 dark:bg-stone-800 hover:bg-purple-100 dark:hover:bg-purple-950 text-stone-700 dark:text-stone-300">Easter Day</button>
           <button data-quick-date="2026-05-24" class="btn-quick-feast text-left p-1.5 rounded bg-stone-100 dark:bg-stone-800 hover:bg-purple-100 dark:hover:bg-purple-950 text-stone-700 dark:text-stone-300">Day of Pentecost</button>
+          <button data-quick-date="2026-10-18" class="btn-quick-feast text-left p-1.5 rounded bg-stone-100 dark:bg-stone-800 hover:bg-purple-100 dark:hover:bg-purple-950 text-stone-700 dark:text-stone-300">St. Luke's Day</button>
           <button data-quick-date="2026-11-01" class="btn-quick-feast text-left p-1.5 rounded bg-stone-100 dark:bg-stone-800 hover:bg-purple-100 dark:hover:bg-purple-950 text-stone-700 dark:text-stone-300">All Saints' Day</button>
           <button data-quick-date="2026-11-29" class="btn-quick-feast text-left p-1.5 rounded bg-stone-100 dark:bg-stone-800 hover:bg-purple-100 dark:hover:bg-purple-950 text-stone-700 dark:text-stone-300">Advent Sunday</button>
           <button data-quick-date="2026-12-25" class="btn-quick-feast text-left p-1.5 rounded bg-stone-100 dark:bg-stone-800 hover:bg-purple-100 dark:hover:bg-purple-950 text-stone-700 dark:text-stone-300">Christmas Day</button>
@@ -373,7 +375,43 @@
 
   <!-- SCRIPT LOGIC: LITURGICAL ENGINE, DATA & CONTROLLERS -->
   <script>
-    // --- 1. LITURGICAL CALENDAR ENGINE ---
+    // --- 1. LOCAL DATE HELPERS (Avoids UTC evening offset bugs) ---
+    function makeLocalDate(year, monthIndex, day) {
+      return new Date(year, monthIndex, day, 12, 0, 0, 0);
+    }
+
+    function todayLocalDate() {
+      const now = new Date();
+      return makeLocalDate(now.getFullYear(), now.getMonth(), now.getDate());
+    }
+
+    function addDays(date, days) {
+      return makeLocalDate(date.getFullYear(), date.getMonth(), date.getDate() + days);
+    }
+
+    function toYMD(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function daysBetween(d1, d2) {
+      const u1 = Date.UTC(d1.getFullYear(), d1.getMonth(), d1.getDate());
+      const u2 = Date.UTC(d2.getFullYear(), d2.getMonth(), d2.getDate());
+      return Math.round((u2 - u1) / (1000 * 60 * 60 * 24));
+    }
+
+    function ordinalWord(n) {
+      const words = [
+        "", "First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth",
+        "Eleventh", "Twelfth", "Thirteenth", "Fourteenth", "Fifteenth", "Sixteenth", "Seventeenth", "Eighteenth", "Nineteenth", "Twentieth",
+        "Twenty-first", "Twenty-second", "Twenty-third", "Twenty-fourth", "Twenty-fifth", "Twenty-sixth", "Twenty-seventh", "Twenty-eighth", "Twenty-ninth"
+      ];
+      return words[n] || `${n}th`;
+    }
+
+    // --- 2. LITURGICAL CALENDAR ENGINE & CANADIAN SAINTS/HOLY DAYS ---
     function calculateEasterSunday(year) {
       const a = year % 19;
       const b = Math.floor(year / 100);
@@ -389,203 +427,997 @@
       const m = Math.floor((a + 11 * h + 22 * l) / 451);
       const month = Math.floor((h + l - 7 * m + 114) / 31);
       const day = ((h + l - 7 * m + 114) % 31) + 1;
-      return new Date(Date.UTC(year, month - 1, day));
-    }
-
-    function addDays(date, days) {
-      const result = new Date(date);
-      result.setUTCDate(result.getUTCDate() + days);
-      return result;
+      return makeLocalDate(year, month - 1, day);
     }
 
     function getAdventSunday(year) {
-      const christmas = new Date(Date.UTC(year, 11, 25));
-      const dayOfWeek = christmas.getUTCDay();
+      const christmas = makeLocalDate(year, 11, 25);
+      const dayOfWeek = christmas.getDay();
       const daysToSubtract = dayOfWeek === 0 ? 28 : (21 + dayOfWeek);
       return addDays(christmas, -daysToSubtract);
     }
 
+    // Fixed Holy Days & Commemorations in the Anglican Church of Canada
+    const FIXED_HOLY_DAYS = {
+      "01-01": { name: "The Naming of Jesus", type: "major", color: "White" },
+      "01-06": { name: "The Epiphany of the Lord", type: "principal", color: "White" },
+      "01-25": { name: "The Conversion of Saint Paul the Apostle", type: "major", color: "White" },
+      "02-02": { name: "The Presentation of the Lord (Candlemas)", type: "major", color: "White" },
+      "03-17": { name: "Patrick, Missionary Bishop in Ireland, 461", type: "commemoration", color: null },
+      "03-19": { name: "Saint Joseph of Nazareth", type: "major", color: "White" },
+      "03-25": { name: "The Annunciation of the Lord to the Blessed Virgin Mary", type: "major", color: "White" },
+      "04-25": { name: "Saint Mark the Evangelist", type: "major", color: "Red" },
+      "05-01": { name: "Saint Philip and Saint James, Apostles", type: "major", color: "Red" },
+      "05-31": { name: "The Visit of the Blessed Virgin Mary to Elizabeth", type: "major", color: "White" },
+      "06-11": { name: "Saint Barnabas the Apostle", type: "major", color: "Red" },
+      "06-24": { name: "The Birth of Saint John the Baptist", type: "major", color: "White" },
+      "06-29": { name: "Saint Peter and Saint Paul, Apostles", type: "major", color: "Red" },
+      "07-01": { name: "Canada Day", type: "major", color: "White" },
+      "07-22": { name: "Saint Mary Magdalene the Apostle", type: "major", color: "White" },
+      "07-25": { name: "Saint James the Apostle", type: "major", color: "Red" },
+      "08-06": { name: "The Transfiguration of the Lord", type: "major", color: "White" },
+      "08-15": { name: "Saint Mary the Virgin", type: "major", color: "White" },
+      "08-24": { name: "Saint Bartholomew the Apostle", type: "major", color: "Red" },
+      "09-14": { name: "Holy Cross Day", type: "major", color: "Red" },
+      "09-21": { name: "Saint Matthew, Apostle and Evangelist", type: "major", color: "Red" },
+      "09-29": { name: "Saint Michael and All Angels", type: "major", color: "White" },
+      "10-04": { name: "Francis of Assisi, Friar, 1226", type: "commemoration", color: null },
+      "10-06": { name: "William Tyndale, Translator of the Scriptures, Reformation Martyr, 1536", type: "commemoration", color: null },
+      "10-15": { name: "Teresa of Avila, Mystic and Teacher of the Faith, 1582", type: "commemoration", color: null },
+      "10-16": { name: "Hugh Latimer and Nicholas Ridley, Bishops, Reformation Martyrs, 1555", type: "commemoration", color: null },
+      "10-17": { name: "Ignatius, Bishop of Antioch, Martyr, c. 115", type: "memorial", color: "Red" },
+      "10-18": { name: "Saint Luke the Evangelist", type: "major", color: "Red" },
+      "10-19": { name: "Jean de Brébeuf, Isaac Jogues, and their Companions, Missionaries and Martyrs in Huronia, 1642–1649", type: "memorial", color: "Red" },
+      "10-23": { name: "Saint James of Jerusalem, Brother of the Lord, Martyr, c. 62", type: "major", color: "Red" },
+      "10-28": { name: "Saint Simon and Saint Jude, Apostles", type: "major", color: "Red" },
+      "11-01": { name: "All Saints' Day", type: "principal", color: "White" },
+      "11-02": { name: "All Souls' Day (Commemoration of All the Faithful Departed)", type: "memorial", color: "Violet" },
+      "11-11": { name: "Remembrance Day / Martin, Bishop of Tours, 397", type: "memorial", color: null },
+      "11-30": { name: "Saint Andrew the Apostle", type: "major", color: "Red" },
+      "12-06": { name: "Nicholas, Bishop of Myra, c. 342", type: "commemoration", color: null },
+      "12-21": { name: "Saint Thomas the Apostle", type: "major", color: "Red" },
+      "12-25": { name: "The Nativity of the Lord (Christmas Day)", type: "principal", color: "White" },
+      "12-26": { name: "Saint Stephen, Deacon and Martyr", type: "major", color: "Red" },
+      "12-27": { name: "Saint John, Apostle and Evangelist", type: "major", color: "White" },
+      "12-28": { name: "The Holy Innocents", type: "major", color: "Red" }
+    };
+
+    const WEEKDAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
     function getLiturgicalInfo(date) {
-      const year = date.getUTCFullYear();
+      const year = date.getFullYear();
       const easter = calculateEasterSunday(year);
       const ashWednesday = addDays(easter, -46);
       const palmSunday = addDays(easter, -7);
+      const goodFriday = addDays(easter, -2);
       const ascension = addDays(easter, 39);
       const pentecost = addDays(easter, 49);
       const trinitySunday = addDays(easter, 56);
       const advent = getAdventSunday(year);
-      const christmas = new Date(Date.UTC(year, 11, 25));
-      const epiphany = new Date(Date.UTC(year, 0, 6));
+      const reignOfChrist = addDays(advent, -7);
+      const christmas = makeLocalDate(year, 11, 25);
+      const epiphany = makeLocalDate(year, 0, 6);
 
-      let lectionaryCycleYear = "Year Two";
-      const isPastAdventThisYear = date >= advent;
-      if (isPastAdventThisYear) {
-        lectionaryCycleYear = ((year + 1) % 2 === 1) ? "Year One" : "Year Two";
-      } else {
-        lectionaryCycleYear = (year % 2 === 1) ? "Year One" : "Year Two";
-      }
+      const isPastAdvent = daysBetween(advent, date) >= 0;
+      const churchYearStart = isPastAdvent ? year : (year - 1);
+      const lectionaryCycleYear = (churchYearStart % 2 === 0) ? "Year One" : "Year Two";
+
+      const ymd = toYMD(date);
+      const md = ymd.slice(5);
+      const dow = date.getDay();
+      const dayName = WEEKDAY_NAMES[dow];
 
       let season = "Ordinary Time";
       let color = "Green";
       let feastName = "";
+      let commemoration = "";
 
-      const ymd = date.toISOString().slice(0, 10);
-      const ashYmd = ashWednesday.toISOString().slice(0, 10);
-      const easterYmd = easter.toISOString().slice(0, 10);
-      const pentecostYmd = pentecost.toISOString().slice(0, 10);
-      const trinityYmd = trinitySunday.toISOString().slice(0, 10);
+      const holyDay = FIXED_HOLY_DAYS[md];
+      if (holyDay) {
+        commemoration = holyDay.name;
+      }
 
-      if (ymd.slice(5) === "11-01") return { season: "All Saints", color: "White", feastName: "All Saints' Day", cycle: lectionaryCycleYear };
-      if (ymd.slice(5) === "01-06") return { season: "Epiphany", color: "White", feastName: "The Epiphany of the Lord", cycle: lectionaryCycleYear };
-      if (ymd.slice(5) === "12-25") return { season: "Christmas", color: "White", feastName: "The Nativity of the Lord (Christmas Day)", cycle: lectionaryCycleYear };
-
-      if (date >= christmas || date < epiphany) {
-        season = "Christmas";
-        color = "White";
-        feastName = "The Season of Christmas";
-      } else if (date >= epiphany && date < ashWednesday) {
-        season = "Epiphany";
-        color = "Green";
-        feastName = "The Season after Epiphany";
-      } else if (date >= ashWednesday && date < easter) {
+      if (ymd === toYMD(ashWednesday)) {
         season = "Lent";
         color = "Violet";
-        if (ymd === ashYmd) feastName = "Ash Wednesday";
-        else if (date >= palmSunday) feastName = "Holy Week";
-        else feastName = "The Season of Lent";
-      } else if (date >= easter && date < pentecost) {
+        feastName = "Ash Wednesday";
+      } else if (daysBetween(palmSunday, date) >= 0 && daysBetween(easter, date) < 0) {
+        season = "Holy Week";
+        color = (ymd === toYMD(goodFriday)) ? "Red" : "Violet";
+        const hwNames = ["Palm Sunday", "Monday in Holy Week", "Tuesday in Holy Week", "Wednesday in Holy Week", "Maundy Thursday", "Good Friday", "Holy Saturday"];
+        feastName = hwNames[dow];
+      } else if (daysBetween(ashWednesday, date) > 0 && daysBetween(palmSunday, date) < 0) {
+        season = "Lent";
+        color = "Violet";
+        const firstSundayLent = addDays(ashWednesday, 4);
+        if (daysBetween(firstSundayLent, date) < 0) {
+          feastName = `${dayName} after Ash Wednesday`;
+        } else {
+          const lentWeek = Math.floor(daysBetween(firstSundayLent, date) / 7) + 1;
+          feastName = (dow === 0) ? `${ordinalWord(lentWeek)} Sunday in Lent` : `${dayName} in the ${ordinalWord(lentWeek)} Week of Lent`;
+        }
+      } else if (daysBetween(easter, date) >= 0 && daysBetween(pentecost, date) < 0) {
         season = "Easter";
         color = "White";
-        if (ymd === easterYmd) feastName = "The Sunday of the Resurrection: Easter Day";
-        else feastName = "The Season of Easter (The Great Fifty Days)";
-      } else if (ymd === pentecostYmd) {
+        const easterWeek = Math.floor(daysBetween(easter, date) / 7) + 1;
+        if (ymd === toYMD(easter)) feastName = "Easter Day: The Sunday of the Resurrection";
+        else if (ymd === toYMD(ascension)) feastName = "Ascension Day";
+        else if (easterWeek === 1) feastName = `${dayName} in Easter Week`;
+        else feastName = (dow === 0) ? `${ordinalWord(easterWeek)} Sunday of Easter` : `${dayName} in the ${ordinalWord(easterWeek)} Week of Easter`;
+      } else if (ymd === toYMD(pentecost)) {
         season = "Pentecost";
         color = "Red";
         feastName = "The Day of Pentecost";
-      } else if (ymd === trinityYmd) {
-        season = "Trinity";
+      } else if (ymd === toYMD(trinitySunday)) {
+        season = "Season after Pentecost";
         color = "White";
         feastName = "Trinity Sunday";
-      } else if (date >= pentecost && date < advent) {
-        season = "Ordinary Time";
-        color = "Green";
-        const sundayDiff = Math.floor((date - pentecost) / (7 * 24 * 3600 * 1000));
-        feastName = `${sundayDiff + 1}th Sunday after Pentecost (Proper)`;
-      } else if (date >= advent && date < christmas) {
+      } else if (ymd === toYMD(reignOfChrist)) {
+        season = "Season after Pentecost";
+        color = "White";
+        feastName = "The Reign of Christ (Last Sunday after Pentecost)";
+      } else if (daysBetween(advent, date) >= 0 && daysBetween(christmas, date) < 0) {
         season = "Advent";
         color = "Violet";
-        feastName = "The Season of Advent";
-      }
-
-      return { season, color, feastName, cycle: lectionaryCycleYear };
-    }
-
-    function getDailyLectionaryCitations(date, cycle) {
-      const dayOfWeek = date.getUTCDay();
-      if (cycle === "Year Two") {
-        const readings = [
-          { ot: "Micah 6:1-8", epistle: "1 Corinthians 1:1-17", gospel: "Matthew 10:1-15", mPsalms: "Psalm 145", ePsalms: "Psalm 67, 96" },
-          { ot: "Micah 7:1-7", epistle: "1 Corinthians 1:18-31", gospel: "Matthew 10:16-23", mPsalms: "Psalm 146", ePsalms: "Psalm 147" },
-          { ot: "Habakkuk 1:1-11", epistle: "1 Corinthians 2:1-16", gospel: "Matthew 10:24-33", mPsalms: "Psalm 148", ePsalms: "Psalm 149, 150" },
-          { ot: "Habakkuk 2:1-4", epistle: "1 Corinthians 3:1-23", gospel: "Matthew 10:34-42", mPsalms: "Psalm 1, 2, 3", ePsalms: "Psalm 4, 7" },
-          { ot: "Habakkuk 3:1-19", epistle: "1 Corinthians 4:1-16", gospel: "Matthew 11:1-6", mPsalms: "Psalm 18:1-20", ePsalms: "Psalm 18:21-50" },
-          { ot: "Zephaniah 1:1-18", epistle: "1 Corinthians 4:17-5:13", gospel: "Matthew 11:7-15", mPsalms: "Psalm 16, 17", ePsalms: "Psalm 22" },
-          { ot: "Zephaniah 2:1-15", epistle: "1 Corinthians 6:1-11", gospel: "Matthew 11:16-24", mPsalms: "Psalm 20, 21", ePsalms: "Psalm 110, 116" }
-        ];
-        return readings[dayOfWeek] || readings[4];
+        const advWeek = Math.floor(daysBetween(advent, date) / 7) + 1;
+        feastName = (dow === 0) ? `${ordinalWord(advWeek)} Sunday of Advent` : `${dayName} in the ${ordinalWord(advWeek)} Week of Advent`;
+      } else if (daysBetween(christmas, date) >= 0 || daysBetween(epiphany, date) < 0) {
+        season = "Christmas";
+        color = "White";
+        if (md === "12-25") feastName = "The Nativity of the Lord: Christmas Day";
+        else feastName = `${dayName} in the Season of Christmas`;
+      } else if (daysBetween(epiphany, date) >= 0 && daysBetween(ashWednesday, date) < 0) {
+        season = "Epiphany";
+        color = (md === "01-06") ? "White" : "Green";
+        const firstSunEpiph = addDays(epiphany, (7 - epiphany.getDay()) % 7 || 7);
+        if (md === "01-06") feastName = "The Epiphany of the Lord";
+        else if (daysBetween(firstSunEpiph, date) < 0) feastName = `${dayName} after the Epiphany`;
+        else {
+          const epWeek = Math.floor(daysBetween(firstSunEpiph, date) / 7) + 1;
+          feastName = (dow === 0) ? `${ordinalWord(epWeek)} Sunday after the Epiphany` : `${dayName} after the ${ordinalWord(epWeek)} Sunday after the Epiphany`;
+        }
       } else {
-        const readings = [
-          { ot: "Jeremiah 31:27-34", epistle: "2 Timothy 3:14-4:5", gospel: "Luke 18:1-8", mPsalms: "Psalm 63, 98", ePsalms: "Psalm 103" },
-          { ot: "Jeremiah 32:1-15", epistle: "Titus 1:1-16", gospel: "Luke 18:9-14", mPsalms: "Psalm 41, 52", ePsalms: "Psalm 44" },
-          { ot: "Jeremiah 33:1-13", epistle: "Titus 2:1-15", gospel: "Luke 18:15-30", mPsalms: "Psalm 45", ePsalms: "Psalm 47, 48" },
-          { ot: "Jeremiah 33:14-26", epistle: "Titus 3:1-15", gospel: "Luke 18:31-43", mPsalms: "Psalm 119:49-72", ePsalms: "Psalm 49, 53" },
-          { ot: "Habakkuk 1:12-2:4", epistle: "Galatians 1:1-17", gospel: "Luke 19:1-10", mPsalms: "Psalm 50", ePsalms: "Psalm 59, 60" },
-          { ot: "Sirach 35:12-17", epistle: "Galatians 1:18-2:10", gospel: "Luke 19:11-28", mPsalms: "Psalm 40, 54", ePsalms: "Psalm 51" },
-          { ot: "Proverbs 3:1-12", epistle: "Galatians 2:11-21", gospel: "Luke 19:29-40", mPsalms: "Psalm 55", ePsalms: "Psalm 138, 139" }
-        ];
-        return readings[dayOfWeek] || readings[4];
+        season = "Season after Pentecost";
+        color = "Green";
+        const diffDays = daysBetween(pentecost, date);
+        const sunNum = Math.floor(diffDays / 7) + 1;
+        if (dow === 0) {
+          feastName = `${ordinalWord(sunNum)} Sunday after Pentecost`;
+        } else {
+          feastName = `${dayName} after the ${ordinalWord(sunNum)} Sunday after Pentecost`;
+        }
       }
+
+      if (holyDay) {
+        if (holyDay.type === "principal" || (holyDay.type === "major" && dow !== 0) || (holyDay.name.includes("Luke") && dow === 0)) {
+          feastName = holyDay.name;
+          if (holyDay.color) color = holyDay.color;
+          commemoration = "";
+        } else if (holyDay.type === "memorial" && dow !== 0 && season === "Season after Pentecost") {
+          if (holyDay.color) color = holyDay.color;
+        }
+      }
+
+      return { season, color, feastName, commemoration, cycle: lectionaryCycleYear, dow, dayName, md };
     }
 
-    // --- 2. REPOSITORY: PSALTERS (INCLUSIVE, BAS 1985, COVERDALE BCP) ---
+    // --- 3. DYNAMIC DAILY PSALM & SCRIPTURE LECTIONARY ---
+    const PSALM_POOL_KEYS = [
+      "Psalm 1", "Psalm 4", "Psalm 8", "Psalm 15", "Psalm 18:1-20", "Psalm 19",
+      "Psalm 23", "Psalm 24", "Psalm 27", "Psalm 34:1-10", "Psalm 42", "Psalm 46",
+      "Psalm 51:1-13", "Psalm 63:1-8", "Psalm 67", "Psalm 84", "Psalm 90:1-12",
+      "Psalm 91", "Psalm 96", "Psalm 100", "Psalm 103:1-13", "Psalm 116",
+      "Psalm 121", "Psalm 126", "Psalm 130", "Psalm 134", "Psalm 139:1-11", "Psalm 145:1-13"
+    ];
+
+    const LECTIONARY_WEEKS = {
+      "ordinary-1": [
+        { ot: "Micah 6:1-8", epistle: "1 Corinthians 1:1-17", gospel: "Matthew 10:1-15", mPsalm: "Psalm 145:1-13", ePsalm: "Psalm 67" },
+        { ot: "Micah 7:1-7", epistle: "1 Corinthians 1:18-31", gospel: "Matthew 10:16-23", mPsalm: "Psalm 1", ePsalm: "Psalm 4" },
+        { ot: "Habakkuk 1:1-11", epistle: "1 Corinthians 2:1-16", gospel: "Matthew 10:24-33", mPsalm: "Psalm 8", ePsalm: "Psalm 15" },
+        { ot: "Habakkuk 2:1-4, 9-20", epistle: "1 Corinthians 3:1-23", gospel: "Matthew 10:34-42", mPsalm: "Psalm 19", ePsalm: "Psalm 23" },
+        { ot: "Habakkuk 3:1-19", epistle: "1 Corinthians 4:1-16", gospel: "Matthew 11:1-6", mPsalm: "Psalm 18:1-20", ePsalm: "Psalm 27" },
+        { ot: "Zephaniah 1:1-18", epistle: "1 Corinthians 4:17-5:13", gospel: "Matthew 11:7-15", mPsalm: "Psalm 51:1-13", ePsalm: "Psalm 130" },
+        { ot: "Zephaniah 2:1-15", epistle: "1 Corinthians 6:1-11", gospel: "Matthew 11:16-24", mPsalm: "Psalm 24", ePsalm: "Psalm 116" }
+      ],
+      "ordinary-2": [
+        { ot: "Zephaniah 3:14-20", epistle: "1 Corinthians 6:12-20", gospel: "Matthew 11:25-30", mPsalm: "Psalm 63:1-8", ePsalm: "Psalm 103:1-13" },
+        { ot: "Haggai 1:1-15", epistle: "1 Corinthians 7:1-9", gospel: "Matthew 12:1-14", mPsalm: "Psalm 42", ePsalm: "Psalm 46" },
+        { ot: "Haggai 2:1-9", epistle: "1 Corinthians 7:10-24", gospel: "Matthew 12:15-21", mPsalm: "Psalm 34:1-10", ePsalm: "Psalm 84" },
+        { ot: "Haggai 2:10-23", epistle: "1 Corinthians 7:25-40", gospel: "Matthew 12:22-32", mPsalm: "Psalm 90:1-12", ePsalm: "Psalm 91" },
+        { ot: "Zechariah 1:1-17", epistle: "1 Corinthians 8:1-13", gospel: "Matthew 12:33-42", mPsalm: "Psalm 96", ePsalm: "Psalm 100" },
+        { ot: "Zechariah 2:1-13", epistle: "1 Corinthians 9:1-15", gospel: "Matthew 12:43-50", mPsalm: "Psalm 51:1-13", ePsalm: "Psalm 121" },
+        { ot: "Zechariah 3:1-10", epistle: "1 Corinthians 9:16-27", gospel: "Matthew 13:1-17", mPsalm: "Psalm 126", ePsalm: "Psalm 139:1-11" }
+      ],
+      "ordinary-3": [
+        { ot: "Jeremiah 31:27-34", epistle: "2 Timothy 3:14-4:5", gospel: "Luke 18:1-8", mPsalm: "Psalm 63:1-8", ePsalm: "Psalm 103:1-13" },
+        { ot: "Jeremiah 32:1-15", epistle: "Titus 1:1-16", gospel: "Luke 18:9-14", mPsalm: "Psalm 15", ePsalm: "Psalm 23" },
+        { ot: "Jeremiah 33:1-13", epistle: "Titus 2:1-15", gospel: "Luke 18:15-30", mPsalm: "Psalm 24", ePsalm: "Psalm 27" },
+        { ot: "Jeremiah 33:14-26", epistle: "Titus 3:1-15", gospel: "Luke 18:31-43", mPsalm: "Psalm 34:1-10", ePsalm: "Psalm 42" },
+        { ot: "Sirach 35:1-11", epistle: "Galatians 1:1-17", gospel: "Luke 19:1-10", mPsalm: "Psalm 46", ePsalm: "Psalm 67" },
+        { ot: "Sirach 35:12-17", epistle: "Galatians 1:18-2:10", gospel: "Luke 19:11-27", mPsalm: "Psalm 51:1-13", ePsalm: "Psalm 84" },
+        { ot: "Proverbs 3:1-12", epistle: "Galatians 2:11-21", gospel: "Luke 19:28-40", mPsalm: "Psalm 90:1-12", ePsalm: "Psalm 139:1-11" }
+      ],
+      "ordinary-4": [
+        { ot: "Isaiah 65:17-25", epistle: "2 Thessalonians 3:6-13", gospel: "Luke 21:5-19", mPsalm: "Psalm 96", ePsalm: "Psalm 145:1-13" },
+        { ot: "Malachi 1:1-14", epistle: "James 1:1-15", gospel: "Luke 19:41-48", mPsalm: "Psalm 1", ePsalm: "Psalm 8" },
+        { ot: "Malachi 2:1-16", epistle: "James 1:16-27", gospel: "Luke 20:1-8", mPsalm: "Psalm 19", ePsalm: "Psalm 23" },
+        { ot: "Malachi 3:1-12", epistle: "James 2:1-13", gospel: "Luke 20:9-19", mPsalm: "Psalm 27", ePsalm: "Psalm 34:1-10" },
+        { ot: "Malachi 3:13-4:6", epistle: "James 2:14-26", gospel: "Luke 20:20-26", mPsalm: "Psalm 100", ePsalm: "Psalm 116" },
+        { ot: "Daniel 7:1-14", epistle: "James 3:1-12", gospel: "Luke 20:27-40", mPsalm: "Psalm 51:1-13", ePsalm: "Psalm 130" },
+        { ot: "Daniel 7:15-27", epistle: "James 3:13-4:10", gospel: "Luke 20:41-21:4", mPsalm: "Psalm 121", ePsalm: "Psalm 126" }
+      ]
+    };
+
+    const SPECIAL_FEAST_READINGS = {
+      "10-18": { ot: "Sirach 38:1-4, 6-10, 12-14", epistle: "2 Timothy 4:5-13", gospel: "Luke 4:14-21", mPsalm: "Psalm 145:1-13", ePsalm: "Psalm 103:1-13" },
+      "11-01": { ot: "Daniel 7:1-3, 15-18", epistle: "Ephesians 1:11-23", gospel: "Luke 6:20-31", mPsalm: "Psalm 24", ePsalm: "Psalm 34:1-10" },
+      "12-25": { ot: "Isaiah 9:2-7", epistle: "Titus 2:11-14", gospel: "Luke 2:1-20", mPsalm: "Psalm 96", ePsalm: "Psalm 100" },
+      "01-06": { ot: "Isaiah 60:1-6", epistle: "Ephesians 3:1-12", gospel: "Matthew 2:1-12", mPsalm: "Psalm 67", ePsalm: "Psalm 96" }
+    };
+
+    function getDailyLectionaryCitations(date, lit) {
+      if (SPECIAL_FEAST_READINGS[lit.md]) {
+        return SPECIAL_FEAST_READINGS[lit.md];
+      }
+      if (lit.feastName === "Ash Wednesday") {
+        return { ot: "Joel 2:1-2, 12-17", epistle: "2 Corinthians 5:20b-6:10", gospel: "Matthew 6:1-6, 16-21", mPsalm: "Psalm 51:1-13", ePsalm: "Psalm 103:1-13" };
+      }
+      if (lit.feastName.startsWith("Easter Day")) {
+        return { ot: "Acts 10:34-43", epistle: "Colossians 3:1-4", gospel: "John 20:1-18", mPsalm: "Psalm 116", ePsalm: "Psalm 145:1-13" };
+      }
+      if (lit.feastName === "The Day of Pentecost") {
+        return { ot: "Acts 2:1-21", epistle: "Romans 8:14-17", gospel: "John 14:8-17", mPsalm: "Psalm 103:1-13", ePsalm: "Psalm 67" };
+      }
+
+      const dayOfYear = daysBetween(makeLocalDate(date.getFullYear(), 0, 1), date);
+      const weekIndex = Math.floor(dayOfYear / 7);
+      const keys = ["ordinary-1", "ordinary-2", "ordinary-3", "ordinary-4"];
+      const key = keys[(weekIndex + (lit.cycle === "Year One" ? 2 : 0)) % keys.length];
+      const baseEntry = LECTIONARY_WEEKS[key][lit.dow];
+
+      const mPsalmIdx = (dayOfYear * 2) % PSALM_POOL_KEYS.length;
+      const ePsalmIdx = (dayOfYear * 2 + 1) % PSALM_POOL_KEYS.length;
+
+      return {
+        ot: baseEntry.ot,
+        epistle: baseEntry.epistle,
+        gospel: baseEntry.gospel,
+        mPsalm: PSALM_POOL_KEYS[mPsalmIdx] || baseEntry.mPsalm,
+        ePsalm: PSALM_POOL_KEYS[ePsalmIdx] || baseEntry.ePsalm
+      };
+    }
+
+    // --- 4. SEASONAL & DAILY SENTENCES, ANTIPHONS & COLLECTS ---
+    function getOpeningSentence(lit, office, isInclusive) {
+      if (lit.season === "Advent") {
+        return "In the wilderness prepare the way of the Lord, make straight in the desert a highway for our God. (Isaiah 40:3)";
+      }
+      if (lit.season === "Christmas") {
+        return "I bring you good news of a great joy which will come to all the people; for to you is born this day a Saviour, Christ the Lord. (Luke 2:10–11)";
+      }
+      if (lit.season === "Epiphany") {
+        return "Nations shall come to your light, and kings to the brightness of your rising. (Isaiah 60:3)";
+      }
+      if (lit.season === "Lent" || lit.season === "Holy Week") {
+        return "Return to the Lord your God, who is gracious and merciful, slow to anger, and abounding in steadfast love. (Joel 2:13)";
+      }
+      if (lit.season === "Easter") {
+        return "Alleluia! Christ is risen! The Lord is risen indeed! Alleluia! (Luke 24:34)";
+      }
+      if (lit.season === "Pentecost") {
+        return "You shall receive power when the Holy Spirit has come upon you; and you shall be my witnesses. Alleluia! (Acts 1:8)";
+      }
+      const morningSentences = [
+        "Send out your light and your truth, that they may lead me, and bring me to your holy hill and to your dwelling. (Psalm 43:3)",
+        "The Lord is in his holy temple; let all the earth keep silence before him. (Habakkuk 2:20)",
+        "O worship the Lord in the beauty of holiness; let the whole earth stand in awe of him. (Psalm 96:9)",
+        "Thus says the high and lofty One who inhabits eternity, whose name is Holy: I dwell in the high and holy place, and also with the one who has a contrite and humble spirit. (Isaiah 57:15)",
+        "The earth is the Lord's and all that is in it, the world and all who dwell therein. (Psalm 24:1)",
+        "Grace to you and peace from God our Father and the Lord Jesus Christ. (Philippians 1:2)",
+        "I was glad when they said to me, ‘Let us go to the house of the Lord.’ (Psalm 122:1)"
+      ];
+      const eveningSentences = [
+        "Jesus said, ‘I am the light of the world; whoever follows me will not walk in darkness, but will have the light of life.’ (John 8:12)",
+        "Let my prayer be set forth in your sight as incense, the lifting up of my hands as the evening sacrifice. (Psalm 141:2)",
+        "O Lord, I call to you; come to me quickly; hear my voice when I cry to you. (Psalm 141:1)",
+        "Stay with us, Lord, for it is evening and the day is almost over. (Luke 24:29)",
+        "From the rising of the sun to its setting my name shall be great among the nations, says the Lord of hosts. (Malachi 1:11)",
+        "God is light, and in God there is no darkness at all. (1 John 1:5)",
+        "Watch, therefore, for you do not know when the master of the house will come, in the evening, or at midnight, or at cockcrow, or in the morning. (Mark 13:35)"
+      ];
+      return (office === "evening") ? eveningSentences[lit.dow] : morningSentences[lit.dow];
+    }
+
+    function getInvitatoryAntiphon(lit, isInclusive) {
+      if (lit.season === "Advent") return "Our King and Saviour draws near: * O come, let us adore him.";
+      if (lit.season === "Christmas") return "Alleluia! Unto us a child is born: * O come, let us adore him. Alleluia!";
+      if (lit.season === "Epiphany") return "The Lord has shown forth his glory: * O come, let us adore him.";
+      if (lit.season === "Lent" || lit.season === "Holy Week") return "The Lord is full of compassion and mercy: * O come, let us adore him.";
+      if (lit.season === "Easter") return "Alleluia! The Lord is risen indeed: * O come, let us adore him. Alleluia!";
+      if (lit.season === "Pentecost") return "Alleluia! The Spirit of the Lord renews the face of the earth: * O come, let us adore him. Alleluia!";
+      const dailyAntiphons = [
+        isInclusive ? "The earth is the Lord's, who made it: * O come, let us adore our God." : "The earth is the Lord's for he made it: * O come, let us adore him.",
+        "Worship the Lord in the beauty of holiness: * O come, let us adore our God.",
+        "The mercy of the Lord is everlasting: * O come, let us adore our God.",
+        "The Lord is our refuge and strength: * O come, let us adore our God.",
+        isInclusive ? "The earth is the Lord's, who made it: * O come, let us adore our God." : "The earth is the Lord's for he made it: * O come, let us adore him.",
+        "The Lord is gracious and merciful: * O come, let us adore our God.",
+        "Proclaim the greatness of the Lord our God: * O come, let us adore our God."
+      ];
+      return dailyAntiphons[lit.dow];
+    }
+
+    function getCollectOfTheDay(lit, isBcp) {
+      if (lit.md === "10-18") {
+        return {
+          title: "Collect for Saint Luke the Evangelist",
+          text: isBcp
+            ? "ALMIGHTY God, who calledst Luke the Physician, whose praise is in the Gospel, to be an Evangelist, and Physician of the soul: May it please thee, that, by the wholesome medicines of the doctrine delivered by him, all the diseases of our souls may be healed; through the merits of thy Son Jesus Christ our Lord. Amen."
+            : "Almighty God, you inspired your servant Luke the physician to set forth in the Gospel the love and healing power of your Son: graciously continue in your Church the same love and power to heal, to the praise and glory of your name; through Jesus Christ our Lord, who lives and reigns with you and the Holy Spirit, one God, now and for ever. Amen."
+        };
+      }
+      if (lit.md === "11-01") {
+        return {
+          title: "Collect for All Saints' Day",
+          text: isBcp
+            ? "O ALMIGHTY God, who hast knit together thine elect in one communion and fellowship, in the mystical body of thy Son Christ our Lord: Grant us grace so to follow thy blessed Saints in all virtuous and godly living, that we may come to those unspeakable joys, which thou hast prepared for them that unfeignedly love thee; through Jesus Christ our Lord. Amen."
+            : "Almighty God, whose people are knit together in one holy Church, the mystical Body of your Son, grant us grace to follow your blessed saints in lives of faith and commitment, and to know the inexpressible joys you have prepared for those who love you; through your Son Jesus Christ our Lord. Amen."
+        };
+      }
+      if (lit.season === "Advent") {
+        return {
+          title: "Collect of the Season (Advent)",
+          text: isBcp
+            ? "ALMIGHTY God, give us grace that we may cast away the works of darkness, and put upon us the armour of light, now in the time of this mortal life, in which thy Son Jesus Christ came to visit us in great humility; that in the last day, when he shall come again in his glorious Majesty, to judge both the quick and the dead, we may rise to the life immortal; through him who liveth and reigneth with thee and the Holy Ghost, now and ever. Amen."
+            : "Almighty God, give us grace to cast away the works of darkness and put on the armour of light, now in the time of this mortal life in which your Son Jesus Christ came to us in great humility, that on the last day, when he shall come again in his glorious majesty to judge both the living and the dead, we may rise to the life immortal; through him who lives and reigns with you and the Holy Spirit, one God, now and for ever. Amen."
+        };
+      }
+      if (lit.season === "Lent" || lit.season === "Holy Week") {
+        return {
+          title: "Collect of the Season (Lent)",
+          text: isBcp
+            ? "ALMIGHTY and everlasting God, who hatest nothing that thou hast made, and dost forgive the sins of all them that are penitent: Create and make in us new and contrite hearts, that we worthily lamenting our sins, and acknowledging our wretchedness, may obtain of thee, the God of all mercy, perfect remission and forgiveness; through Jesus Christ our Lord. Amen."
+            : "Almighty and everlasting God, you despise nothing you have made and forgive the sins of all who are penitent. Create and make in us new and contrite hearts, that we, worthily lamenting our sins and acknowledging our brokenness, may obtain of you, the God of all mercy, perfect remission and forgiveness; through Jesus Christ our Lord. Amen."
+        };
+      }
+      if (lit.season === "Easter") {
+        return {
+          title: "Collect of the Season (Easter)",
+          text: isBcp
+            ? "ALMIGHTY God, who through thine only-begotten Son Jesus Christ hast overcome death, and opened unto us the gate of everlasting life: We humbly beseech thee, that as by thy special grace preventing us thou dost put into our minds good desires, so by thy continual help we may bring the same to good effect; through Jesus Christ our Lord, who liveth and reigneth with thee and the Holy Ghost, ever one God, world without end. Amen."
+            : "Lord of life and power, through the mighty resurrection of your Son, you have overcome the old order of sin and death and have made all things new in him. May we, being dead to sin and alive to you in Jesus Christ, reign with him in glory, who with you and the Holy Spirit is alive, one God, now and for ever. Amen."
+        };
+      }
+
+      const dailyCollects = [
+        {
+          title: "The Collect for Sunday (Of the Resurrection)",
+          bas: "O God, you make us glad with the weekly remembrance of the glorious resurrection of your Son our Lord: give us this day such blessing through our worship of you, that the week to come may be spent in your favour; through Jesus Christ our Lord. Amen.",
+          bcp: "O GOD, who makest us glad with the weekly remembrance of the glorious resurrection of thy Son our Lord: Vouchsafe us this day such blessing through our worship of thee, that the days to come may be spent in thy favour; through the same Jesus Christ our Lord. Amen."
+        },
+        {
+          title: "The Collect for Monday (For the Renewal of Life)",
+          bas: "O God, the King eternal, whose light divides the day from the night and turns the shadow of death into the morning: drive far from us all wrong desires, incline our hearts to keep your law, and guide our feet into the way of peace; that, having done your will with cheerfulness during the day, we may, when night comes, rejoice to give you thanks; through Jesus Christ our Lord. Amen.",
+          bcp: "O GOD, the King eternal, who dividest the day from the darkness, and turnest the shadow of death into the morning: Drive far off from us all wrong desires, incline our hearts to keep thy law, and guide our feet into the way of peace; through Jesus Christ our Lord. Amen."
+        },
+        {
+          title: "The Collect for Tuesday (For Peace and Protection)",
+          bas: "O God, the author of peace and lover of concord, to know you is eternal life and to serve you is perfect freedom: defend us, your humble servants, in all assaults of our enemies; that we, surely trusting in your defence, may not fear the power of any adversaries; through the might of Jesus Christ our Lord. Amen.",
+          bcp: "O GOD, who art the author of peace and lover of concord, in knowledge of whom standeth our eternal life, whose service is perfect freedom: Defend us thy humble servants in all assaults of our enemies; that we, surely trusting in thy defence, may not fear the power of any adversaries; through the might of Jesus Christ our Lord. Amen."
+        },
+        {
+          title: "The Collect for Wednesday (For Grace)",
+          bas: "Lord God, almighty and everlasting Father, you have brought us in safety to this new day: preserve us with your mighty power, that we may not fall into sin, nor be overcome by adversity; and in all we do, direct us to the fulfilling of your purpose; through Jesus Christ our Lord. Amen.",
+          bcp: "O LORD, our heavenly Father, Almighty and everlasting God, who hast safely brought us to the beginning of this day: Defend us in the same with thy mighty power; and grant that this day we fall into no sin, neither run into any kind of danger; through Jesus Christ our Lord. Amen."
+        },
+        {
+          title: "The Collect for Thursday (For Guidance and Ministry)",
+          bas: "Heavenly Father, in you we live and move and have our being: we humbly pray you so to guide and govern us by your Holy Spirit, that in all the cares and occupations of our life we may not forget you, but may remember that we are ever walking in your sight; through Jesus Christ our Lord. Amen.",
+          bcp: "HEAVENLY Father, in whom we live and move and have our being: We humbly pray thee so to guide and govern us by thy Holy Spirit, that in all the cares and occupations of our daily life we may never forget thee, but remember that we are ever walking in thy sight; through Jesus Christ our Lord. Amen."
+        },
+        {
+          title: "The Collect for Friday (Of the Cross)",
+          bas: "Almighty God, whose most dear Son went not up to joy but first he suffered pain, and entered not into glory before he was crucified: mercifully grant that we, walking in the way of the cross, may find it none other than the way of life and peace; through Jesus Christ our Lord. Amen.",
+          bcp: "ALMIGHTY God, whose most dear Son went not up to joy but first he suffered pain, and entered not into glory before he was crucified: Mercifully grant that we, walking in the way of the cross, may find it none other than the way of life and peace; through the same thy Son Jesus Christ our Lord. Amen."
+        },
+        {
+          title: "The Collect for Saturday (For Sabbath Rest)",
+          bas: "Almighty God, who after the creation of the world rested from all your works and sanctified a day of rest for all your creatures: grant that we, putting away all earthly anxieties, may be duly prepared for the service of your sanctuary, and that our rest here upon earth may be a preparation for the eternal rest promised to your people in heaven; through Jesus Christ our Lord. Amen.",
+          bcp: "ALMIGHTY God, who after the creation of the world didst rest from all thy works, and sanctify a day of rest for all thy creatures: Grant that we, putting away all earthly anxieties, may be duly prepared for the service of thy sanctuary; through Jesus Christ our Lord. Amen."
+        }
+      ];
+
+      const dc = dailyCollects[lit.dow];
+      return {
+        title: dc.title,
+        text: isBcp ? dc.bcp : dc.bas
+      };
+    }
+
+    // --- 5. EXPANDED PSALMS REPOSITORY (20 Psalms across the Daily Office Cycle) ---
     const PSALMS_DATA = {
+      "Psalm 1": {
+        title: "Psalm 1", latin: "Beatus vir qui non abiit",
+        prayer: "God of all blessing, plant us beside the streams of your living water, that we may delight in your law and bear fruit in due season; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "Happy are they who have not walked in the counsel of the wicked, * nor lingered in the way of sinners, nor sat in the seats of the scornful!" },
+          { v: "2", text: "Their delight is in the law of the Lord, * and on this law they meditate day and night." },
+          { v: "3", text: "They are like trees planted by streams of water, bearing fruit in due season, with leaves that do not wither; * everything they do shall prosper." },
+          { v: "6", text: "For the Lord knows the way of the righteous, * but the way of the wicked is doomed." }
+        ],
+        versesBAS: [
+          { v: "1", text: "Happy are they who have not walked in the counsel of the wicked, * nor lingered in the way of sinners, nor sat in the seats of the scornful!" },
+          { v: "2", text: "Their delight is in the law of the Lord, * and they meditate on his law day and night." },
+          { v: "3", text: "They are like trees planted by streams of water, bearing fruit in due season, with leaves that do not wither; * everything they do shall prosper." },
+          { v: "6", text: "For the Lord knows the way of the righteous, * but the way of the wicked is doomed." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "Blessed is the man that hath not walked in the counsel of the ungodly, nor stood in the way of sinners : and hath not sat in the seat of the scornful." },
+          { v: "2", text: "But his delight is in the law of the Lord : and in his law will he exercise himself day and night." },
+          { v: "3", text: "And he shall be like a tree planted by the water-side : that will bring forth his fruit in due season." },
+          { v: "7", text: "For the Lord knoweth the way of the righteous : but the way of the ungodly shall perish." }
+        ]
+      },
       "Psalm 4": {
-        title: "Psalm 4",
-        latin: "Cum invocarem",
+        title: "Psalm 4", latin: "Cum invocarem",
         prayer: "Lord God of our salvation, hear us as we call upon you, and grant us a peaceful night, resting in your grace; through Jesus Christ our Lord. Amen.",
         versesInclusive: [
           { v: "1", text: "Answer me when I call, O God, defender of my cause; * you set me free when I am hard-pressed; have mercy on me and hear my prayer." },
-          { v: "2", text: "“You mortals, how long will you dishonour my glory; * how long will you worship dumb idols and run after false gods?”" },
           { v: "3", text: "Know that the Lord does wonders for the faithful; * when I call upon the Lord, God will hear me." },
-          { v: "4", text: "Tremble, then, and do not sin; * speak to your heart in silence upon your bed." },
-          { v: "5", text: "Offer the appointed sacrifices * and put your trust in the Lord." },
           { v: "6", text: "Many are saying, “Oh, that we might see better times!” * Lift up the light of your countenance upon us, O Lord." },
           { v: "7", text: "You have put gladness in my heart, * more than when grain and wine and oil increase." },
           { v: "8", text: "I lie down in peace; at once I fall asleep; * for only you, Lord, make me dwell in safety." }
         ],
         versesBAS: [
           { v: "1", text: "Answer me when I call, O God, defender of my cause; * you set me free when I am hard-pressed; have mercy on me and hear my prayer." },
-          { v: "2", text: "“You mortals, how long will you dishonour my glory; * how long will you worship dumb idols and run after false gods?”" },
           { v: "3", text: "Know that the Lord does wonders for the faithful; * when I call upon the Lord, he will hear me." },
-          { v: "4", text: "Tremble, then, and do not sin; * speak to your heart in silence upon your bed." },
-          { v: "5", text: "Offer the appointed sacrifices * and put your trust in the Lord." },
           { v: "6", text: "Many are saying, “Oh, that we might see better times!” * Lift up the light of your countenance upon us, O Lord." },
           { v: "7", text: "You have put gladness in my heart, * more than when their grain and wine and oil increase." },
           { v: "8", text: "I lie down in peace; at once I fall asleep; * for only you, Lord, make me dwell in safety." }
         ],
         versesCoverdale: [
           { v: "1", text: "Hear me when I call, O God of my righteousness : thou hast set me at liberty when I was in trouble; have mercy upon me, and hearken unto my prayer." },
-          { v: "2", text: "O ye sons of men, how long will ye blaspheme mine honour : and have such pleasure in vanity, and seek after leasing?" },
           { v: "3", text: "Know this also, that the Lord hath chosen to himself the man that is godly : when I call upon the Lord, he will hear me." },
-          { v: "4", text: "Stand in awe, and sin not : commune with your own heart, and in your chamber, and be still." },
-          { v: "5", text: "Offer the sacrifice of righteousness : and put your trust in the Lord." },
-          { v: "6", text: "There be many that say : Who will shew us any good?" },
           { v: "7", text: "Lord, lift thou up : the light of thy countenance upon us." },
           { v: "8", text: "Thou hast put gladness in my heart : since the time that their corn and wine and oil increased." },
           { v: "9", text: "I will lay me down in peace, and take my rest : for it is thou, Lord, only, that makest me dwell in safety." }
         ]
       },
+      "Psalm 8": {
+        title: "Psalm 8", latin: "Domine, Dominus noster",
+        prayer: "O Lord our Governor, how glorious is your name in all the world! Give us reverence for the work of your hands; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "O Lord our Governor, * how exalted is your name in all the world!" },
+          { v: "3", text: "When I consider your heavens, the work of your fingers, * the moon and the stars you have set in their courses," },
+          { v: "4", text: "What are mortals that you should be mindful of them, * mere human beings that you should seek them out?" },
+          { v: "5", text: "You have made them but little lower than the angels; * you adorn them with glory and honour;" },
+          { v: "9", text: "O Lord our Governor, * how exalted is your name in all the world!" }
+        ],
+        versesBAS: [
+          { v: "1", text: "O Lord our Governor, * how exalted is your name in all the world!" },
+          { v: "3", text: "When I consider your heavens, the work of your fingers, * the moon and the stars you have set in their courses," },
+          { v: "4", text: "What is man that you should be mindful of him? * the son of man that you should seek him out?" },
+          { v: "5", text: "You have made him but little lower than the angels; * you adorn him with glory and honour;" },
+          { v: "9", text: "O Lord our Governor, * how exalted is your name in all the world!" }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "O Lord our Governour, how excellent is thy Name in all the world : thou that hast set thy glory above the heavens!" },
+          { v: "3", text: "For I will consider thy heavens, even the works of thy fingers : the moon and the stars, which thou hast ordained." },
+          { v: "4", text: "What is man, that thou art mindful of him : and the son of man, that thou visitest him?" },
+          { v: "5", text: "Thou madest him lower than the angels : to crown him with glory and worship." },
+          { v: "9", text: "O Lord our Governour : how excellent is thy Name in all the world!" }
+        ]
+      },
+      "Psalm 15": {
+        title: "Psalm 15", latin: "Domine, quis habitabit?",
+        prayer: "Lord God, lead us in integrity and truth, that we may dwell upon your holy hill and walk blamelessly before you; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "Lord, who may dwell in your tabernacle? * who may abide upon your holy hill?" },
+          { v: "2", text: "Whoever leads a blameless life and does what is right, * who speaks the truth from the heart." },
+          { v: "3", text: "There is no guile upon their tongue; they do no evil to their friend; * they do not heap contempt upon a neighbour." }
+        ],
+        versesBAS: [
+          { v: "1", text: "Lord, who may dwell in your tabernacle? * who may abide upon your holy hill?" },
+          { v: "2", text: "Whoever leads a blameless life and does what is right, * who speaks the truth from his heart." },
+          { v: "3", text: "There is no guile upon his tongue; he does no evil to his friend; * he does not heap contempt upon his neighbour." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "Lord, who shall dwell in thy tabernacle : or who shall rest upon thy holy hill?" },
+          { v: "2", text: "Even he that leadeth an uncorrupt life : and doeth the thing which is right, and speaketh the truth from his heart." },
+          { v: "3", text: "He that hath used no deceit in his tongue, nor done evil to his neighbour : and hath not slandered his neighbour." }
+        ]
+      },
+      "Psalm 18:1-20": {
+        title: "Psalm 18:1–20", latin: "Diligam te, Domine",
+        prayer: "O God, our strength and salvation, you hear the cries of your humble people; deliver us from every snare and lead us into your glorious light; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "I love you, O Lord my strength, * O Lord my stronghold, my crag, and my haven." },
+          { v: "2", text: "My God, my rock in whom I put my trust, * my shield, the horn of my salvation, and my refuge; you are worthy of praise." },
+          { v: "6", text: "In my distress I called upon the Lord * and cried out to my God for help." },
+          { v: "16", text: "God reached down from on high and grasped me; * and drew me out of great waters." },
+          { v: "19", text: "God brought me out into an open place * and rescued me, because of great delight in me." }
+        ],
+        versesBAS: [
+          { v: "1", text: "I love you, O Lord my strength, * O Lord my stronghold, my crag, and my haven." },
+          { v: "2", text: "My God, my rock in whom I put my trust, * my shield, the horn of my salvation, and my refuge; you are worthy of praise." },
+          { v: "6", text: "In my anguish I called upon the Lord * and cried out to my God for help." },
+          { v: "16", text: "He reached down from on high and grasped me; * he drew me out of great waters." },
+          { v: "19", text: "He brought me forth into an open place; * he rescued me, because he delighted in me." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "I will love thee, O Lord, my strength; the Lord is my stony rock, and my defence : my saviour, my God, and my might, in whom I will trust." },
+          { v: "2", text: "I will call upon the Lord, which is worthy to be praised : so shall I be saved from mine enemies." },
+          { v: "6", text: "So shall he hear my voice out of his holy temple : and my complaint shall come before him, it shall enter even into his ears." },
+          { v: "16", text: "He shall send down from on high to fetch me : and shall take me out of many waters." },
+          { v: "19", text: "He brought me forth also into a place of liberty : he brought me forth, even because he had a favour unto me." }
+        ]
+      },
+      "Psalm 19": {
+        title: "Psalm 19", latin: "Caeli enarrant",
+        prayer: "Creator God, the heavens declare your glory and your law revives the soul; may the words of our mouths and the meditation of our hearts be acceptable in your sight, O Lord, our strength and our redeemer. Amen.",
+        versesInclusive: [
+          { v: "1", text: "The heavens declare the glory of God, * and the firmament shows the handiwork of the Lord." },
+          { v: "7", text: "The law of the Lord is perfect and revives the soul; * the testimony of the Lord is sure and gives wisdom to the innocent." },
+          { v: "8", text: "The statutes of the Lord are just and rejoice the heart; * the commandment of the Lord is clear and gives light to the eyes." },
+          { v: "14", text: "Let the words of my mouth and the meditation of my heart be acceptable in your sight, * O Lord, my strength and my redeemer." }
+        ],
+        versesBAS: [
+          { v: "1", text: "The heavens declare the glory of God, * and the firmament shows his handiwork." },
+          { v: "7", text: "The law of the Lord is perfect and revives the soul; * the testimony of the Lord is sure and gives wisdom to the innocent." },
+          { v: "8", text: "The statutes of the Lord are just and rejoice the heart; * the commandment of the Lord is clear and gives light to the eyes." },
+          { v: "14", text: "Let the words of my mouth and the meditation of my heart be acceptable in your sight, * O Lord, my strength and my redeemer." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "The heavens declare the glory of God : and the firmament sheweth his handy-work." },
+          { v: "7", text: "The law of the Lord is an undefiled law, converting the soul : the testimony of the Lord is sure, and giveth wisdom unto the simple." },
+          { v: "8", text: "The statutes of the Lord are right, and rejoice the heart : the commandment of the Lord is pure, and giveth light unto the eyes." },
+          { v: "14", text: "Let the words of my mouth, and the meditation of my heart : be alway acceptable in thy sight, O Lord, my strength, and my redeemer." }
+        ]
+      },
+      "Psalm 23": {
+        title: "Psalm 23", latin: "Dominus regit me",
+        prayer: "Lord Jesus Christ, good Shepherd of the sheep, you lead us beside still waters and restore our souls; abide with us through every shadow, and bring us to dwell in your house for ever. Amen.",
+        versesInclusive: [
+          { v: "1", text: "The Lord is my shepherd; * I shall not be in want." },
+          { v: "2", text: "You make me lie down in green pastures * and lead me beside still waters." },
+          { v: "3", text: "You revive my soul * and guide me along right pathways for your name’s sake." },
+          { v: "4", text: "Though I walk through the valley of the shadow of death, I shall fear no evil; * for you are with me; your rod and your staff, they comfort me." },
+          { v: "6", text: "Surely your goodness and mercy shall follow me all the days of my life, * and I will dwell in the house of the Lord for ever." }
+        ],
+        versesBAS: [
+          { v: "1", text: "The Lord is my shepherd; * I shall not be in want." },
+          { v: "2", text: "He makes me lie down in green pastures * and leads me beside still waters." },
+          { v: "3", text: "He revives my soul * and guides me along right pathways for his name’s sake." },
+          { v: "4", text: "Though I walk through the valley of the shadow of death, I shall fear no evil; * for you are with me; your rod and your staff, they comfort me." },
+          { v: "6", text: "Surely your goodness and mercy shall follow me all the days of my life, * and I will dwell in the house of the Lord for ever." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "The Lord is my shepherd : therefore can I lack nothing." },
+          { v: "2", text: "He shall feed me in a green pasture : and lead me forth beside the waters of comfort." },
+          { v: "3", text: "He shall convert my soul : and bring me forth in the paths of righteousness, for his Name's sake." },
+          { v: "4", text: "Yea, though I walk through the valley of the shadow of death, I will fear no evil : for thou art with me; thy rod and thy staff comfort me." },
+          { v: "6", text: "But thy loving-kindness and mercy shall follow me all the days of my life : and I will dwell in the house of the Lord for ever." }
+        ]
+      },
+      "Psalm 24": {
+        title: "Psalm 24", latin: "Domini est terra",
+        prayer: "King of glory, open the gates of our hearts that you may enter in and reign among us in holiness and peace; for your name's sake. Amen.",
+        versesInclusive: [
+          { v: "1", text: "The earth is the Lord’s and all that is in it, * the world and all who dwell therein." },
+          { v: "3", text: "Who can ascend the hill of the Lord? * and who can stand in the holy place of God?" },
+          { v: "4", text: "Those who have clean hands and a pure heart, * who have not pledged themselves to falsehood, nor sworn by what is a fraud." },
+          { v: "7", text: "Lift up your heads, O gates; lift them high, O everlasting doors; * and the One who reigns in glory shall come in." }
+        ],
+        versesBAS: [
+          { v: "1", text: "The earth is the Lord’s and all that is in it, * the world and all who dwell therein." },
+          { v: "3", text: "Who can ascend the hill of the Lord? * and who can stand in his holy place?" },
+          { v: "4", text: "Those who have clean hands and a pure heart, * who have not pledged themselves to falsehood, nor sworn by what is a fraud." },
+          { v: "7", text: "Lift up your heads, O gates; lift them high, O everlasting doors; * and the King of glory shall come in." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "The earth is the Lord's, and all that therein is : the compass of the world, and they that dwell therein." },
+          { v: "3", text: "Who shall ascend into the hill of the Lord : or who shall rise up in his holy place?" },
+          { v: "4", text: "Even he that hath clean hands, and a pure heart : and that hath not lift up his mind unto vanity, nor sworn to deceive his neighbour." },
+          { v: "7", text: "Lift up your heads, O ye gates, and be ye lift up, ye everlasting doors : and the King of glory shall come in." }
+        ]
+      },
+      "Psalm 27": {
+        title: "Psalm 27", latin: "Dominus illuminatio",
+        prayer: "God of light and salvation, cast out our fear and strengthen our hearts as we wait upon you; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "The Lord is my light and my salvation; whom then shall I fear? * the Lord is the strength of my life; of whom then shall I be afraid?" },
+          { v: "4", text: "One thing have I asked of the Lord; one thing I seek; * that I may dwell in the house of the Lord all the days of my life;" },
+          { v: "5", text: "To behold the fair beauty of the Lord * and to seek God in the temple." },
+          { v: "14", text: "O tarry and await the Lord’s pleasure; be strong, and God shall comfort your heart; * wait patiently for the Lord." }
+        ],
+        versesBAS: [
+          { v: "1", text: "The Lord is my light and my salvation; whom then shall I fear? * the Lord is the strength of my life; of whom then shall I be afraid?" },
+          { v: "4", text: "One thing have I asked of the Lord; one thing I seek; * that I may dwell in the house of the Lord all the days of my life;" },
+          { v: "5", text: "To behold the fair beauty of the Lord * and to seek him in his temple." },
+          { v: "14", text: "O tarry and await the Lord’s pleasure; be strong, and he shall comfort your heart; * wait patiently for the Lord." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "The Lord is my light, and my salvation; whom then shall I fear : the Lord is the strength of my life; of whom then shall I be afraid?" },
+          { v: "4", text: "One thing have I desired of the Lord, which I will require : even that I may dwell in the house of the Lord all the days of my life, to behold the fair beauty of the Lord, and to visit his temple." },
+          { v: "16", text: "O tarry thou the Lord's leisure : be strong, and he shall comfort thine heart; and put thou thy trust in the Lord." }
+        ]
+      },
+      "Psalm 34:1-10": {
+        title: "Psalm 34:1–10", latin: "Benedicam Dominum",
+        prayer: "Gracious God, feed us with the bread of life that we may taste and see your goodness in every season; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "I will bless the Lord at all times; * the praise of God shall ever be in my mouth." },
+          { v: "3", text: "Proclaim with me the greatness of the Lord; * let us exalt the name of the Lord together." },
+          { v: "4", text: "I sought the Lord, who answered me * and delivered me out of all my terror." },
+          { v: "8", text: "Taste and see that the Lord is good; * happy are they who trust in the Most High!" }
+        ],
+        versesBAS: [
+          { v: "1", text: "I will bless the Lord at all times; * his praise shall ever be in my mouth." },
+          { v: "3", text: "Proclaim with me the greatness of the Lord; * let us exalt his name together." },
+          { v: "4", text: "I sought the Lord, and he answered me * and delivered me out of all my terror." },
+          { v: "8", text: "Taste and see that the Lord is good; * happy are they who trust in him!" }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "I will alway give thanks unto the Lord : his praise shall ever be in my mouth." },
+          { v: "3", text: "O praise the Lord with me : and let us magnify his Name together." },
+          { v: "4", text: "I sought the Lord, and he heard me : yea, he delivered me out of all my fear." },
+          { v: "8", text: "O taste, and see, how gracious the Lord is : blessed is the man that trusteth in him." }
+        ]
+      },
+      "Psalm 42": {
+        title: "Psalm 42", latin: "Quemadmodum",
+        prayer: "Living God, as the deer longs for running streams, so our souls thirst for you; pour out your Spirit upon us and lead us to your altar of joy; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "As the deer longs for the water-brooks, * so longs my soul for you, O God." },
+          { v: "2", text: "My soul is athirst for God, athirst for the living God; * when shall I come to appear before the presence of God?" },
+          { v: "5", text: "Why are you so full of heaviness, O my soul? * and why are you so disquieted within me?" },
+          { v: "6", text: "Put your trust in God; * for I will yet give thanks to the One who is the help of my countenance, and my God." }
+        ],
+        versesBAS: [
+          { v: "1", text: "As the deer longs for the water-brooks, * so longs my soul for you, O God." },
+          { v: "2", text: "My soul is athirst for God, athirst for the living God; * when shall I come to appear before the presence of God?" },
+          { v: "5", text: "Why are you so full of heaviness, O my soul? * and why are you so disquieted within me?" },
+          { v: "6", text: "Put your trust in God; * for I will yet give thanks to him, who is the help of my countenance, and my God." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "Like as the hart desireth the water-brooks : so longeth my soul after thee, O God." },
+          { v: "2", text: "My soul is athirst for God, yea, even for the living God : when shall I come to appear before the presence of God?" },
+          { v: "6", text: "Why art thou so full of heaviness, O my soul : and why art thou so disquieted within me?" },
+          { v: "7", text: "Put thy trust in God : for I will yet give him thanks for the help of his countenance." }
+        ]
+      },
+      "Psalm 46": {
+        title: "Psalm 46", latin: "Deus noster refugium",
+        prayer: "God our refuge and strength, be our present help in every trouble, that we may be still and know that you are God; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "God is our refuge and strength, * a very present help in trouble." },
+          { v: "2", text: "Therefore we will not fear, though the earth be moved, * and though the mountains be toppled into the depths of the sea;" },
+          { v: "4", text: "There is a river whose streams make glad the city of God, * the holy habitation of the Most High." },
+          { v: "10", text: "“Be still, then, and know that I am God; * I will be exalted among the nations; I will be exalted in the earth.”" },
+          { v: "11", text: "The Lord of hosts is with us; * the God of Jacob is our stronghold." }
+        ],
+        versesBAS: [
+          { v: "1", text: "God is our refuge and strength, * a very present help in trouble." },
+          { v: "2", text: "Therefore we will not fear, though the earth be moved, * and though the mountains be toppled into the depths of the sea;" },
+          { v: "4", text: "There is a river whose streams make glad the city of God, * the holy habitation of the Most High." },
+          { v: "10", text: "“Be still, then, and know that I am God; * I will be exalted among the nations; I will be exalted in the earth.”" },
+          { v: "11", text: "The Lord of hosts is with us; * the God of Jacob is our stronghold." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "God is our hope and strength : a very present help in trouble." },
+          { v: "2", text: "Therefore will we not fear, though the earth be moved : and though the hills be carried into the midst of the sea." },
+          { v: "4", text: "There is a river, the streams whereof shall make glad the city of God : the holy place of the tabernacle of the Most Highest." },
+          { v: "10", text: "Be still then, and know that I am God : I will be exalted among the heathen, and I will be exalted in the earth." },
+          { v: "11", text: "The Lord of hosts is with us : the God of Jacob is our refuge." }
+        ]
+      },
+      "Psalm 51:1-13": {
+        title: "Psalm 51:1–13", latin: "Miserere mei, Deus",
+        prayer: "Merciful God, create in us clean hearts and renew a right spirit within us, that we may proclaim your praise; through Jesus Christ our Saviour. Amen.",
+        versesInclusive: [
+          { v: "1", text: "Have mercy on me, O God, according to your loving-kindness; * in your great compassion blot out my offences." },
+          { v: "2", text: "Wash me through and through from my wickedness * and cleanse me from my sin." },
+          { v: "10", text: "Create in me a clean heart, O God, * and renew a right spirit within me." },
+          { v: "11", text: "Cast me not away from your presence * and take not your holy Spirit from me." },
+          { v: "12", text: "Give me the joy of your saving help again * and sustain me with your bountiful Spirit." }
+        ],
+        versesBAS: [
+          { v: "1", text: "Have mercy on me, O God, according to your loving-kindness; * in your great compassion blot out my offences." },
+          { v: "2", text: "Wash me through and through from my wickedness * and cleanse me from my sin." },
+          { v: "10", text: "Create in me a clean heart, O God, * and renew a right spirit within me." },
+          { v: "11", text: "Cast me not away from your presence * and take not your holy Spirit from me." },
+          { v: "12", text: "Give me the joy of your saving help again * and sustain me with your bountiful Spirit." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "Have mercy upon me, O God, after thy great goodness : according to the multitude of thy mercies do away mine offences." },
+          { v: "2", text: "Wash me throughly from my wickedness : and cleanse me from my sin." },
+          { v: "10", text: "Make me a clean heart, O God : and renew a right spirit within me." },
+          { v: "11", text: "Cast me not away from thy presence : and take not thy holy Spirit from me." },
+          { v: "12", text: "O give me the comfort of thy help again : and stablish me with thy free Spirit." }
+        ]
+      },
+      "Psalm 63:1-8": {
+        title: "Psalm 63:1–8", latin: "Deus, Deus meus",
+        prayer: "O God, early in the morning we cry to you; satisfy us with your loving-kindness, which is better than life itself; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "O God, you are my God; eagerly I seek you; * my soul thirsts for you, my flesh faints for you, as in a barren and dry land where there is no water." },
+          { v: "2", text: "Therefore I have gazed upon you in your holy place, * that I might behold your power and your glory." },
+          { v: "3", text: "For your loving-kindness is better than life itself; * my lips shall give you praise." },
+          { v: "7", text: "For you have been my helper, * and under the shadow of your wings I will rejoice." }
+        ],
+        versesBAS: [
+          { v: "1", text: "O God, you are my God; eagerly I seek you; * my soul thirsts for you, my flesh faints for you, as in a barren and dry land where there is no water." },
+          { v: "2", text: "Therefore I have gazed upon you in your holy place, * that I might behold your power and your glory." },
+          { v: "3", text: "For your loving-kindness is better than life itself; * my lips shall give you praise." },
+          { v: "7", text: "For you have been my helper, * and under the shadow of your wings I will rejoice." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "O God, thou art my God : early will I seek thee." },
+          { v: "2", text: "My soul thirsteth for thee, my flesh also longeth after thee : in a barren and dry land where no water is." },
+          { v: "4", text: "For thy loving-kindness is better than the life itself : my lips shall praise thee." },
+          { v: "8", text: "Because thou hast been my helper : therefore under the shadow of thy wings will I rejoice." }
+        ]
+      },
+      "Psalm 67": {
+        title: "Psalm 67", latin: "Deus misereatur",
+        prayer: "Merciful God, let the light of your countenance shine upon us, that your way may be known upon earth and your saving health among all nations; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "May God be merciful to us and bless us, * show us the light of the divine countenance and come to us." },
+          { v: "2", text: "Let your ways be known upon earth, * your saving health among all nations." },
+          { v: "3", text: "Let the peoples praise you, O God; * let all the peoples praise you." },
+          { v: "6", text: "The earth has brought forth her increase; * may God, our own God, give us a blessing." }
+        ],
+        versesBAS: [
+          { v: "1", text: "May God be merciful to us and bless us, * show us the light of his countenance and come to us." },
+          { v: "2", text: "Let your ways be known upon earth, * your saving health among all nations." },
+          { v: "3", text: "Let the peoples praise you, O God; * let all the peoples praise you." },
+          { v: "6", text: "The earth has brought forth her increase; * may God, our own God, give us his blessing." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "God be merciful unto us, and bless us : and shew us the light of his countenance, and be merciful unto us;" },
+          { v: "2", text: "That thy way may be known upon earth : thy saving health among all nations." },
+          { v: "3", text: "Let the people praise thee, O God : yea, let all the people praise thee." },
+          { v: "6", text: "Then shall the earth bring forth her increase : and God, even our own God, shall give us his blessing." }
+        ]
+      },
+      "Psalm 84": {
+        title: "Psalm 84", latin: "Quam dilecta!",
+        prayer: "Lord of hosts, how dear to us is your dwelling place! Grant that our hearts and minds may ever rejoice in the living God; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "How dear to me is your dwelling, O Lord of hosts! * My soul has a desire and longing for the courts of the Lord; my heart and my flesh rejoice in the living God." },
+          { v: "3", text: "Happy are they who dwell in your house! * they will always be praising you." },
+          { v: "4", text: "Happy are the people whose strength is in you! * whose hearts are set on the pilgrims’ way." },
+          { v: "11", text: "O Lord of hosts, * happy are they who put their trust in you!" }
+        ],
+        versesBAS: [
+          { v: "1", text: "How dear to me is your dwelling, O Lord of hosts! * My soul has a desire and longing for the courts of the Lord; my heart and my flesh rejoice in the living God." },
+          { v: "3", text: "Happy are they who dwell in your house! * they will always be praising you." },
+          { v: "4", text: "Happy are the people whose strength is in you! * whose hearts are set on the pilgrims’ way." },
+          { v: "11", text: "O Lord of hosts, * happy are they who put their trust in you!" }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "O how amiable are thy dwellings : thou Lord of hosts!" },
+          { v: "2", text: "My soul hath a desire and longing to enter into the courts of the Lord : my heart and my flesh rejoice in the living God." },
+          { v: "4", text: "Blessed are they that dwell in thy house : they will be alway praising thee." },
+          { v: "13", text: "O Lord God of hosts : blessed is the man that putteth his trust in thee." }
+        ]
+      },
+      "Psalm 90:1-12": {
+        title: "Psalm 90:1–12", latin: "Domine, refugium",
+        prayer: "Eternal God, our refuge from one generation to another, teach us to number our days that we may apply our hearts to your wisdom; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "Lord, you have been our refuge * from one generation to another." },
+          { v: "2", text: "Before the mountains were brought forth, or the land and the earth were born, * from age to age you are God." },
+          { v: "4", text: "For a thousand years in your sight are like yesterday when it is past * and like a watch in the night." },
+          { v: "12", text: "So teach us to number our days * that we may apply our hearts to wisdom." }
+        ],
+        versesBAS: [
+          { v: "1", text: "Lord, you have been our refuge * from one generation to another." },
+          { v: "2", text: "Before the mountains were brought forth, or the land and the earth were born, * from age to age you are God." },
+          { v: "4", text: "For a thousand years in your sight are like yesterday when it is past * and like a watch in the night." },
+          { v: "12", text: "So teach us to number our days * that we may apply our hearts to wisdom." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "Lord, thou hast been our refuge : from one generation to another." },
+          { v: "2", text: "Before the mountains were brought forth, or ever the earth and the world were made : thou art God from everlasting, and world without end." },
+          { v: "4", text: "For a thousand years in thy sight are but as yesterday : seeing that is past as a watch in the night." },
+          { v: "12", text: "So teach us to number our days : that we may apply our hearts unto wisdom." }
+        ]
+      },
       "Psalm 91": {
-        title: "Psalm 91",
-        latin: "Qui habitat",
+        title: "Psalm 91", latin: "Qui habitat",
         prayer: "O God, our refuge and our fortress, defend us from all terror by night and day; keep us beneath the shadow of your wings, in the company of your angels; through Jesus Christ our Lord. Amen.",
         versesInclusive: [
           { v: "1", text: "Those who dwell in the shelter of the Most High * abide under the shadow of the Almighty." },
           { v: "2", text: "They shall say to the Lord, “My refuge and my stronghold, * my God in whom I put my trust.”" },
-          { v: "3", text: "For God shall deliver you from the snare of the hunter * and from the deadly pestilence." },
           { v: "4", text: "God’s pinions will cover you, and you will find refuge under God’s wings; * the faithfulness of the Lord shall be a shield and buckler." },
-          { v: "5", text: "You shall not be afraid of any terror by night, * nor of the arrow that flies by day;" },
-          { v: "9", text: "Because you have made the Lord your refuge, * and the Most High your habitation," },
           { v: "11", text: "For God shall give the angels charge over you, * to keep you in all your ways." },
-          { v: "12", text: "They shall bear you in their hands, * lest you dash your foot against a stone." },
-          { v: "16", text: "“With long life will I satisfy you, * and show you my salvation.”" }
+          { v: "12", text: "They shall bear you in their hands, * lest you dash your foot against a stone." }
         ],
         versesBAS: [
           { v: "1", text: "He who dwells in the shelter of the Most High, * abides under the shadow of the Almighty." },
           { v: "2", text: "He shall say to the Lord, “You are my refuge and my stronghold, * my God in whom I put my trust.”" },
-          { v: "3", text: "He shall deliver you from the snare of the hunter * and from the deadly pestilence." },
           { v: "4", text: "He shall cover you with his pinions, and you shall find refuge under his wings; * his faithfulness shall be a shield and buckler." },
-          { v: "5", text: "You shall not be afraid of any terror by night, * nor of the arrow that flies by day;" },
-          { v: "9", text: "Because you have made the Lord your refuge, * and the Most High your habitation," },
           { v: "11", text: "For he shall give his angels charge over you, * to keep you in all your ways." },
-          { v: "12", text: "They shall bear you in their hands, * lest you dash your foot against a stone." },
-          { v: "16", text: "“With long life will I satisfy him, * and show him my salvation.”" }
+          { v: "12", text: "They shall bear you in their hands, * lest you dash your foot against a stone." }
         ],
         versesCoverdale: [
           { v: "1", text: "Whoso dwelleth under the defence of the Most High : shall abide under the shadow of the Almighty." },
           { v: "2", text: "I will say unto the Lord, Thou art my hope, and my strong hold : my God, in him will I trust." },
-          { v: "3", text: "For he shall deliver thee from the snare of the hunter : and from the noisome pestilence." },
           { v: "4", text: "He shall defend thee under his wings, and thou shalt be safe under his feathers : his faithfulness and truth shall be thy shield and buckler." },
-          { v: "5", text: "Thou shalt not be afraid for any terror by night : nor for the arrow that flieth by day;" },
-          { v: "9", text: "For thou, Lord, art my hope : thou hast set thine house of defence very high." },
           { v: "11", text: "For he shall give his angels charge over thee : to keep thee in all thy ways." },
-          { v: "12", text: "They shall bear thee in their hands : that thou hurt not thy foot against a stone." },
-          { v: "16", text: "With long life will I satisfy him : and shew him my salvation." }
+          { v: "12", text: "They shall bear thee in their hands : that thou hurt not thy foot against a stone." }
+        ]
+      },
+      "Psalm 96": {
+        title: "Psalm 96", latin: "Cantate Domino",
+        prayer: "Almighty God, enable us to sing to you a new song and to worship you in the beauty of holiness; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "Sing to the Lord a new song; * sing to the Lord, all the whole earth." },
+          { v: "2", text: "Sing to the Lord and bless the divine name; * proclaim the good news of salvation from day to day." },
+          { v: "9", text: "Worship the Lord in the beauty of holiness; * let the whole earth tremble before God." },
+          { v: "11", text: "Let the heavens rejoice, and let the earth be glad; let the sea thunder and all that is in it; * let the field be joyful and all that is therein." }
+        ],
+        versesBAS: [
+          { v: "1", text: "Sing to the Lord a new song; * sing to the Lord, all the whole earth." },
+          { v: "2", text: "Sing to the Lord and bless his name; * proclaim the good news of his salvation from day to day." },
+          { v: "9", text: "Worship the Lord in the beauty of holiness; * let the whole earth tremble before him." },
+          { v: "11", text: "Let the heavens rejoice, and let the earth be glad; let the sea thunder and all that is in it; * let the field be joyful and all that is therein." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "O sing unto the Lord a new song : sing unto the Lord, all the whole earth." },
+          { v: "2", text: "Sing unto the Lord, and praise his Name : be telling of his salvation from day to day." },
+          { v: "9", text: "O worship the Lord in the beauty of holiness : let the whole earth stand in awe of him." },
+          { v: "11", text: "Let the heavens rejoice, and let the earth be glad : let the sea make a noise, and all that therein is." }
+        ]
+      },
+      "Psalm 100": {
+        title: "Psalm 100", latin: "Jubilate Deo",
+        prayer: "Creator and Shepherd of all, we enter your gates with thanksgiving and your courts with praise; keep us ever mindful of your steadfast love and faithfulness; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "Be joyful in the Lord, all you lands; * serve the Lord with gladness and come before the divine presence with a song." },
+          { v: "2", text: "Know this: The Lord alone is God; * the One who has made us, and to whom we belong; we are the Lord's people and the sheep of God's pasture." },
+          { v: "3", text: "Enter the gates of the Lord with thanksgiving; go into these courts with praise; * give thanks and call upon the name of the Lord." },
+          { v: "4", text: "For the Lord is good; the mercy of the Lord is everlasting; * and the faithfulness of God endures from age to age." }
+        ],
+        versesBAS: [
+          { v: "1", text: "Be joyful in the Lord, all you lands; * serve the Lord with gladness and come before his presence with a song." },
+          { v: "2", text: "Know this: The Lord himself is God; * he himself has made us, and we are his; we are his people and the sheep of his pasture." },
+          { v: "3", text: "Enter his gates with thanksgiving; go into his courts with praise; * give thanks to him and call upon his name." },
+          { v: "4", text: "For the Lord is good; his mercy is everlasting; * and his faithfulness endures from age to age." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "O be joyful in the Lord, all ye lands : serve the Lord with gladness, and come before his presence with a song." },
+          { v: "2", text: "Be ye sure that the Lord he is God : it is he that hath made us, and not we ourselves; we are his people, and the sheep of his pasture." },
+          { v: "3", text: "O go your way into his gates with thanksgiving, and into his courts with praise : be thankful unto him, and speak good of his Name." },
+          { v: "4", text: "For the Lord is gracious, his mercy is everlasting : and his truth endureth from generation to generation." }
+        ]
+      },
+      "Psalm 103:1-13": {
+        title: "Psalm 103:1–13", latin: "Benedic, anima mea",
+        prayer: "Merciful God, you crown us with loving-kindness and forgive all our sins; fill our hearts with gratitude so that all that is within us may bless your holy name; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "Bless the Lord, O my soul, * and all that is within me, bless God’s holy name." },
+          { v: "2", text: "Bless the Lord, O my soul, * and forget not all the benefits of the Lord," },
+          { v: "3", text: "Who forgives all your sins * and heals all your infirmities;" },
+          { v: "8", text: "The Lord is full of compassion and mercy, * slow to anger and of great kindness." },
+          { v: "12", text: "As far as the east is from the west, * so far has the Lord removed our sins from us." }
+        ],
+        versesBAS: [
+          { v: "1", text: "Bless the Lord, O my soul, * and all that is within me, bless his holy name." },
+          { v: "2", text: "Bless the Lord, O my soul, * and forget not all his benefits." },
+          { v: "3", text: "He forgives all your sins * and heals all your infirmities;" },
+          { v: "8", text: "The Lord is full of compassion and mercy, * slow to anger and of great kindness." },
+          { v: "12", text: "As far as the east is from the west, * so far has he removed our sins from us." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "Praise the Lord, O my soul : and all that is within me praise his holy Name." },
+          { v: "2", text: "Praise the Lord, O my soul : and forget not all his benefits;" },
+          { v: "3", text: "Who forgiveth all thy sin : and healeth all thine infirmities;" },
+          { v: "8", text: "The Lord is full of compassion and mercy : long-suffering, and of great goodness." },
+          { v: "12", text: "Look how wide also the east is from the west : so far hath he set our sins from us." }
+        ]
+      },
+      "Psalm 116": {
+        title: "Psalm 116", latin: "Dilexi, quoniam",
+        prayer: "Gracious God, you have heard our voice and delivered our souls from death; grant that we may walk before you in the land of the living and lift up the cup of salvation; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "I love the Lord, who has heard the voice of my supplication, * and has inclined an ear to me whenever I called." },
+          { v: "7", text: "For you have rescued my life from death, * my eyes from tears, and my feet from stumbling." },
+          { v: "8", text: "I will walk in the presence of the Lord * in the land of the living." },
+          { v: "11", text: "How shall I repay the Lord * for all the good things done for me?" },
+          { v: "12", text: "I will lift up the cup of salvation * and call upon the name of the Lord." }
+        ],
+        versesBAS: [
+          { v: "1", text: "I love the Lord, because he has heard the voice of my supplication, * because he has inclined his ear to me whenever I called upon him." },
+          { v: "7", text: "For you have rescued my life from death, * my eyes from tears, and my feet from stumbling." },
+          { v: "8", text: "I will walk in the presence of the Lord * in the land of the living." },
+          { v: "11", text: "How shall I repay the Lord * for all the good things he has done for me?" },
+          { v: "12", text: "I will lift up the cup of salvation * and call upon the name of the Lord." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "I am well pleased : that the Lord hath heard the voice of my prayer;" },
+          { v: "2", text: "That he hath inclined his ear unto me : therefore will I call upon him as long as I live." },
+          { v: "8", text: "For thou hast delivered my soul from death : mine eyes from tears, and my feet from falling." },
+          { v: "9", text: "I will walk before the Lord : in the land of the living." },
+          { v: "12", text: "I will receive the cup of salvation : and call upon the Name of the Lord." }
+        ]
+      },
+      "Psalm 121": {
+        title: "Psalm 121", latin: "Levavi oculos",
+        prayer: "O Lord, Maker of heaven and earth, you neither slumber nor sleep; preserve our going out and our coming in from this time forth for evermore; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "I lift up my eyes to the hills; * from where is my help to come?" },
+          { v: "2", text: "My help comes from the Lord, * the maker of heaven and earth." },
+          { v: "3", text: "The Lord will not let your foot be moved, * and the One who watches over you will not fall asleep." },
+          { v: "7", text: "The Lord shall preserve you from all evil; * it is the Lord who shall keep you safe." },
+          { v: "8", text: "The Lord shall watch over your going out and your coming in, * from this time forth for evermore." }
+        ],
+        versesBAS: [
+          { v: "1", text: "I lift up my eyes to the hills; * from where is my help to come?" },
+          { v: "2", text: "My help comes from the Lord, * the maker of heaven and earth." },
+          { v: "3", text: "He will not let your foot be moved * and he who watches over you will not fall asleep." },
+          { v: "7", text: "The Lord shall preserve you from all evil; * it is he who shall keep you safe." },
+          { v: "8", text: "The Lord shall watch over your going out and your coming in, * from this time forth for evermore." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "I will lift up mine eyes unto the hills : from whence cometh my help." },
+          { v: "2", text: "My help cometh even from the Lord : who hath made heaven and earth." },
+          { v: "3", text: "He will not suffer thy foot to be moved : and he that keepeth thee will not sleep." },
+          { v: "7", text: "The Lord shall preserve thee from all evil : yea, it is even he that shall keep thy soul." },
+          { v: "8", text: "The Lord shall preserve thy going out, and thy coming in : from this time forth for evermore." }
+        ]
+      },
+      "Psalm 126": {
+        title: "Psalm 126", latin: "In convertendo",
+        prayer: "God of our restoration, turn our weeping into shouts of joy, that those who sow in tears may reap the harvest of your kingdom; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "When the Lord restored the fortunes of Zion, * then were we like those who dream." },
+          { v: "2", text: "Then was our mouth filled with laughter, * and our tongue with shouts of joy." },
+          { v: "3", text: "The Lord has done great things for us, * and we are glad indeed." },
+          { v: "6", text: "Those who sowed with tears * will reap with songs of joy." }
+        ],
+        versesBAS: [
+          { v: "1", text: "When the Lord restored the fortunes of Zion, * then were we like those who dream." },
+          { v: "2", text: "Then was our mouth filled with laughter, * and our tongue with shouts of joy." },
+          { v: "3", text: "The Lord has done great things for us, * and we are glad indeed." },
+          { v: "6", text: "Those who sowed with tears * will reap with songs of joy." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "When the Lord turned again the captivity of Sion : then were we like unto them that dream." },
+          { v: "2", text: "Then was our mouth filled with laughter : and our tongue with joy." },
+          { v: "4", text: "The Lord hath done great things for us already : whereof we rejoice." },
+          { v: "6", text: "They that sow in tears : shall reap in joy." }
+        ]
+      },
+      "Psalm 130": {
+        title: "Psalm 130", latin: "De profundis",
+        prayer: "God of plenteous redemption, hear our voice out of the depths and forgive our sins, as our souls wait in hope for your word; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "Out of the depths have I called to you, O Lord; * Lord, hear my voice; let your ears consider well the voice of my supplication." },
+          { v: "2", text: "If you, Lord, were to note what is done amiss, * O Lord, who could stand?" },
+          { v: "3", text: "For there is forgiveness with you; * therefore you shall be feared." },
+          { v: "4", text: "I wait for the Lord; my soul waits for the Lord; * in the word of God is my hope." },
+          { v: "6", text: "O Israel, wait for the Lord, * for with the Lord there is mercy; with the Lord there is plenteous redemption." }
+        ],
+        versesBAS: [
+          { v: "1", text: "Out of the depths have I called to you, O Lord; * Lord, hear my voice; let your ears consider well the voice of my supplication." },
+          { v: "2", text: "If you, Lord, were to note what is done amiss, * O Lord, who could stand?" },
+          { v: "3", text: "For there is forgiveness with you; * therefore you shall be feared." },
+          { v: "4", text: "I wait for the Lord; my soul waits for him; * in his word is my hope." },
+          { v: "6", text: "O Israel, wait for the Lord, * for with the Lord there is mercy; with him there is plenteous redemption." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "Out of the deep have I called unto thee, O Lord : Lord, hear my voice." },
+          { v: "3", text: "If thou, Lord, wilt be extreme to mark what is done amiss : O Lord, who may abide it?" },
+          { v: "4", text: "For there is mercy with thee : therefore shalt thou be feared." },
+          { v: "5", text: "I look for the Lord; my soul doth wait for him : in his word is my trust." },
+          { v: "7", text: "O Israel, trust in the Lord, for with the Lord there is mercy : and with him is plenteous redemption." }
         ]
       },
       "Psalm 134": {
-        title: "Psalm 134",
-        latin: "Ecce nunc",
+        title: "Psalm 134", latin: "Ecce nunc",
         prayer: "O Lord our God, as night settles upon the earth, bless your servants who keep watch; and lift our hands to bless your holy name, now and for ever. Amen.",
         versesInclusive: [
           { v: "1", text: "Behold now, bless the Lord, all you servants of the Lord, * you that stand by night in the house of the Lord." },
@@ -602,38 +1434,60 @@
           { v: "4", text: "The Lord that made heaven and earth : give thee blessing out of Sion." }
         ]
       },
-      "Psalm 18:1-20": {
-        title: "Psalm 18:1–20",
-        latin: "Diligam te, Domine",
-        prayer: "O God, our strength and salvation, you hear the cries of your humble people; deliver us from every snare and lead us into your glorious light; through Jesus Christ our Lord. Amen.",
+      "Psalm 139:1-11": {
+        title: "Psalm 139:1–11", latin: "Domine, probasti",
+        prayer: "All-knowing God, you search us out and know us in every waking and sleeping moment; lead us in the way everlasting; through Jesus Christ our Lord. Amen.",
         versesInclusive: [
-          { v: "1", text: "I love you, O Lord my strength, * O Lord my stronghold, my crag, and my haven." },
-          { v: "2", text: "My God, my rock in whom I put my trust, * my shield, the horn of my salvation, and my refuge; you are worthy of praise." },
-          { v: "6", text: "In my distress I called upon the Lord * and cried out to my God for help." },
-          { v: "7", text: "From the holy temple my voice was heard; * my cry came to the divine ears." },
-          { v: "16", text: "God reached down from on high and grasped me; * and drew me out of great waters." },
-          { v: "19", text: "God brought me out into an open place * and rescued me, because of great delight in me." }
+          { v: "1", text: "Lord, you have searched me out and known me; * you know my sitting down and my rising up; you discern my thoughts from afar." },
+          { v: "2", text: "You trace my journeys and my resting-places * and are acquainted with all my ways." },
+          { v: "6", text: "Where can I go then from your Spirit? * where can I flee from your presence?" },
+          { v: "8", text: "If I take the wings of the morning * and dwell in the uttermost parts of the sea," },
+          { v: "9", text: "Even there your hand will lead me * and your right hand hold me fast." }
         ],
         versesBAS: [
-          { v: "1", text: "I love you, O Lord my strength, * O Lord my stronghold, my crag, and my haven." },
-          { v: "2", text: "My God, my rock in whom I put my trust, * my shield, the horn of my salvation, and my refuge; you are worthy of praise." },
-          { v: "6", text: "In my anguish I called upon the Lord * and cried out to my God for help." },
-          { v: "7", text: "From his holy temple he heard my voice; * my cry came to his ears." },
-          { v: "16", text: "He reached down from on high and grasped me; * he drew me out of great waters." },
-          { v: "19", text: "He brought me forth into an open place; * he rescued me, because he delighted in me." }
+          { v: "1", text: "Lord, you have searched me out and known me; * you know my sitting down and my rising up; you discern my thoughts from afar." },
+          { v: "2", text: "You trace my journeys and my resting-places * and are acquainted with all my ways." },
+          { v: "6", text: "Where can I go then from your Spirit? * where can I flee from your presence?" },
+          { v: "8", text: "If I take the wings of the morning * and dwell in the uttermost parts of the sea," },
+          { v: "9", text: "Even there your hand will lead me * and your right hand hold me fast." }
         ],
         versesCoverdale: [
-          { v: "1", text: "I will love thee, O Lord, my strength; the Lord is my stony rock, and my defence : my saviour, my God, and my might, in whom I will trust, my buckler, the horn also of my salvation, and my refuge." },
-          { v: "2", text: "I will call upon the Lord, which is worthy to be praised : so shall I be saved from mine enemies." },
-          { v: "6", text: "So shall he hear my voice out of his holy temple : and my complaint shall come before him, it shall enter even into his ears." },
-          { v: "16", text: "He shall send down from on high to fetch me : and shall take me out of many waters." },
-          { v: "19", text: "He brought me forth also into a place of liberty : he brought me forth, even because he had a favour unto me." }
+          { v: "1", text: "O Lord, thou hast searched me out, and known me : thou knowest my down-sitting, and mine up-rising; thou understandest my thoughts long before." },
+          { v: "2", text: "Thou art about my path, and about my bed : and spiest out all my ways." },
+          { v: "6", text: "Whither shall I go then from thy Spirit : or whither shall I go then from thy presence?" },
+          { v: "8", text: "If I take the wings of the morning : and remain in the uttermost parts of the sea;" },
+          { v: "9", text: "Even there also shall thy hand lead me : and thy right hand shall hold me." }
+        ]
+      },
+      "Psalm 145:1-13": {
+        title: "Psalm 145:1–13", latin: "Exaltabo te, Deus",
+        prayer: "Generous God, your kingdom is an everlasting kingdom and your compassion is over all your works; fill our mouths with your praise from age to age; through Jesus Christ our Lord. Amen.",
+        versesInclusive: [
+          { v: "1", text: "I will exalt you, O God my Sovereign, * and bless your name for ever and ever." },
+          { v: "2", text: "Every day will I bless you * and praise your name for ever and ever." },
+          { v: "3", text: "Great is the Lord and greatly to be praised; * there is no end to the greatness of God." },
+          { v: "8", text: "The Lord is gracious and full of compassion, * slow to anger and of great kindness." },
+          { v: "9", text: "The Lord is loving to everyone, * and God’s compassion is over all the Lord’s works." }
+        ],
+        versesBAS: [
+          { v: "1", text: "I will exalt you, O God my King, * and bless your name for ever and ever." },
+          { v: "2", text: "Every day will I bless you * and praise your name for ever and ever." },
+          { v: "3", text: "Great is the Lord and greatly to be praised; * there is no end to his greatness." },
+          { v: "8", text: "The Lord is gracious and full of compassion, * slow to anger and of great kindness." },
+          { v: "9", text: "The Lord is loving to everyone, * and his compassion is over all his works." }
+        ],
+        versesCoverdale: [
+          { v: "1", text: "I will magnify thee, O God, my King : and I will praise thy Name for ever and ever." },
+          { v: "2", text: "Every day will I give thanks unto thee : and praise thy Name for ever and ever." },
+          { v: "3", text: "Great is the Lord, and marvellous worthy to be praised : there is no end of his greatness." },
+          { v: "8", text: "The Lord is gracious, and merciful : long-suffering, and of great goodness." },
+          { v: "9", text: "The Lord is loving unto every man : and his mercy is over all his works." }
         ]
       }
     };
 
-    // --- 3. STATE AND CONTROLLER ---
-    let currentDate = new Date();
+    // --- 6. STATE AND CONTROLLER ---
+    let currentDate = todayLocalDate();
     let currentOffice = 'morning';
     let currentBookMode = 'bas'; // 'bas' or 'bcp'
     let currentPsalter = 'inclusive'; // 'inclusive' or 'bas1985'
@@ -657,6 +1511,7 @@
     const bannerBookBadge = document.getElementById('bannerBookBadge');
     const bannerDateTitle = document.getElementById('bannerDateTitle');
     const bannerFeastName = document.getElementById('bannerFeastName');
+    const bannerCommemoration = document.getElementById('bannerCommemoration');
     const currentDateDisplay = document.getElementById('currentDateDisplay');
     const tabMorning = document.getElementById('tabMorning');
     const tabEvening = document.getElementById('tabEvening');
@@ -689,19 +1544,26 @@
       }
     }
 
-    // --- 4. RENDER OFFICE SERVICE ---
+    // --- 7. RENDER OFFICE SERVICE ---
     function renderOffice() {
       updateBookModeUI();
       const lit = getLiturgicalInfo(currentDate);
-      const lectionary = getDailyLectionaryCitations(currentDate, lit.cycle);
+      const lectionary = getDailyLectionaryCitations(currentDate, lit);
 
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
       const formattedDate = currentDate.toLocaleDateString('en-CA', options);
       bannerDateTitle.textContent = formattedDate;
       bannerFeastName.textContent = lit.feastName || lit.season;
+      if (lit.commemoration) {
+        bannerCommemoration.textContent = "Commemoration: " + lit.commemoration;
+        bannerCommemoration.style.display = "block";
+      } else {
+        bannerCommemoration.textContent = "";
+        bannerCommemoration.style.display = "none";
+      }
       bannerLiturgicalColorTag.textContent = lit.color;
       bannerLectionaryCycle.textContent = `${lit.cycle} • Daily Office`;
-      headerSeasonSubtitle.textContent = `${lit.season} Season • ${lit.color}`;
+      headerSeasonSubtitle.textContent = `${lit.season} • ${lit.color}`;
       currentDateDisplay.textContent = currentDate.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
 
       let dotColor = '#581c87';
@@ -749,7 +1611,7 @@
     }
 
     function renderPsalmBlock(psalmKey) {
-      const data = PSALMS_DATA[psalmKey] || PSALMS_DATA["Psalm 4"];
+      const data = PSALMS_DATA[psalmKey] || PSALMS_DATA["Psalm 18:1-20"];
       let verses;
       let editionLabel;
       let gloria;
@@ -804,9 +1666,12 @@
     }
 
     // ==========================================
-    // 5. BCP 1962 LITURGIES
+    // 8. BCP 1962 LITURGIES
     // ==========================================
     function renderBcpMattins(lit, lectionary) {
+      const openingSentence = getOpeningSentence(lit, 'morning', false);
+      const collectOfDay = getCollectOfTheDay(lit, true);
+
       prayerContainer.innerHTML = `
         <header class="text-center mb-8 pb-4 border-b border-stone-200 dark:border-stone-800">
           <h2 class="office-title tracking-tight text-stone-900 dark:text-stone-100">The Order for Morning Prayer</h2>
@@ -816,7 +1681,7 @@
         <section class="mb-8">
           <h3 class="section-header text-stone-900 dark:text-stone-100">Opening Sentence & Confession</h3>
           <span class="rubric">At the beginning of Morning Prayer the Minister shall read with a loud voice some one or more of these Sentences of the Scriptures.</span>
-          <p class="italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“The Lord is in his holy temple: let all the earth keep silence before him.” (Habakkuk 2. 20)</p>
+          <p class="italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“${openingSentence}”</p>
 
           <span class="rubric">A General Confession (To be said of the whole Congregation after the Minister, all kneeling).</span>
           <div class="my-4 p-4 rounded-xl bg-stone-100/70 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800">
@@ -866,7 +1731,7 @@
 
         <!-- PSALMS & LESSONS -->
         <section class="mb-8">
-          ${renderPsalmBlock("Psalm 18:1-20")}
+          ${renderPsalmBlock(lectionary.mPsalm)}
 
           ${makeScriptureLink(lectionary.ot, "The First Lesson (Old Testament)")}
 
@@ -956,6 +1821,10 @@
           <!-- THE COLLECTS -->
           <div class="my-6 space-y-4">
             <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">The First Collect: ${collectOfDay.title}</h3>
+              <p>${collectOfDay.text}</p>
+            </div>
+            <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">The Second Collect, for Peace</h3>
               <p>O GOD, who art the author of peace and lover of concord, in knowledge of whom standeth our eternal life, whose service is perfect freedom: Defend us thy humble servants in all assaults of our enemies; that we, surely trusting in thy defence, may not fear the power of any adversaries; through the might of Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
             </div>
@@ -977,6 +1846,9 @@
     }
 
     function renderBcpEvensong(lit, lectionary) {
+      const openingSentence = getOpeningSentence(lit, 'evening', false);
+      const collectOfDay = getCollectOfTheDay(lit, true);
+
       prayerContainer.innerHTML = `
         <header class="text-center mb-8 pb-4 border-b border-stone-200 dark:border-stone-800">
           <h2 class="office-title tracking-tight text-stone-900 dark:text-stone-100">The Order for Evening Prayer</h2>
@@ -985,7 +1857,7 @@
 
         <section class="mb-8">
           <h3 class="section-header text-stone-900 dark:text-stone-100">Opening Sentence & Preces</h3>
-          <p class="italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“O worship the Lord in the beauty of holiness: let the whole earth stand in awe of him.” (Psalm 96. 9)</p>
+          <p class="italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“${openingSentence}”</p>
 
           <div class="space-y-1.5 my-3">
             <div class="versicle"><span class="versicle-label">V.</span><span>O Lord, open thou our lips;</span></div>
@@ -1007,9 +1879,9 @@
 
         <!-- PSALMS & READINGS -->
         <section class="mb-8">
-          ${renderPsalmBlock("Psalm 4")}
+          ${renderPsalmBlock(lectionary.ePsalm)}
 
-          ${makeScriptureLink(lectionary.epistle, "The First Lesson")}
+          ${makeScriptureLink(lectionary.ot, "The First Lesson")}
 
           <!-- MAGNIFICAT -->
           <div class="my-6">
@@ -1069,6 +1941,10 @@
 
           <div class="my-6 space-y-4">
             <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">The First Collect: ${collectOfDay.title}</h3>
+              <p>${collectOfDay.text}</p>
+            </div>
+            <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">The Second Collect at Evening Prayer (for Peace)</h3>
               <p>O GOD, from whom all holy desires, all good counsels, and all just works do proceed: Give unto thy servants that peace which the world cannot give; that both our hearts may be set to obey thy commandments, and also that by thee we being defended from the fear of our enemies may pass our time in rest and quietness; through the merits of Jesus Christ our Saviour. <span class="font-bold">Amen.</span></p>
             </div>
@@ -1093,7 +1969,7 @@
         </header>
 
         <section class="mb-8">
-          <h3 class="section-header text-stone-900 dark:text-stone-100">The Gathering</h3>
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Gathering (${lit.dayName} Night)</h3>
           <div class="space-y-1.5 my-3">
             <div class="versicle"><span class="versicle-label">V.</span><span>The Lord Almighty grant us a quiet night and a perfect end.</span></div>
             <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">Amen.</span></div>
@@ -1141,13 +2017,11 @@
     }
 
     // ==========================================
-    // 6. BAS 1985 LITURGIES
+    // 9. BAS 1985 LITURGIES
     // ==========================================
     const CANTICLES_DATA = {
       venite: {
         title: "The Invitatory: Venite (Psalm 95:1–7)",
-        antiphonInclusive: "The earth is the Lord's, who made it: * O come, let us adore our God.",
-        antiphonBAS: "The earth is the Lord's for he made it: * O come, let us adore him.",
         inclusive: [
           "Come, let us sing to the Lord; * let us shout for joy to the rock of our salvation.",
           "Let us come before God's presence with thanksgiving * and raise a loud shout with psalms.",
@@ -1212,14 +2086,15 @@
     };
 
     function renderBasMorningPrayer(lit, lectionary) {
+      const isInclusive = (currentPsalter === 'inclusive');
       const vData = CANTICLES_DATA.venite;
       const bData = CANTICLES_DATA.benedictus;
-      const vText = (currentPsalter === 'inclusive') ? vData.inclusive : vData.bas;
-      const vAntiphon = (currentPsalter === 'inclusive') ? vData.antiphonInclusive : vData.antiphonBAS;
-      const bText = (currentPsalter === 'inclusive') ? bData.inclusive : bData.bas;
-      const editionLabel = (currentPsalter === 'inclusive') ? 'Inclusive Language (2019)' : 'BAS (1985)';
-
-      let seasonalSentence = (currentPsalter === 'inclusive') ? "The earth is the Lord's, who made it: O come, let us adore our God." : "The earth is the Lord's for he made it: O come, let us adore him.";
+      const vText = isInclusive ? vData.inclusive : vData.bas;
+      const vAntiphon = getInvitatoryAntiphon(lit, isInclusive);
+      const bText = isInclusive ? bData.inclusive : bData.bas;
+      const editionLabel = isInclusive ? 'Inclusive Language (2019)' : 'BAS (1985)';
+      const openingSentence = getOpeningSentence(lit, 'morning', isInclusive);
+      const collectOfDay = getCollectOfTheDay(lit, false);
 
       prayerContainer.innerHTML = `
         <header class="text-center mb-8 pb-4 border-b border-stone-200 dark:border-stone-800">
@@ -1229,7 +2104,7 @@
 
         <section class="mb-8">
           <h3 class="section-header text-stone-900 dark:text-stone-100">The Gathering of the Community</h3>
-          <p class="italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“${seasonalSentence}”</p>
+          <p class="italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“${openingSentence}”</p>
           
           <div class="space-y-1.5 my-4">
             <div class="versicle"><span class="versicle-label">V.</span><span>Lord, open our lips.</span></div>
@@ -1254,7 +2129,7 @@
 
         <section class="mb-8">
           <h3 class="section-header text-stone-900 dark:text-stone-100">The Proclamation of the Word</h3>
-          ${renderPsalmBlock("Psalm 18:1-20")}
+          ${renderPsalmBlock(lectionary.mPsalm)}
 
           ${makeScriptureLink(lectionary.ot, "First Reading: Old Testament")}
 
@@ -1294,6 +2169,10 @@
 
           <div class="my-6 space-y-4">
             <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">${collectOfDay.title}</h3>
+              <p>${collectOfDay.text}</p>
+            </div>
+            <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">A Collect for Peace</h3>
               <p>O God, the author of peace and lover of concord, to know you is eternal life, to serve you is perfect freedom: defend us your humble servants in all assaults of our enemies, that we, surely trusting in your defence, may not fear the power of any adversaries; through the might of Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
             </div>
@@ -1311,9 +2190,12 @@
     }
 
     function renderBasEveningPrayer(lit, lectionary) {
+      const isInclusive = (currentPsalter === 'inclusive');
       const mData = CANTICLES_DATA.magnificat;
-      const mText = (currentPsalter === 'inclusive') ? mData.inclusive : mData.bas;
-      const editionLabel = (currentPsalter === 'inclusive') ? 'Inclusive Language (2019)' : 'BAS (1985)';
+      const mText = isInclusive ? mData.inclusive : mData.bas;
+      const editionLabel = isInclusive ? 'Inclusive Language (2019)' : 'BAS (1985)';
+      const openingSentence = getOpeningSentence(lit, 'evening', isInclusive);
+      const collectOfDay = getCollectOfTheDay(lit, false);
 
       prayerContainer.innerHTML = `
         <header class="text-center mb-8 pb-4 border-b border-stone-200 dark:border-stone-800">
@@ -1324,7 +2206,7 @@
         <section class="mb-8">
           <h3 class="section-header text-stone-900 dark:text-stone-100">Service of Light</h3>
           <span class="rubric">Opening Sentence</span>
-          <p class="italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“Jesus said, ‘I am the light of the world; whoever follows me will not walk in darkness, but will have the light of life.’” (John 8:12)</p>
+          <p class="italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“${openingSentence}”</p>
 
           <h3 class="section-header text-stone-900 dark:text-stone-100">Canticle of Light (Phos Hilaron)</h3>
           <div class="space-y-2 font-medium">
@@ -1334,7 +2216,7 @@
         </section>
 
         <section class="mb-8">
-          ${renderPsalmBlock("Psalm 4")}
+          ${renderPsalmBlock(lectionary.ePsalm)}
 
           ${makeScriptureLink(lectionary.epistle, "First Reading")}
 
@@ -1354,6 +2236,10 @@
 
         <section class="mb-8">
           <div class="my-6 space-y-4">
+            <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">${collectOfDay.title}</h3>
+              <p>${collectOfDay.text}</p>
+            </div>
             <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">A Collect for Peace</h3>
               <p>Most holy God, the source of all good desires, all right judgements, and all just works: give to your servants that peace which the world cannot give, that our hearts may be set to obey your commandments, and that we, being defended from the fear of our enemies, may pass our time in rest and quietness; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
@@ -1379,7 +2265,7 @@
         </header>
 
         <section class="mb-8">
-          <h3 class="section-header text-stone-900 dark:text-stone-100">The Gathering</h3>
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Gathering (${lit.dayName} Night)</h3>
           <div class="space-y-2 mb-4">
             <div class="versicle"><span class="versicle-label">V.</span><span>The Lord almighty grant us a quiet night and a peaceable end.</span></div>
             <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">Amen.</span></div>
@@ -1441,7 +2327,7 @@
       `;
     }
 
-    // --- 7. FORMATTING & EVENT HANDLERS ---
+    // --- 10. FORMATTING & EVENT HANDLERS ---
     function applyFormatting() {
       prayerContainer.style.fontSize = fontSize + 'px';
       if (liturgicalBanner) {
@@ -1491,33 +2377,47 @@
     tabCompline.addEventListener('click', () => { currentOffice = 'compline'; renderOffice(); });
 
     // Date navigation
-    document.getElementById('btnPrevDay').addEventListener('click', () => { currentDate = addDays(currentDate, -1); renderOffice(); });
-    document.getElementById('btnNextDay').addEventListener('click', () => { currentDate = addDays(currentDate, 1); renderOffice(); });
-    document.getElementById('btnToday').addEventListener('click', () => { currentDate = new Date(); renderOffice(); });
+    document.getElementById('btnPrevDay').addEventListener('click', () => {
+      currentDate = addDays(currentDate, -1);
+      renderOffice();
+      showToast(currentDate.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric' }));
+    });
+    document.getElementById('btnNextDay').addEventListener('click', () => {
+      currentDate = addDays(currentDate, 1);
+      renderOffice();
+      showToast(currentDate.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric' }));
+    });
+    document.getElementById('btnToday').addEventListener('click', () => {
+      currentDate = todayLocalDate();
+      renderOffice();
+      showToast('Returned to Today');
+    });
 
     // Calendar Modal
     const modalCalendar = document.getElementById('modalCalendar');
     const datePickerInput = document.getElementById('datePickerInput');
     document.getElementById('btnOpenCalendar').addEventListener('click', () => {
-      datePickerInput.value = currentDate.toISOString().slice(0, 10);
+      datePickerInput.value = toYMD(currentDate);
       modalCalendar.classList.remove('hidden');
     });
     document.getElementById('btnCloseCalendar').addEventListener('click', () => modalCalendar.classList.add('hidden'));
     document.getElementById('btnApplyDate').addEventListener('click', () => {
       if (datePickerInput.value) {
         const parts = datePickerInput.value.split('-');
-        currentDate = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])));
+        currentDate = makeLocalDate(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
         modalCalendar.classList.add('hidden');
         renderOffice();
+        showToast(currentDate.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }));
       }
     });
     document.querySelectorAll('.btn-quick-feast').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const targetDate = e.target.getAttribute('data-quick-date');
         const parts = targetDate.split('-');
-        currentDate = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])));
+        currentDate = makeLocalDate(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
         modalCalendar.classList.add('hidden');
         renderOffice();
+        showToast(currentDate.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }));
       });
     });
 

@@ -1,5 +1,5 @@
 // ACC Daily Office Service Worker for Offline Functionality
-const CACHE_NAME = 'acc-daily-office-v3';
+const CACHE_NAME = 'acc-daily-office-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
