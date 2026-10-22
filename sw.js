@@ -1,4 +1,4 @@
-const CACHE_NAME = 'acc-daily-office-v5';
+const CACHE_NAME = 'acc-daily-office-v6';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

@@ -337,15 +337,13 @@
         <p class="text-[11px] text-stone-400 mt-1">Adjusts pronouns for God and humanity across BAS Psalms and Canticles.</p>
       </div>
 
-      <!-- Psalter Schedule Selection -->
-      <div class="mb-4">
-        <label class="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-1.5">Psalter Schedule</label>
-        <select id="settingPsalmSchedule" class="w-full text-sm font-medium bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg p-2.5 text-stone-800 dark:text-stone-100">
-          <option value="auto" selected>Official Book Default (BAS 7-Wk / BCP 30-Day)</option>
-          <option value="bcp30">30-Day Monthly Cycle (Psalms 1–150)</option>
-          <option value="bas7">BAS 7-Week Lectionary Cycle</option>
-        </select>
-        <p class="text-[11px] text-stone-400 mt-1">Follows the official Anglican Church of Canada psalm tables for all 150 Psalms.</p>
+      <!-- Automatic Lectionary & Psalter Routing Info -->
+      <div class="mb-4 p-3 rounded-lg bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-700">
+        <div class="text-xs font-semibold text-stone-700 dark:text-stone-200 mb-0.5">Automatic Schedule by Prayer Book</div>
+        <p class="text-[11px] text-stone-500 dark:text-stone-400 leading-snug">
+          <strong>BAS (1985):</strong> Automatically follows the <em>BAS Daily Office Lectionary</em> (pp. 455–496).<br>
+          <strong>BCP (1962):</strong> Automatically follows the <em>BCP Psalter Table</em> (30-Day Monthly Cycle &amp; BCP Tables of Psalms, pp. xlvi–lv).
+        </p>
       </div>
 
       <!-- Display Theme -->
@@ -592,16 +590,42 @@
         color = "Green";
         const diffDays = daysBetween(pentecost, date);
         const sunNum = Math.floor(diffDays / 7) + 1;
+        const sundayOfWeek = addDays(date, -dow);
+        const weeksBeforeAdvent = Math.round(daysBetween(sundayOfWeek, advent) / 7);
+        const basProper = 35 - weeksBeforeAdvent;
         if (dow === 0) {
-          feastName = `${ordinalWord(sunNum)} Sunday after Pentecost`;
+          feastName = `${ordinalWord(sunNum)} Sunday after Pentecost (Proper ${basProper})`;
         } else {
-          feastName = `${dayName} after the ${ordinalWord(sunNum)} Sunday after Pentecost`;
+          feastName = `${dayName} in the Week of Proper ${basProper} (${ordinalWord(sunNum)} Sunday after Pentecost)`;
+        }
+      }
+
+      // Calculate BAS Proper number for Season after Pentecost
+      const sundayOfWeek = addDays(date, -dow);
+      const weeksBeforeAdvent = Math.round(daysBetween(sundayOfWeek, advent) / 7);
+      const basProper = (season === "Season after Pentecost") ? (35 - weeksBeforeAdvent) : null;
+
+      // Calculate traditional BCP 1962 Season & Feast Name (Trinity Season instead of Season after Pentecost)
+      let bcpSeason = season;
+      let bcpFeastName = feastName;
+      let trinityWeekNum = null;
+      if (season === "Season after Pentecost" && ymd !== toYMD(trinitySunday)) {
+        bcpSeason = "Trinity Season";
+        const trinityDiff = daysBetween(trinitySunday, date);
+        trinityWeekNum = Math.floor(trinityDiff / 7);
+        if (ymd === toYMD(reignOfChrist)) {
+          bcpFeastName = "The Sunday Next Before Advent";
+        } else if (dow === 0) {
+          bcpFeastName = `The ${ordinalWord(trinityWeekNum)} Sunday after Trinity`;
+        } else {
+          bcpFeastName = `${dayName} after the ${ordinalWord(trinityWeekNum)} Sunday after Trinity`;
         }
       }
 
       if (holyDay) {
-        if (holyDay.type === "principal" || (holyDay.type === "major" && dow !== 0) || (holyDay.name.includes("Luke") && dow === 0)) {
+        if (holyDay.type === "principal" || (holyDay.type === "major" && dow !== 0)) {
           feastName = holyDay.name;
+          bcpFeastName = holyDay.name;
           if (holyDay.color) color = holyDay.color;
           commemoration = "";
         } else if (holyDay.type === "memorial" && dow !== 0 && season === "Season after Pentecost") {
@@ -609,123 +633,213 @@
         }
       }
 
-      return { season, color, feastName, commemoration, cycle: lectionaryCycleYear, dow, dayName, md };
+      return { season, bcpSeason, color, feastName, bcpFeastName, basProper, trinityWeekNum, commemoration, cycle: lectionaryCycleYear, dow, dayName, md };
     }
 
     // --- 3. OFFICIAL ANGLICAN CHURCH OF CANADA PSALM & SCRIPTURE SCHEDULES ---
     const BCP_30_DAY_CYCLE = {"1": {"m": ["Psalm 1", "Psalm 2", "Psalm 3", "Psalm 4", "Psalm 5"], "e": ["Psalm 6", "Psalm 7", "Psalm 8"]}, "2": {"m": ["Psalm 9", "Psalm 10", "Psalm 11"], "e": ["Psalm 12", "Psalm 13", "Psalm 14"]}, "3": {"m": ["Psalm 15", "Psalm 16", "Psalm 17"], "e": ["Psalm 18"]}, "4": {"m": ["Psalm 19", "Psalm 20", "Psalm 21"], "e": ["Psalm 22", "Psalm 23"]}, "5": {"m": ["Psalm 24", "Psalm 25", "Psalm 26"], "e": ["Psalm 27", "Psalm 28", "Psalm 29"]}, "6": {"m": ["Psalm 30", "Psalm 31"], "e": ["Psalm 32", "Psalm 33", "Psalm 34"]}, "7": {"m": ["Psalm 35", "Psalm 36"], "e": ["Psalm 37"]}, "8": {"m": ["Psalm 38", "Psalm 39", "Psalm 40"], "e": ["Psalm 41", "Psalm 42", "Psalm 43"]}, "9": {"m": ["Psalm 44", "Psalm 45", "Psalm 46"], "e": ["Psalm 47", "Psalm 48", "Psalm 49"]}, "10": {"m": ["Psalm 50", "Psalm 51", "Psalm 52"], "e": ["Psalm 53", "Psalm 54", "Psalm 55"]}, "11": {"m": ["Psalm 56", "Psalm 57", "Psalm 58"], "e": ["Psalm 59", "Psalm 60", "Psalm 61"]}, "12": {"m": ["Psalm 62", "Psalm 63", "Psalm 64"], "e": ["Psalm 65", "Psalm 66", "Psalm 67"]}, "13": {"m": ["Psalm 68"], "e": ["Psalm 69", "Psalm 70"]}, "14": {"m": ["Psalm 71", "Psalm 72"], "e": ["Psalm 73", "Psalm 74"]}, "15": {"m": ["Psalm 75", "Psalm 76", "Psalm 77"], "e": ["Psalm 78"]}, "16": {"m": ["Psalm 79", "Psalm 80", "Psalm 81"], "e": ["Psalm 82", "Psalm 83", "Psalm 84", "Psalm 85"]}, "17": {"m": ["Psalm 86", "Psalm 87", "Psalm 88"], "e": ["Psalm 89"]}, "18": {"m": ["Psalm 90", "Psalm 91", "Psalm 92"], "e": ["Psalm 93", "Psalm 94"]}, "19": {"m": ["Psalm 95", "Psalm 96", "Psalm 97"], "e": ["Psalm 98", "Psalm 99", "Psalm 100", "Psalm 101"]}, "20": {"m": ["Psalm 102", "Psalm 103"], "e": ["Psalm 104"]}, "21": {"m": ["Psalm 105"], "e": ["Psalm 106"]}, "22": {"m": ["Psalm 107"], "e": ["Psalm 108", "Psalm 109"]}, "23": {"m": ["Psalm 110", "Psalm 111", "Psalm 112", "Psalm 113"], "e": ["Psalm 114", "Psalm 115"]}, "24": {"m": ["Psalm 116", "Psalm 117", "Psalm 118"], "e": ["Psalm 119"]}, "25": {"m": ["Psalm 119"], "e": ["Psalm 119"]}, "26": {"m": ["Psalm 119"], "e": ["Psalm 119"]}, "27": {"m": ["Psalm 120", "Psalm 121", "Psalm 122", "Psalm 123", "Psalm 124", "Psalm 125"], "e": ["Psalm 126", "Psalm 127", "Psalm 128", "Psalm 129", "Psalm 130", "Psalm 131"]}, "28": {"m": ["Psalm 132", "Psalm 133", "Psalm 134", "Psalm 135"], "e": ["Psalm 136", "Psalm 137", "Psalm 138"]}, "29": {"m": ["Psalm 139", "Psalm 140"], "e": ["Psalm 141", "Psalm 142", "Psalm 143"]}, "30": {"m": ["Psalm 144", "Psalm 145", "Psalm 146"], "e": ["Psalm 147", "Psalm 148", "Psalm 149", "Psalm 150"]}};
-    const BAS_7_WEEK_PSALM_CYCLE = [[{"m": ["Psalm 146", "Psalm 147"], "e": ["Psalm 111", "Psalm 112", "Psalm 113"]}, {"m": ["Psalm 1", "Psalm 2", "Psalm 3"], "e": ["Psalm 4", "Psalm 7"]}, {"m": ["Psalm 5", "Psalm 6"], "e": ["Psalm 10", "Psalm 11"]}, {"m": ["Psalm 119"], "e": ["Psalm 12", "Psalm 13", "Psalm 14"]}, {"m": ["Psalm 18"], "e": ["Psalm 18"]}, {"m": ["Psalm 16", "Psalm 17"], "e": ["Psalm 22"]}, {"m": ["Psalm 20", "Psalm 21"], "e": ["Psalm 110", "Psalm 116", "Psalm 117"]}], [{"m": ["Psalm 148", "Psalm 149", "Psalm 150"], "e": ["Psalm 114", "Psalm 115"]}, {"m": ["Psalm 25"], "e": ["Psalm 9", "Psalm 15"]}, {"m": ["Psalm 26", "Psalm 28"], "e": ["Psalm 36", "Psalm 39"]}, {"m": ["Psalm 38"], "e": ["Psalm 119"]}, {"m": ["Psalm 37"], "e": ["Psalm 37"]}, {"m": ["Psalm 31"], "e": ["Psalm 35"]}, {"m": ["Psalm 30", "Psalm 32"], "e": ["Psalm 42", "Psalm 43"]}], [{"m": ["Psalm 63", "Psalm 98"], "e": ["Psalm 103"]}, {"m": ["Psalm 41", "Psalm 52"], "e": ["Psalm 44"]}, {"m": ["Psalm 45"], "e": ["Psalm 47", "Psalm 48"]}, {"m": ["Psalm 119"], "e": ["Psalm 49", "Psalm 53"]}, {"m": ["Psalm 50"], "e": ["Psalm 59", "Psalm 60"]}, {"m": ["Psalm 40", "Psalm 54"], "e": ["Psalm 51"]}, {"m": ["Psalm 55"], "e": ["Psalm 138", "Psalm 139"]}], [{"m": ["Psalm 24", "Psalm 29"], "e": ["Psalm 8", "Psalm 84"]}, {"m": ["Psalm 56", "Psalm 57"], "e": ["Psalm 64", "Psalm 65"]}, {"m": ["Psalm 61", "Psalm 62"], "e": ["Psalm 68"]}, {"m": ["Psalm 72"], "e": ["Psalm 119"]}, {"m": ["Psalm 70", "Psalm 71"], "e": ["Psalm 74"]}, {"m": ["Psalm 69"], "e": ["Psalm 73"]}, {"m": ["Psalm 75", "Psalm 76"], "e": ["Psalm 23", "Psalm 27"]}], [{"m": ["Psalm 93", "Psalm 96"], "e": ["Psalm 34"]}, {"m": ["Psalm 80"], "e": ["Psalm 77", "Psalm 79"]}, {"m": ["Psalm 78"], "e": ["Psalm 78"]}, {"m": ["Psalm 119"], "e": ["Psalm 81", "Psalm 82"]}, {"m": ["Psalm 83", "Psalm 85"], "e": ["Psalm 86"]}, {"m": ["Psalm 88"], "e": ["Psalm 91", "Psalm 92"]}, {"m": ["Psalm 87", "Psalm 90"], "e": ["Psalm 136"]}], [{"m": ["Psalm 66", "Psalm 67"], "e": ["Psalm 19", "Psalm 46"]}, {"m": ["Psalm 89"], "e": ["Psalm 89"]}, {"m": ["Psalm 97", "Psalm 99", "Psalm 100"], "e": ["Psalm 94"]}, {"m": ["Psalm 101", "Psalm 109"], "e": ["Psalm 119"]}, {"m": ["Psalm 105"], "e": ["Psalm 105"]}, {"m": ["Psalm 102"], "e": ["Psalm 107"]}, {"m": ["Psalm 107", "Psalm 108"], "e": ["Psalm 33"]}], [{"m": ["Psalm 118"], "e": ["Psalm 145"]}, {"m": ["Psalm 106"], "e": ["Psalm 106"]}, {"m": ["Psalm 120", "Psalm 121", "Psalm 122", "Psalm 123"], "e": ["Psalm 124", "Psalm 125", "Psalm 126", "Psalm 127"]}, {"m": ["Psalm 119"], "e": ["Psalm 128", "Psalm 129", "Psalm 130"]}, {"m": ["Psalm 131", "Psalm 132", "Psalm 133"], "e": ["Psalm 134", "Psalm 135"]}, {"m": ["Psalm 140", "Psalm 142"], "e": ["Psalm 141", "Psalm 143"]}, {"m": ["Psalm 137", "Psalm 144"], "e": ["Psalm 104"]}]];
+    const BAS_7_WEEK_PSALM_CYCLE = [[{"m": ["Psalm 146", "Psalm 147"], "e": ["Psalm 111", "Psalm 112", "Psalm 113"]}, {"m": ["Psalm 1", "Psalm 2", "Psalm 3"], "e": ["Psalm 4", "Psalm 7"]}, {"m": ["Psalm 5", "Psalm 6"], "e": ["Psalm 10", "Psalm 11"]}, {"m": ["Psalm 119:1-24"], "e": ["Psalm 12", "Psalm 13", "Psalm 14"]}, {"m": ["Psalm 18:1-20"], "e": ["Psalm 18:21-50"]}, {"m": ["Psalm 16", "Psalm 17"], "e": ["Psalm 22"]}, {"m": ["Psalm 20", "Psalm 21"], "e": ["Psalm 110", "Psalm 116", "Psalm 117"]}], [{"m": ["Psalm 148", "Psalm 149", "Psalm 150"], "e": ["Psalm 114", "Psalm 115"]}, {"m": ["Psalm 25"], "e": ["Psalm 9", "Psalm 15"]}, {"m": ["Psalm 26", "Psalm 28"], "e": ["Psalm 36", "Psalm 39"]}, {"m": ["Psalm 38"], "e": ["Psalm 119:25-48"]}, {"m": ["Psalm 37:1-18"], "e": ["Psalm 37:19-42"]}, {"m": ["Psalm 31"], "e": ["Psalm 35"]}, {"m": ["Psalm 30", "Psalm 32"], "e": ["Psalm 42", "Psalm 43"]}], [{"m": ["Psalm 63", "Psalm 98"], "e": ["Psalm 103"]}, {"m": ["Psalm 41", "Psalm 52"], "e": ["Psalm 44"]}, {"m": ["Psalm 45"], "e": ["Psalm 47", "Psalm 48"]}, {"m": ["Psalm 119:49-72"], "e": ["Psalm 49", "Psalm 53"]}, {"m": ["Psalm 50"], "e": ["Psalm 59", "Psalm 60"]}, {"m": ["Psalm 40", "Psalm 54"], "e": ["Psalm 51"]}, {"m": ["Psalm 55"], "e": ["Psalm 138", "Psalm 139"]}], [{"m": ["Psalm 24", "Psalm 29"], "e": ["Psalm 8", "Psalm 84"]}, {"m": ["Psalm 56", "Psalm 57"], "e": ["Psalm 64", "Psalm 65"]}, {"m": ["Psalm 61", "Psalm 62"], "e": ["Psalm 68:1-20, 24-36"]}, {"m": ["Psalm 72"], "e": ["Psalm 119:73-96"]}, {"m": ["Psalm 70", "Psalm 71"], "e": ["Psalm 74"]}, {"m": ["Psalm 69:1-23, 30-36"], "e": ["Psalm 73"]}, {"m": ["Psalm 75", "Psalm 76"], "e": ["Psalm 23", "Psalm 27"]}], [{"m": ["Psalm 93", "Psalm 96"], "e": ["Psalm 34"]}, {"m": ["Psalm 80"], "e": ["Psalm 77", "Psalm 79"]}, {"m": ["Psalm 78:1-39"], "e": ["Psalm 78:40-72"]}, {"m": ["Psalm 119:97-120"], "e": ["Psalm 81", "Psalm 82"]}, {"m": ["Psalm 83", "Psalm 85"], "e": ["Psalm 86"]}, {"m": ["Psalm 88"], "e": ["Psalm 91", "Psalm 92"]}, {"m": ["Psalm 87", "Psalm 90"], "e": ["Psalm 136"]}], [{"m": ["Psalm 66", "Psalm 67"], "e": ["Psalm 19", "Psalm 46"]}, {"m": ["Psalm 89:1-18"], "e": ["Psalm 89:19-52"]}, {"m": ["Psalm 97", "Psalm 99", "Psalm 100"], "e": ["Psalm 94"]}, {"m": ["Psalm 101", "Psalm 109:1-4, 20-30"], "e": ["Psalm 119:121-144"]}, {"m": ["Psalm 105:1-22"], "e": ["Psalm 105:23-45"]}, {"m": ["Psalm 102"], "e": ["Psalm 107:1-32"]}, {"m": ["Psalm 107:33-43", "Psalm 108"], "e": ["Psalm 33"]}], [{"m": ["Psalm 118"], "e": ["Psalm 145"]}, {"m": ["Psalm 106:1-18"], "e": ["Psalm 106:19-48"]}, {"m": ["Psalm 120", "Psalm 121", "Psalm 122", "Psalm 123"], "e": ["Psalm 124", "Psalm 125", "Psalm 126", "Psalm 127"]}, {"m": ["Psalm 119:145-176"], "e": ["Psalm 128", "Psalm 129", "Psalm 130"]}, {"m": ["Psalm 131", "Psalm 132", "Psalm 133"], "e": ["Psalm 134", "Psalm 135"]}, {"m": ["Psalm 140", "Psalm 142"], "e": ["Psalm 141", "Psalm 143"]}, {"m": ["Psalm 137", "Psalm 144"], "e": ["Psalm 104"]}]];
 
-    const LECTIONARY_WEEKS = {
-      "ordinary-1": [
-        { ot: "Micah 6:1-8", epistle: "1 Corinthians 1:1-17", gospel: "Matthew 10:1-15" },
-        { ot: "Micah 7:1-7", epistle: "1 Corinthians 1:18-31", gospel: "Matthew 10:16-23" },
-        { ot: "Habakkuk 1:1-11", epistle: "1 Corinthians 2:1-16", gospel: "Matthew 10:24-33" },
-        { ot: "Habakkuk 2:1-4, 9-20", epistle: "1 Corinthians 3:1-23", gospel: "Matthew 10:34-42" },
-        { ot: "Habakkuk 3:1-19", epistle: "1 Corinthians 4:1-16", gospel: "Matthew 11:1-6" },
-        { ot: "Zephaniah 1:1-18", epistle: "1 Corinthians 4:17-5:13", gospel: "Matthew 11:7-15" },
-        { ot: "Zephaniah 2:1-15", epistle: "1 Corinthians 6:1-11", gospel: "Matthew 11:16-24" }
+    const BCP_ODD_MONTH_TABLE = {"1": {"m": ["Psalm 1", "Psalm 2", "Psalm 3"], "e": ["Psalm 4", "Psalm 5"]}, "2": {"m": ["Psalm 9"], "e": ["Psalm 10"]}, "3": {"m": ["Psalm 15", "Psalm 16"], "e": ["Psalm 17"]}, "4": {"m": ["Psalm 19"], "e": ["Psalm 20", "Psalm 21"]}, "5": {"m": ["Psalm 24", "Psalm 26"], "e": ["Psalm 25"]}, "6": {"m": ["Psalm 30", "Psalm 32"], "e": ["Psalm 31"]}, "7": {"m": ["Psalm 35"], "e": ["Psalm 36"]}, "8": {"m": ["Psalm 38"], "e": ["Psalm 39", "Psalm 41"]}, "9": {"m": ["Psalm 44"], "e": ["Psalm 45"]}, "10": {"m": ["Psalm 50"], "e": ["Psalm 51", "Psalm 52"]}, "11": {"m": ["Psalm 56"], "e": ["Psalm 57"]}, "12": {"m": ["Psalm 63", "Psalm 67"], "e": ["Psalm 62", "Psalm 64"]}, "13": {"m": ["Psalm 68"], "e": ["Psalm 68"]}, "14": {"m": ["Psalm 71"], "e": ["Psalm 72"]}, "15": {"m": ["Psalm 75", "Psalm 76"], "e": ["Psalm 77"]}, "16": {"m": ["Psalm 79", "Psalm 80"], "e": ["Psalm 81"]}, "17": {"m": ["Psalm 86", "Psalm 87"], "e": ["Psalm 88"]}, "18": {"m": ["Psalm 90"], "e": ["Psalm 91"]}, "19": {"m": ["Psalm 95", "Psalm 96"], "e": ["Psalm 97"]}, "20": {"m": ["Psalm 102"], "e": ["Psalm 103"]}, "21": {"m": ["Psalm 105"], "e": ["Psalm 105"]}, "22": {"m": ["Psalm 107"], "e": ["Psalm 107"]}, "23": {"m": ["Psalm 110", "Psalm 111"], "e": ["Psalm 112", "Psalm 113"]}, "24": {"m": ["Psalm 118"], "e": ["Psalm 119"]}, "25": {"m": ["Psalm 119"], "e": ["Psalm 119"]}, "26": {"m": ["Psalm 119"], "e": ["Psalm 119"]}, "27": {"m": ["Psalm 120", "Psalm 121", "Psalm 122"], "e": ["Psalm 123", "Psalm 124", "Psalm 125"]}, "28": {"m": ["Psalm 132", "Psalm 133"], "e": ["Psalm 134", "Psalm 135"]}, "29": {"m": ["Psalm 139"], "e": ["Psalm 140"]}, "30": {"m": ["Psalm 145"], "e": ["Psalm 144", "Psalm 146"]}, "31": {"m": ["Psalm 147"], "e": ["Psalm 148", "Psalm 149", "Psalm 150"]}};
+    const BCP_EVEN_MONTH_TABLE = {"1": {"m": ["Psalm 6", "Psalm 8"], "e": ["Psalm 7"]}, "2": {"m": ["Psalm 11", "Psalm 12"], "e": ["Psalm 13", "Psalm 14"]}, "3": {"m": ["Psalm 18"], "e": ["Psalm 18"]}, "4": {"m": ["Psalm 22"], "e": ["Psalm 22", "Psalm 23"]}, "5": {"m": ["Psalm 28", "Psalm 29"], "e": ["Psalm 27"]}, "6": {"m": ["Psalm 33"], "e": ["Psalm 34"]}, "7": {"m": ["Psalm 37"], "e": ["Psalm 37"]}, "8": {"m": ["Psalm 40"], "e": ["Psalm 42", "Psalm 43"]}, "9": {"m": ["Psalm 46", "Psalm 47"], "e": ["Psalm 48", "Psalm 49"]}, "10": {"m": ["Psalm 53", "Psalm 54"], "e": ["Psalm 55"]}, "11": {"m": ["Psalm 59"], "e": ["Psalm 60", "Psalm 61"]}, "12": {"m": ["Psalm 65"], "e": ["Psalm 66"]}, "13": {"m": ["Psalm 69"], "e": ["Psalm 71"]}, "14": {"m": ["Psalm 73"], "e": ["Psalm 74"]}, "15": {"m": ["Psalm 78"], "e": ["Psalm 78"]}, "16": {"m": ["Psalm 82", "Psalm 83"], "e": ["Psalm 84", "Psalm 85"]}, "17": {"m": ["Psalm 89"], "e": ["Psalm 89"]}, "18": {"m": ["Psalm 92", "Psalm 93"], "e": ["Psalm 94"]}, "19": {"m": ["Psalm 98", "Psalm 99"], "e": ["Psalm 100", "Psalm 101"]}, "20": {"m": ["Psalm 103"], "e": ["Psalm 104"]}, "21": {"m": ["Psalm 106"], "e": ["Psalm 106"]}, "22": {"m": ["Psalm 108"], "e": ["Psalm 109"]}, "23": {"m": ["Psalm 114", "Psalm 115"], "e": ["Psalm 116", "Psalm 117"]}, "24": {"m": ["Psalm 119"], "e": ["Psalm 119"]}, "25": {"m": ["Psalm 119"], "e": ["Psalm 119"]}, "26": {"m": ["Psalm 119"], "e": ["Psalm 119"]}, "27": {"m": ["Psalm 126", "Psalm 127", "Psalm 128"], "e": ["Psalm 129", "Psalm 130", "Psalm 131"]}, "28": {"m": ["Psalm 136"], "e": ["Psalm 137", "Psalm 138"]}, "29": {"m": ["Psalm 141"], "e": ["Psalm 142", "Psalm 143"]}, "30": {"m": ["Psalm 144", "Psalm 146"], "e": ["Psalm 145"]}, "31": {"m": ["Psalm 148", "Psalm 149", "Psalm 150"], "e": ["Psalm 147"]}};
+    const BCP_TRINITY_SUNDAY_PSALMS = {"0": {"m": ["Psalm 92", "Psalm 93"], "e": ["Psalm 146", "Psalm 150"]}, "1": {"m": ["Psalm 1", "Psalm 5"], "e": ["Psalm 4", "Psalm 6"]}, "2": {"m": ["Psalm 7", "Psalm 8"], "e": ["Psalm 15", "Psalm 16"]}, "3": {"m": ["Psalm 26"], "e": ["Psalm 19", "Psalm 20"]}, "4": {"m": ["Psalm 18"], "e": ["Psalm 18"]}, "5": {"m": ["Psalm 28", "Psalm 29"], "e": ["Psalm 30", "Psalm 32"]}, "6": {"m": ["Psalm 34"], "e": ["Psalm 31"]}, "7": {"m": ["Psalm 37"], "e": ["Psalm 37"]}, "8": {"m": ["Psalm 39", "Psalm 41"], "e": ["Psalm 40"]}, "9": {"m": ["Psalm 44"], "e": ["Psalm 46", "Psalm 47"]}, "10": {"m": ["Psalm 50"], "e": ["Psalm 51"]}, "11": {"m": ["Psalm 65", "Psalm 67"], "e": ["Psalm 68"]}, "12": {"m": ["Psalm 69"], "e": ["Psalm 71"]}, "13": {"m": ["Psalm 72"], "e": ["Psalm 74"]}, "14": {"m": ["Psalm 78"], "e": ["Psalm 78"]}, "15": {"m": ["Psalm 79"], "e": ["Psalm 84", "Psalm 85"]}, "16": {"m": ["Psalm 90"], "e": ["Psalm 91"]}, "17": {"m": ["Psalm 119"], "e": ["Psalm 102"]}, "18": {"m": ["Psalm 105"], "e": ["Psalm 105"]}, "19": {"m": ["Psalm 106"], "e": ["Psalm 106"]}, "20": {"m": ["Psalm 107"], "e": ["Psalm 107", "Psalm 108"]}, "21": {"m": ["Psalm 147"], "e": ["Psalm 116", "Psalm 117"]}, "22": {"m": ["Psalm 118"], "e": ["Psalm 121", "Psalm 122", "Psalm 123"]}, "23": {"m": ["Psalm 137", "Psalm 138"], "e": ["Psalm 103"]}, "24": {"m": ["Psalm 143"], "e": ["Psalm 145"]}};
+
+    // Official BAS Daily Office Lectionary Readings (Year Two & Year One)
+    const BAS_PROPER_READINGS = {
+      28: [ // Week of Proper 28 (Oct 9–15)
+        { ot: "Micah 6:1-8", epistle: "1 Corinthians 4:9-16", gospel: "Matthew 18:15-20" },
+        { ot: "Jeremiah 36:1-10", epistle: "1 Corinthians 13:1-13", gospel: "Matthew 10:5-15" },
+        { ot: "Jeremiah 36:11-26", epistle: "1 Corinthians 14:1-12", gospel: "Matthew 10:16-23" },
+        { ot: "Jeremiah 36:27-37:2", epistle: "1 Corinthians 14:13-25", gospel: "Matthew 10:24-33" },
+        { ot: "Jeremiah 37:3-21", epistle: "1 Corinthians 14:26-40", gospel: "Matthew 10:34-42" },
+        { ot: "Jeremiah 38:1-13", epistle: "1 Corinthians 15:1-11", gospel: "Matthew 11:1-6" },
+        { ot: "Jeremiah 38:14-28", epistle: "1 Corinthians 15:12-29", gospel: "Matthew 11:7-15" }
       ],
-      "ordinary-2": [
-        { ot: "Zephaniah 3:14-20", epistle: "1 Corinthians 6:12-20", gospel: "Matthew 11:25-30" },
-        { ot: "Haggai 1:1-15", epistle: "1 Corinthians 7:1-9", gospel: "Matthew 12:1-14" },
-        { ot: "Haggai 2:1-9", epistle: "1 Corinthians 7:10-24", gospel: "Matthew 12:15-21" },
-        { ot: "Haggai 2:10-23", epistle: "1 Corinthians 7:25-40", gospel: "Matthew 12:22-32" },
-        { ot: "Zechariah 1:1-17", epistle: "1 Corinthians 8:1-13", gospel: "Matthew 12:33-42" },
-        { ot: "Zechariah 2:1-13", epistle: "1 Corinthians 9:1-15", gospel: "Matthew 12:43-50" },
-        { ot: "Zechariah 3:1-10", epistle: "1 Corinthians 9:16-27", gospel: "Matthew 13:1-17" }
+      29: [ // Week of Proper 29 (Oct 16–22)
+        { ot: "Sirach 4:1-10", epistle: "1 Corinthians 10:1-13", gospel: "Matthew 18:21-35" },
+        { ot: "Sirach 4:20-5:7", epistle: "Revelation 7:1-8", gospel: "Luke 9:51-62" },
+        { ot: "Sirach 6:5-17", epistle: "Revelation 7:9-17", gospel: "Luke 10:1-16" },
+        { ot: "Sirach 7:4-14", epistle: "Revelation 8:1-13", gospel: "Luke 10:17-24" },
+        { ot: "Sirach 10:1-18", epistle: "Revelation 9:1-12", gospel: "Luke 10:25-37" },
+        { ot: "Sirach 11:2-20", epistle: "Revelation 9:13-21", gospel: "Luke 10:38-42" },
+        { ot: "Sirach 15:9-20", epistle: "Revelation 10:1-11", gospel: "Luke 11:1-13" }
       ],
-      "ordinary-3": [
-        { ot: "Jeremiah 31:27-34", epistle: "2 Timothy 3:14-4:5", gospel: "Luke 18:1-8" },
-        { ot: "Jeremiah 32:1-15", epistle: "Titus 1:1-16", gospel: "Luke 18:9-14" },
-        { ot: "Jeremiah 33:1-13", epistle: "Titus 2:1-15", gospel: "Luke 18:15-30" },
-        { ot: "Jeremiah 33:14-26", epistle: "Titus 3:1-15", gospel: "Luke 18:31-43" },
-        { ot: "Sirach 35:1-11", epistle: "Galatians 1:1-17", gospel: "Luke 19:1-10" },
-        { ot: "Sirach 35:12-17", epistle: "Galatians 1:18-2:10", gospel: "Luke 19:11-27" },
-        { ot: "Proverbs 3:1-12", epistle: "Galatians 2:11-21", gospel: "Luke 19:28-40" }
+      30: [ // Week of Proper 30 (Oct 23–29)
+        { ot: "Sirach 18:1-14", epistle: "2 Timothy 2:1-7", gospel: "Luke 18:9-14" },
+        { ot: "Sirach 19:4-17", epistle: "Revelation 11:1-14", gospel: "Luke 11:14-26" },
+        { ot: "Sirach 24:1-12", epistle: "Revelation 11:14-19", gospel: "Luke 11:27-36" },
+        { ot: "Sirach 28:14-26", epistle: "Revelation 12:1-6", gospel: "Luke 11:37-52" },
+        { ot: "Sirach 31:12-18, 25-32:2", epistle: "Revelation 12:7-17", gospel: "Luke 11:53-12:12" },
+        { ot: "Sirach 34:1-8, 18-22", epistle: "Revelation 13:1-10", gospel: "Luke 12:13-31" },
+        { ot: "Sirach 35:1-17", epistle: "Revelation 13:11-18", gospel: "Luke 12:32-48" }
       ],
-      "ordinary-4": [
-        { ot: "Isaiah 65:17-25", epistle: "2 Thessalonians 3:6-13", gospel: "Luke 21:5-19" },
-        { ot: "Malachi 1:1-14", epistle: "James 1:1-15", gospel: "Luke 19:41-48" },
-        { ot: "Malachi 2:1-16", epistle: "James 1:16-27", gospel: "Luke 20:1-8" },
-        { ot: "Malachi 3:1-12", epistle: "James 2:1-13", gospel: "Luke 20:9-19" },
-        { ot: "Malachi 3:13-4:6", epistle: "James 2:14-26", gospel: "Luke 20:20-26" },
-        { ot: "Daniel 7:1-14", epistle: "James 3:1-12", gospel: "Luke 20:27-40" },
-        { ot: "Daniel 7:15-27", epistle: "James 3:13-4:10", gospel: "Luke 20:41-21:4" }
+      31: [ // Week of Proper 31 (Oct 30–Nov 5)
+        { ot: "Sirach 36:1-17", epistle: "1 Corinthians 12:27-13:13", gospel: "Luke 18:31-43" },
+        { ot: "Sirach 38:24-34", epistle: "Revelation 14:1-13", gospel: "Luke 12:49-59" },
+        { ot: "Sirach 39:1-10", epistle: "Revelation 14:14-15:8", gospel: "Luke 13:1-9" },
+        { ot: "Sirach 42:15-25", epistle: "Revelation 16:1-11", gospel: "Luke 13:10-17" },
+        { ot: "Sirach 43:1-22", epistle: "Revelation 16:12-21", gospel: "Luke 13:18-30" },
+        { ot: "Sirach 43:23-33", epistle: "Revelation 17:1-18", gospel: "Luke 13:31-35" },
+        { ot: "Sirach 44:1-15", epistle: "Revelation 18:1-14", gospel: "Luke 14:1-11" }
+      ],
+      32: [ // Week of Proper 32 (Nov 6–12)
+        { ot: "Sirach 51:1-12", epistle: "2 Corinthians 5:1-10", gospel: "Luke 19:1-10" },
+        { ot: "Joel 1:1-14", epistle: "Revelation 18:15-24", gospel: "Luke 14:12-24" },
+        { ot: "Joel 1:15-2:2, 10-11", epistle: "Revelation 19:1-10", gospel: "Luke 14:25-35" },
+        { ot: "Joel 2:12-19", epistle: "Revelation 19:11-21", gospel: "Luke 15:1-10" },
+        { ot: "Joel 2:21-27", epistle: "James 1:1-15", gospel: "Luke 15:1-2, 11-32" },
+        { ot: "Joel 2:28-3:8", epistle: "James 1:16-27", gospel: "Luke 16:1-9" },
+        { ot: "Joel 3:9-17", epistle: "James 2:1-13", gospel: "Luke 16:10-18" }
+      ],
+      33: [ // Week of Proper 33 (Nov 13–19)
+        { ot: "Habakkuk 1:1-4; 2:1-4", epistle: "2 Thessalonians 1:1-12", gospel: "Luke 19:11-27" },
+        { ot: "Habakkuk 1:5-17", epistle: "James 2:14-26", gospel: "Luke 16:19-31" },
+        { ot: "Habakkuk 3:1-18", epistle: "James 3:1-12", gospel: "Luke 17:1-10" },
+        { ot: "Malachi 1:1, 6-14", epistle: "James 3:13-4:12", gospel: "Luke 17:11-19" },
+        { ot: "Malachi 2:1-16", epistle: "James 4:13-5:6", gospel: "Luke 17:20-37" },
+        { ot: "Malachi 3:1-12", epistle: "James 5:7-12", gospel: "Luke 18:1-8" },
+        { ot: "Malachi 3:13-4:6", epistle: "James 5:13-20", gospel: "Luke 18:9-14" }
+      ],
+      34: [ // Week of Proper 34 / The Reign of Christ (Nov 20–26)
+        { ot: "Daniel 7:9-14", epistle: "Revelation 1:1-8", gospel: "John 18:33-37" },
+        { ot: "Zechariah 10:1-12", epistle: "Galatians 6:1-10", gospel: "Luke 18:15-30" },
+        { ot: "Zechariah 11:4-17", epistle: "1 Corinthians 3:10-23", gospel: "Luke 18:31-43" },
+        { ot: "Zechariah 12:1-10", epistle: "Ephesians 1:3-14", gospel: "Luke 19:1-10" },
+        { ot: "Zechariah 13:1-9", epistle: "Ephesians 1:15-23", gospel: "Luke 19:11-27" },
+        { ot: "Zechariah 14:1-11", epistle: "Romans 15:7-13", gospel: "Luke 19:28-40" },
+        { ot: "Zechariah 14:12-21", epistle: "Philippians 2:1-11", gospel: "Luke 19:41-48" }
       ]
     };
 
     const SPECIAL_FEAST_READINGS = {
-      "10-18": { ot: "Sirach 38:1-4, 6-10, 12-14", epistle: "2 Timothy 4:5-13", gospel: "Luke 4:14-21", mPsalms: ["Psalm 145", "Psalm 146"], ePsalms: ["Psalm 103"] },
-      "11-01": { ot: "Daniel 7:1-3, 15-18", epistle: "Ephesians 1:11-23", gospel: "Luke 6:20-31", mPsalms: ["Psalm 111", "Psalm 112"], ePsalms: ["Psalm 148", "Psalm 150"] },
-      "12-25": { ot: "Isaiah 9:2-7", epistle: "Titus 2:11-14", gospel: "Luke 2:1-20", mPsalms: ["Psalm 2", "Psalm 85"], ePsalms: ["Psalm 110", "Psalm 132"] },
-      "01-06": { ot: "Isaiah 60:1-6", epistle: "Ephesians 3:1-12", gospel: "Matthew 2:1-12", mPsalms: ["Psalm 46", "Psalm 97"], ePsalms: ["Psalm 96", "Psalm 100"] }
+      "11-01": { ot: "Daniel 7:1-3, 15-18", epistle: "Ephesians 1:11-23", gospel: "Luke 6:20-31", basMPsalms: ["Psalm 111", "Psalm 112"], basEPsalms: ["Psalm 148", "Psalm 150"], bcpMPsalms: ["Psalm 1", "Psalm 15", "Psalm 112"], bcpEPsalms: ["Psalm 146", "Psalm 149"] },
+      "12-25": { ot: "Isaiah 9:2-7", epistle: "Titus 2:11-14", gospel: "Luke 2:1-20", basMPsalms: ["Psalm 2", "Psalm 85"], basEPsalms: ["Psalm 110", "Psalm 132"], bcpMPsalms: ["Psalm 45"], bcpEPsalms: ["Psalm 85", "Psalm 110"] },
+      "01-06": { ot: "Isaiah 60:1-6", epistle: "Ephesians 3:1-12", gospel: "Matthew 2:1-12", basMPsalms: ["Psalm 46", "Psalm 97"], basEPsalms: ["Psalm 96", "Psalm 100"], bcpMPsalms: ["Psalm 87", "Psalm 93"], bcpEPsalms: ["Psalm 72"] }
     };
 
     function getAppointedPsalms(date, lit) {
-      // Principal Feasts have Proper Psalms in both BAS and BCP
+      // 1. When BCP 1962 is selected -> Strictly follow the BCP Psalter Table
+      if (currentBookMode === 'bcp') {
+        if (bcpTableMode === 'table1962') {
+          // Check Sundays & Holy Days Table (BCP p. xlvi) first, then Ordinary Weekdays Table (BCP p. lv)
+          if (SPECIAL_FEAST_READINGS[lit.md]) {
+            return {
+              mPsalms: SPECIAL_FEAST_READINGS[lit.md].bcpMPsalms,
+              ePsalms: SPECIAL_FEAST_READINGS[lit.md].bcpEPsalms,
+              scheduleLabel: `BCP Table of Proper Psalms • ${lit.bcpFeastName || lit.feastName}`
+            };
+          }
+          if (lit.dow === 0 && lit.trinityWeekNum !== null && BCP_TRINITY_SUNDAY_PSALMS[lit.trinityWeekNum]) {
+            const tEntry = BCP_TRINITY_SUNDAY_PSALMS[lit.trinityWeekNum];
+            return {
+              mPsalms: tEntry.m,
+              ePsalms: tEntry.e,
+              scheduleLabel: `BCP Sunday Psalter Table • Trinity ${lit.trinityWeekNum}`
+            };
+          }
+          const monthNum = date.getMonth() + 1; // 1..12
+          const domActual = date.getDate(); // 1..31
+          const isOddMonth = (monthNum % 2 === 1);
+          const wkTable = isOddMonth ? BCP_ODD_MONTH_TABLE : BCP_EVEN_MONTH_TABLE;
+          const dayEntry = wkTable[domActual] || wkTable[30];
+          const monthGroup = isOddMonth ? "Jan/Mar/May/Jul/Sep/Nov" : "Feb/Apr/Jun/Aug/Oct/Dec";
+          return {
+            mPsalms: dayEntry.m,
+            ePsalms: dayEntry.e,
+            scheduleLabel: `BCP Weekday Table (${monthGroup}) • Day ${domActual}`
+          };
+        } else {
+          // Standard BCP 30-Day Monthly Psalter Table (Day 1 to Day 30)
+          const dom = Math.min(date.getDate(), 30); // Day 30 is used on the 30th and 31st in the 30-day course
+          const dayEntry = BCP_30_DAY_CYCLE[dom] || BCP_30_DAY_CYCLE[15];
+          return {
+            mPsalms: dayEntry.m,
+            ePsalms: dayEntry.e,
+            scheduleLabel: `BCP 30-Day Psalter Table • Day ${dom}`
+          };
+        }
+      }
+
+      // 2. When BAS is selected -> Strictly follow the BAS Daily Office Lectionary (BAS pp. 455–496)
       if (SPECIAL_FEAST_READINGS[lit.md]) {
         return {
-          mPsalms: SPECIAL_FEAST_READINGS[lit.md].mPsalms,
-          ePsalms: SPECIAL_FEAST_READINGS[lit.md].ePsalms,
-          scheduleLabel: "Proper Psalms for the Feast"
+          mPsalms: SPECIAL_FEAST_READINGS[lit.md].basMPsalms,
+          ePsalms: SPECIAL_FEAST_READINGS[lit.md].basEPsalms,
+          scheduleLabel: `BAS Daily Office Lectionary • ${lit.feastName}`
         };
       }
       if (lit.feastName === "Ash Wednesday") {
         return {
-          mPsalms: ["Psalm 6", "Psalm 32", "Psalm 38"],
-          ePsalms: ["Psalm 51", "Psalm 102", "Psalm 130"],
-          scheduleLabel: "Proper Psalms for Ash Wednesday"
+          mPsalms: ["Psalm 95", "Psalm 32", "Psalm 143"],
+          ePsalms: ["Psalm 102", "Psalm 130"],
+          scheduleLabel: "BAS Daily Office Lectionary • Ash Wednesday"
         };
       }
       if (lit.feastName.startsWith("Easter Day")) {
         return {
-          mPsalms: ["Psalm 2", "Psalm 57", "Psalm 111"],
-          ePsalms: ["Psalm 113", "Psalm 114", "Psalm 118"],
-          scheduleLabel: "Proper Psalms for Easter Day"
+          mPsalms: ["Psalm 114", "Psalm 118"],
+          ePsalms: ["Psalm 113", "Psalm 117"],
+          scheduleLabel: "BAS Daily Office Lectionary • Easter Day"
         };
       }
       if (lit.feastName === "The Day of Pentecost") {
         return {
-          mPsalms: ["Psalm 48", "Psalm 68"],
-          ePsalms: ["Psalm 104", "Psalm 145"],
-          scheduleLabel: "Proper Psalms for Pentecost"
+          mPsalms: ["Psalm 118"],
+          ePsalms: ["Psalm 145"],
+          scheduleLabel: "BAS Daily Office Lectionary • Day of Pentecost"
+        };
+      }
+      if (lit.season === "Holy Week") {
+        const hwPsalms = [
+          { m: ["Psalm 24", "Psalm 29"], e: ["Psalm 103"] },      // Palm Sunday
+          { m: ["Psalm 51"], e: ["Psalm 69"] },                   // Monday
+          { m: ["Psalm 6", "Psalm 12"], e: ["Psalm 94"] },        // Tuesday
+          { m: ["Psalm 55"], e: ["Psalm 74"] },                   // Wednesday
+          { m: ["Psalm 102"], e: ["Psalm 142", "Psalm 143"] },    // Maundy Thursday
+          { m: ["Psalm 22"], e: ["Psalm 40", "Psalm 54"] },       // Good Friday
+          { m: ["Psalm 95", "Psalm 88"], e: ["Psalm 27"] }        // Holy Saturday
+        ];
+        const hw = hwPsalms[lit.dow];
+        return {
+          mPsalms: hw.m,
+          ePsalms: hw.e,
+          scheduleLabel: `BAS Daily Office Lectionary • ${lit.feastName}`
         };
       }
 
-      // Determine whether to use BCP 30-Day Monthly Cycle or BAS 7-Week Lectionary Cycle
-      const use30Day = (currentPsalmSchedule === 'bcp30') || (currentPsalmSchedule === 'auto' && currentBookMode === 'bcp');
-
-      if (use30Day) {
-        const dom = Math.min(date.getDate(), 30); // Day 30 is used on the 30th and 31st
-        const dayEntry = BCP_30_DAY_CYCLE[dom] || BCP_30_DAY_CYCLE[15];
-        return {
-          mPsalms: dayEntry.m,
-          ePsalms: dayEntry.e,
-          scheduleLabel: `30-Day Psalter Cycle • Day ${dom}`
-        };
-      } else {
-        // Official BAS 7-Week Daily Office Lectionary Cycle
-        const year = date.getFullYear();
-        const pentecost = addDays(calculateEasterSunday(year), 49);
-        const diffDays = daysBetween(pentecost, date);
-        let weekNum;
-        if (diffDays >= 0) {
-          // Aligns Proper 28 (Week of Oct 11-17, 2026) with BAS Week 1 (where Thursday Morning is Psalm 18)
-          const sunAfterPentecost = Math.floor(diffDays / 7) + 1;
-          weekNum = (sunAfterPentecost - 1) % 7;
-        } else {
-          const dayOfYear = daysBetween(makeLocalDate(year, 0, 1), date);
-          weekNum = Math.floor(dayOfYear / 7) % 7;
-        }
-        const weekTable = BAS_7_WEEK_PSALM_CYCLE[weekNum] || BAS_7_WEEK_PSALM_CYCLE[0];
+      // Season after Pentecost (Propers 7–34): Exact BAS Proper Week
+      if (lit.basProper !== null) {
+        const cycleIdx = ((lit.basProper % 7) + 7) % 7;
+        const weekTable = BAS_7_WEEK_PSALM_CYCLE[cycleIdx] || BAS_7_WEEK_PSALM_CYCLE[0];
         const dayEntry = weekTable[lit.dow];
         return {
           mPsalms: dayEntry.m,
           ePsalms: dayEntry.e,
-          scheduleLabel: `BAS Daily Office Lectionary • Week ${weekNum + 1}`
+          scheduleLabel: `BAS Daily Office Lectionary • Proper ${lit.basProper}`
         };
       }
+
+      // Advent, Lent, Easter, and Season after Epiphany
+      const year = date.getFullYear();
+      let cycleIdx = 0;
+      if (lit.season === "Advent") {
+        const advent = getAdventSunday(year);
+        cycleIdx = Math.floor(daysBetween(advent, date) / 7) % 4;
+      } else if (lit.season === "Lent") {
+        const firstSunLent = addDays(calculateEasterSunday(year), -42);
+        const lentWk = Math.floor(daysBetween(firstSunLent, date) / 7) + 1;
+        cycleIdx = (lentWk <= 0) ? 1 : ((lentWk + 1) % 7);
+      } else {
+        const dayOfYear = daysBetween(makeLocalDate(year, 0, 1), date);
+        cycleIdx = Math.floor(dayOfYear / 7) % 7;
+      }
+      const weekTable = BAS_7_WEEK_PSALM_CYCLE[cycleIdx] || BAS_7_WEEK_PSALM_CYCLE[0];
+      const dayEntry = weekTable[lit.dow];
+      return {
+        mPsalms: dayEntry.m,
+        ePsalms: dayEntry.e,
+        scheduleLabel: `BAS Daily Office Lectionary • ${lit.season}`
+      };
     }
 
     function getDailyLectionaryCitations(date, lit) {
@@ -744,11 +858,25 @@
         return { ot: "Acts 2:1-21", epistle: "Romans 8:14-17", gospel: "John 14:8-17", mPsalms: psalmInfo.mPsalms, ePsalms: psalmInfo.ePsalms, scheduleLabel: psalmInfo.scheduleLabel };
       }
 
+      // If in a known BAS Proper week (Propers 28–34), use the exact BAS Daily Office Lectionary readings
+      if (lit.basProper && BAS_PROPER_READINGS[lit.basProper]) {
+        const entry = BAS_PROPER_READINGS[lit.basProper][lit.dow];
+        return {
+          ot: entry.ot,
+          epistle: entry.epistle,
+          gospel: entry.gospel,
+          mPsalms: psalmInfo.mPsalms,
+          ePsalms: psalmInfo.ePsalms,
+          scheduleLabel: psalmInfo.scheduleLabel
+        };
+      }
+
+      // Fallback rotation across BAS Proper readings
+      const properKeys = [28, 29, 30, 31, 32, 33, 34];
       const dayOfYear = daysBetween(makeLocalDate(date.getFullYear(), 0, 1), date);
       const weekIndex = Math.floor(dayOfYear / 7);
-      const keys = ["ordinary-1", "ordinary-2", "ordinary-3", "ordinary-4"];
-      const key = keys[(weekIndex + (lit.cycle === "Year One" ? 2 : 0)) % keys.length];
-      const baseEntry = LECTIONARY_WEEKS[key][lit.dow];
+      const pKey = properKeys[weekIndex % properKeys.length];
+      const baseEntry = BAS_PROPER_READINGS[pKey][lit.dow];
 
       return {
         ot: baseEntry.ot,
@@ -926,14 +1054,14 @@
     let currentOffice = 'morning';
     let currentBookMode = 'bas'; // 'bas' or 'bcp'
     let currentPsalter = 'inclusive'; // 'inclusive' or 'bas1985'
-    let currentPsalmSchedule = 'auto'; // 'auto', 'bcp30', or 'bas7'
+    let bcpTableMode = 'monthly30'; // 'monthly30' (Day 1-30) or 'table1962' (BCP Tables of Psalms pp. xlvi-lv)
     let showRubrics = true;
     let fontSize = 18;
 
     try {
       if (localStorage.getItem('bas_bookMode')) currentBookMode = localStorage.getItem('bas_bookMode');
       if (localStorage.getItem('bas_psalter')) currentPsalter = localStorage.getItem('bas_psalter');
-      if (localStorage.getItem('bas_psalmSchedule')) currentPsalmSchedule = localStorage.getItem('bas_psalmSchedule');
+      if (localStorage.getItem('bcp_tableMode')) bcpTableMode = localStorage.getItem('bcp_tableMode');
       if (localStorage.getItem('bas_fontsize')) fontSize = parseInt(localStorage.getItem('bas_fontsize'));
       if (localStorage.getItem('bas_theme')) setTheme(localStorage.getItem('bas_theme'));
     } catch(e) {}
@@ -990,7 +1118,16 @@
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
       const formattedDate = currentDate.toLocaleDateString('en-CA', options);
       bannerDateTitle.textContent = formattedDate;
-      bannerFeastName.textContent = lit.feastName || lit.season;
+      if (currentBookMode === 'bcp') {
+        const dom = Math.min(currentDate.getDate(), 30);
+        bannerFeastName.textContent = lit.bcpFeastName || lit.feastName || lit.bcpSeason;
+        bannerLectionaryCycle.textContent = `Day ${dom} • BCP Psalter Table`;
+        headerSeasonSubtitle.textContent = `${lit.bcpSeason || lit.season} • ${lit.color}`;
+      } else {
+        bannerFeastName.textContent = lit.feastName || lit.season;
+        bannerLectionaryCycle.textContent = `${lit.cycle} • Daily Office Lectionary`;
+        headerSeasonSubtitle.textContent = `${lit.season} • ${lit.color}`;
+      }
       if (lit.commemoration) {
         bannerCommemoration.textContent = "Commemoration: " + lit.commemoration;
         bannerCommemoration.style.display = "block";
@@ -999,8 +1136,6 @@
         bannerCommemoration.style.display = "none";
       }
       bannerLiturgicalColorTag.textContent = lit.color;
-      bannerLectionaryCycle.textContent = `${lit.cycle} • Daily Office`;
-      headerSeasonSubtitle.textContent = `${lit.season} • ${lit.color}`;
       currentDateDisplay.textContent = currentDate.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
 
       let dotColor = '#581c87';
@@ -1047,13 +1182,28 @@
       `;
     }
 
+    function setBcpTableMode(mode) {
+      bcpTableMode = mode;
+      try { localStorage.setItem('bcp_tableMode', mode); } catch(e) {}
+      renderOffice();
+    }
+
     function renderPsalmsSection(psalmList, scheduleLabel) {
       const list = Array.isArray(psalmList) ? psalmList : [psalmList];
+      const bcpToggleHtml = (currentBookMode === 'bcp') ? `
+        <div class="inline-flex rounded-lg border border-stone-300 dark:border-stone-700 p-0.5 bg-stone-100 dark:bg-stone-800 font-sans">
+          <button onclick="setBcpTableMode('monthly30')" class="px-2 py-0.5 rounded transition ${bcpTableMode === 'monthly30' ? 'bg-purple-700 text-white font-semibold' : 'text-stone-600 dark:text-stone-300'}">30-Day Psalter</button>
+          <button onclick="setBcpTableMode('table1962')" class="px-2 py-0.5 rounded transition ${bcpTableMode === 'table1962' ? 'bg-purple-700 text-white font-semibold' : 'text-stone-600 dark:text-stone-300'}">BCP Table (p. xlvi)</button>
+        </div>
+      ` : '';
       let sectionHtml = `
         <div class="my-6">
           <div class="flex items-center justify-between flex-wrap gap-2 mb-2 pb-2 border-b border-stone-200 dark:border-stone-800">
             <span class="rubric" style="margin:0;">The Appointed Psalms: ${list.join(', ')}</span>
-            ${scheduleLabel ? `<span class="font-sans px-2.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 font-medium">${scheduleLabel}</span>` : ''}
+            <div class="flex items-center gap-2 flex-wrap">
+              ${scheduleLabel ? `<span class="font-sans px-2.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 font-medium">${scheduleLabel}</span>` : ''}
+              ${bcpToggleHtml}
+            </div>
           </div>
           ${list.map(pk => renderPsalmBlock(pk)).join('')}
         </div>
@@ -1062,7 +1212,9 @@
     }
 
     function renderPsalmBlock(psalmKey) {
-      const data = PSALMS_DATA[psalmKey] || PSALMS_DATA["Psalm 18"];
+      const baseKey = psalmKey.split(':')[0].split(',')[0].trim();
+      const rawData = PSALMS_DATA[psalmKey] || PSALMS_DATA[baseKey] || PSALMS_DATA["Psalm 18"];
+      const data = Object.assign({}, rawData, { title: psalmKey });
       let verses;
       let editionLabel;
       let gloria;
@@ -1962,7 +2114,6 @@
     document.getElementById('btnOpenSettings').addEventListener('click', () => {
       document.getElementById('settingBookMode').value = currentBookMode;
       document.getElementById('settingPsalter').value = currentPsalter;
-      document.getElementById('settingPsalmSchedule').value = currentPsalmSchedule;
       document.getElementById('fontSizeSlider').value = fontSize;
       document.getElementById('fontSizeDisplay').textContent = fontSize + 'px';
       document.getElementById('toggleRubrics').checked = showRubrics;
@@ -1989,12 +2140,7 @@
       showToast('BAS Language: ' + name);
     });
 
-    document.getElementById('settingPsalmSchedule').addEventListener('change', (e) => {
-      currentPsalmSchedule = e.target.value;
-      try { localStorage.setItem('bas_psalmSchedule', currentPsalmSchedule); } catch(err) {}
-      renderOffice();
-      showToast('Updated Psalter Schedule');
-    });
+
 
     document.querySelectorAll('.btn-theme-select').forEach(btn => {
       btn.addEventListener('click', (e) => setTheme(e.target.getAttribute('data-theme')));
