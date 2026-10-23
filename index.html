@@ -1160,7 +1160,7 @@
 
     function makeScriptureLink(citation, headingLabel) {
       const url = `https://www.biblegateway.com/passage/?search=${encodeURIComponent(citation)}&version=NRSVUE`;
-      const oremusUrl = `https://bible.oremus.org/?ql=${encodeURIComponent(citation)}`;
+      const oremusUrl = `https://bible.oremus.org/?passage=${encodeURIComponent(citation)}&version=av&vnum=yes`;
       return `
         <div class="my-5 p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-800/40">
           <div class="flex items-center justify-between flex-wrap gap-3">
@@ -1237,7 +1237,8 @@
             </div>
             <div class="flex items-center gap-2 flex-wrap">
               <span class="font-sans px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400">${editionLabel}</span>
-              <a href="https://bible.oremus.org/?ql=${encodeURIComponent(data.title)}" target="_blank" rel="noopener noreferrer" class="font-sans underline text-purple-700 dark:text-purple-400 hover:text-purple-900">Full Text ↗</a>
+              <a href="https://bible.oremus.org/?passage=${encodeURIComponent(data.title)}&version=${currentBookMode === 'bcp' ? 'bcp' : 'cw'}&vnum=yes" target="_blank" rel="noopener noreferrer" class="font-sans underline text-purple-700 dark:text-purple-400 hover:text-purple-900">Full Psalm (Oremus) ↗</a>
+              <a href="https://www.biblegateway.com/passage/?search=${encodeURIComponent(data.title)}&version=NRSVUE" target="_blank" rel="noopener noreferrer" class="font-sans underline text-stone-500 dark:text-stone-400 hover:text-stone-800">NRSV ↗</a>
             </div>
           </div>
           <div class="space-y-2 mb-4">
