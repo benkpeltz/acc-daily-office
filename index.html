@@ -7,9 +7,11 @@
   <meta name="description" content="Daily Office (Morning Prayer/Mattins, Evening Prayer/Evensong, Compline) according to the Book of Alternative Services (1985) and the Book of Common Prayer (1962).">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#4c1d95">
+  <meta name="application-name" content="ACC Daily Office">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="ACC Office">
+  <meta name="apple-mobile-web-app-title" content="ACC Daily Office">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
 
   <!-- Tailwind CSS via CDN -->
@@ -2161,7 +2163,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(err => {
+        navigator.serviceWorker.register('/acc-daily-office/sw.js', { scope: '/acc-daily-office/' }).catch(err => {
           console.log('SW registration skipped in preview frame.');
         });
       });
