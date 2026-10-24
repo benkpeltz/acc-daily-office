@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ACC Daily Office • Anglican Church of Canada</title>
   <meta name="description" content="Daily Office (Morning Prayer/Mattins, Evening Prayer/Evensong, Compline) according to the Book of Alternative Services (1985) and the Book of Common Prayer (1962).">
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="/acc-daily-office/manifest.json?v=9">
   <meta name="theme-color" content="#4c1d95">
   <meta name="application-name" content="ACC Daily Office">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2163,7 +2163,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/acc-daily-office/sw.js', { scope: '/acc-daily-office/' }).catch(err => {
+        navigator.serviceWorker.register('/acc-daily-office/sw.js?v=9', { scope: '/acc-daily-office/', updateViaCache: 'none' }).catch(err => {
           console.log('SW registration skipped in preview frame.');
         });
       });

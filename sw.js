@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'acc-daily-office-';
-const CACHE_NAME = `${CACHE_PREFIX}v8`;
+const CACHE_NAME = `${CACHE_PREFIX}v9`;
 const BASE_PATH = '/acc-daily-office';
 const ASSETS_TO_CACHE = [
   `${BASE_PATH}/`,
@@ -33,13 +33,20 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// Network-first with offline cache fallback so manifest.json and index.html are never stale
 self.addEventListener('fetch', (event) => {
-  if (!event.request.url.includes(BASE_PATH)) {
+  if (event.request.method !== 'GET' || !event.request.url.includes(BASE_PATH)) {
     return;
   }
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
-    })
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+        }
+        return networkResponse;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
