@@ -1,22 +1,22 @@
 {
-  "id": "/acc-daily-office/",
+  "id": "/",
   "name": "ACC Daily Office",
   "short_name": "ACC Daily Office",
   "description": "Daily Prayer (Morning Prayer/Mattins, Evening Prayer/Evensong, Compline) for the Anglican Church of Canada (BAS & BCP).",
-  "start_url": "/acc-daily-office/?pwa=1",
-  "scope": "/acc-daily-office/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#18181b",
   "theme_color": "#4c1d95",
   "icons": [
     {
-      "src": "/acc-daily-office/icon-192.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/acc-daily-office/icon-512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
