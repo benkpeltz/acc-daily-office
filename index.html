@@ -6,7 +6,7 @@
   <title>ACC Daily Office • Anglican Church of Canada</title>
   <meta name="description" content="Daily Office (Morning Prayer/Mattins, Evening Prayer/Evensong, Compline) according to the Book of Alternative Services (1985) and the Book of Common Prayer (1962).">
   <link rel="canonical" href="https://dailyoffice.benpeltz.ca/">
-  <link rel="manifest" href="/manifest.json?v=10">
+  <link rel="manifest" href="/manifest.json?v=12">
   <meta name="theme-color" content="#4c1d95">
   <meta name="application-name" content="ACC Daily Office">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -91,12 +91,22 @@
       margin-bottom: 0.35em;
     }
     .versicle-label {
-      width: 2.2em;
+      min-width: 2.2em;
+      padding-right: 0.45em;
       flex-shrink: 0;
       font-weight: 700;
       color: #b91c1c;
     }
-    .dark .versicle-label {
+    .versicle-label-wide {
+      min-width: 5.4em;
+      padding-right: 0.5em;
+      flex-shrink: 0;
+      font-weight: 700;
+      color: #b91c1c;
+      font-style: italic;
+    }
+    .dark .versicle-label,
+    .dark .versicle-label-wide {
       color: #f87171;
     }
     .psalm-colon {
@@ -1161,11 +1171,40 @@
       applyFormatting();
     }
 
+    function formatBcpLessonIntro(citation, lessonLabel) {
+      const isSecond = (lessonLabel || '').toLowerCase().includes('second');
+      const rankWord = isSecond ? 'Second' : 'First';
+      // Parse book, chapter, and starting verse from citation like "Sirach 36:1-17" or "1 Corinthians 12:27-13:13"
+      const m = citation.match(/^(.+?)\s+(\d+):(\d+)/);
+      if (m) {
+        const book = m[1];
+        const chap = m[2];
+        const verse = m[3];
+        return {
+          before: `The ${rankWord} Lesson is written in ${book}, in the ${chap}${chap.endsWith('1') && chap !== '11' ? 'st' : chap.endsWith('2') && chap !== '12' ? 'nd' : chap.endsWith('3') && chap !== '13' ? 'rd' : 'th'} chapter, beginning at the ${verse}${verse.endsWith('1') && verse !== '11' ? 'st' : verse.endsWith('2') && verse !== '12' ? 'nd' : verse.endsWith('3') && verse !== '13' ? 'rd' : 'th'} verse.`,
+          after: `Here endeth the ${rankWord} Lesson.`
+        };
+      }
+      return {
+        before: `The ${rankWord} Lesson is written in ${citation}.`,
+        after: `Here endeth the ${rankWord} Lesson.`
+      };
+    }
+
     function makeScriptureLink(citation, headingLabel) {
-      const url = `https://www.biblegateway.com/passage/?search=${encodeURIComponent(citation)}&version=NRSVUE`;
+      const isBcp = (currentBookMode === 'bcp');
+      const primaryVer = isBcp ? 'KJV' : 'NRSVUE';
+      const primaryBtnLabel = isBcp ? 'Read KJV' : 'Read NRSV';
+      const url = `https://www.biblegateway.com/passage/?search=${encodeURIComponent(citation)}&version=${primaryVer}`;
       const oremusUrl = `https://bible.oremus.org/?passage=${encodeURIComponent(citation)}&version=av&vnum=yes`;
+      const bcpStatements = isBcp ? formatBcpLessonIntro(citation, headingLabel) : null;
+
       return `
         <div class="my-5 p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-800/40">
+          ${isBcp ? `
+            <span class="rubric" style="margin-top:0;">Then shall be read ${headingLabel || 'the Lesson'} as appointed, and before the Lesson the Minister shall say:</span>
+            <p class="mb-3"><span class="versicle-label-wide">Minister.</span>${bcpStatements.before}</p>
+          ` : ''}
           <div class="flex items-center justify-between flex-wrap gap-3">
             <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100" style="margin-top:0; margin-bottom:0.2em;">${headingLabel || 'The Scripture Lesson'}</h3>
@@ -1173,14 +1212,25 @@
             </div>
             <div class="flex items-center space-x-2">
               <a href="${url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-sans font-semibold bg-purple-700 hover:bg-purple-800 text-white transition shadow-sm">
-                <span>Read NRSV</span>
+                <span>${primaryBtnLabel}</span>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
               </a>
               <a href="${oremusUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-lg font-sans text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 transition">
-                Oremus
+                Oremus (AV)
               </a>
             </div>
           </div>
+          ${isBcp ? `
+            <div class="mt-3 pt-2.5 border-t border-stone-200/80 dark:border-stone-700/80">
+              <span class="rubric" style="margin-top:0;">And after the Lesson the Minister shall say:</span>
+              <p><span class="versicle-label-wide">Minister.</span>${bcpStatements.after}</p>
+            </div>
+          ` : `
+            <div class="mt-3 pt-2.5 border-t border-stone-200/80 dark:border-stone-700/80 space-y-1">
+              <div class="versicle"><span class="versicle-label-wide">Reader.</span><span>The word of the Lord.</span></div>
+              <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">Thanks be to God.</span></div>
+            </div>
+          `}
         </div>
       `;
     }
@@ -1276,7 +1326,7 @@
     }
 
     // ==========================================
-    // 8. BCP 1962 LITURGIES
+    // 8. BCP 1962 LITURGIES (Complete 1962 Canadian Prayer Book)
     // ==========================================
     function renderBcpMattins(lit, lectionary) {
       const openingSentence = getOpeningSentence(lit, 'morning', false);
@@ -1285,62 +1335,92 @@
       prayerContainer.innerHTML = `
         <header class="text-center mb-8 pb-4 border-b border-stone-200 dark:border-stone-800">
           <h2 class="office-title tracking-tight text-stone-900 dark:text-stone-100">The Order for Morning Prayer</h2>
-          <p class="font-sans font-medium text-stone-500 dark:text-stone-400">Daily throughout the year • Book of Common Prayer (1962 Canada), p. 1</p>
+          <p class="font-sans font-medium text-stone-500 dark:text-stone-400">Daily Throughout the Year • Book of Common Prayer (1962 Canada), pp. 1–16</p>
         </header>
 
         <section class="mb-8">
-          <h3 class="section-header text-stone-900 dark:text-stone-100">Opening Sentence & Confession</h3>
-          <span class="rubric">At the beginning of Morning Prayer the Minister shall read with a loud voice some one or more of these Sentences of the Scriptures.</span>
-          <p class="italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“${openingSentence}”</p>
+          <h3 class="section-header text-stone-900 dark:text-stone-100">Opening Sentence &amp; The Exhortation</h3>
+          <span class="rubric">The Minister shall read aloud one or more of these Sentences of the Scriptures that follow.</span>
+          <p class="mb-4"><span class="versicle-label-wide">Minister.</span><span class="italic text-purple-900 dark:text-purple-300">“${openingSentence}”</span></p>
 
-          <span class="rubric">A General Confession (To be said of the whole Congregation after the Minister, all kneeling).</span>
+          <span class="rubric">The Minister, turning to the people, shall say the Exhortation in the form following. Occasionally the second paragraph may be omitted, or in place of the Exhortation the Minister may say, Let us humbly confess our sins to Almighty God.</span>
+          <div class="my-3 space-y-2.5">
+            <p><span class="versicle-label-wide">Minister.</span>DEARLY beloved brethren, the Scripture moveth us in sundry places to acknowledge and confess our manifold sins and wickedness; and that we should not dissemble nor cloke them before the face of Almighty God our heavenly Father; but confess them with an humble, lowly, penitent, and obedient heart; to the end that we may obtain forgiveness of the same, by his infinite goodness and mercy.</p>
+            <p>And although we ought at all times humbly to acknowledge our sins before God; yet ought we most chiefly so to do, when we assemble and meet together to render thanks for the great benefits that we have received at his hands, to set forth his most worthy praise, to hear his most holy Word, and to ask those things which are requisite and necessary, as well for the body as the soul.</p>
+            <p>Wherefore I pray and beseech you, as many as are here present, to accompany me with a pure heart and humble voice unto the throne of the heavenly grace.</p>
+            <p class="italic text-stone-600 dark:text-stone-400"><span class="versicle-label-wide">Or:</span>Let us humbly confess our sins to Almighty God.</p>
+          </div>
+
+          <h3 class="section-header text-stone-900 dark:text-stone-100">A General Confession</h3>
+          <span class="rubric">To be said of the whole Congregation with the Minister, all kneeling.</span>
           <div class="my-4 p-4 rounded-xl bg-stone-100/70 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800">
             <p class="font-medium">
-              ALMIGHTY and most merciful Father, We have erred and strayed from thy ways like lost sheep, We have followed too much the devices and desires of our own hearts, We have offended against thy holy laws, We have left undone those things which we ought to have done, And we have done those things which we ought not to have done; And there is no health in us. But thou, O Lord, have mercy upon us, miserable offenders. Spare thou them, O God, which confess their faults. Restore thou them that are penitent; According to thy promises declared unto mankind in Christ Jesu our Lord. And grant, O most merciful Father, for his sake, That we may hereafter live a godly, righteous, and sober life, To the glory of thy holy Name. Amen.
+              <span class="versicle-label-wide">Minister &amp; People.</span>ALMIGHTY and most merciful Father, We have erred and strayed from thy ways like lost sheep, We have followed too much the devices and desires of our own hearts, We have offended against thy holy laws, We have left undone those things which we ought to have done, And we have done those things which we ought not to have done; And there is no health in us. But thou, O Lord, have mercy upon us, miserable offenders. Spare thou them, O God, which confess their faults. Restore thou them that are penitent; According to thy promises declared unto mankind in Christ Jesu our Lord. And grant, O most merciful Father, for his sake, That we may hereafter live a godly, righteous, and sober life, To the glory of thy holy Name. Amen.
             </p>
           </div>
 
-          <span class="rubric">The Absolution or Remission of sins (To be pronounced by the Priest alone, standing).</span>
-          <p class="italic mb-4">
-            THE Almighty and merciful Lord grant you Absolution and Remission of all your sins, true repentance, amendment of life, and the grace and consolation of his Holy Spirit. <span class="font-bold">Amen.</span>
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Absolution, or Remission of Sins</h3>
+          <span class="rubric">To be pronounced by the Priest alone, standing: the people still kneeling.</span>
+          <div class="space-y-2.5 mb-3">
+            <p><span class="versicle-label-wide">Priest.</span>ALMIGHTY God, the Father of our Lord Jesus Christ, who desireth not the death of a sinner, but rather that he may turn from his wickedness, and live, hath given power and commandment to his Ministers, to declare and pronounce to his people, being penitent, the Absolution and Remission of their sins.</p>
+            <p>He pardoneth and absolveth all them that truly repent and unfeignedly believe his holy Gospel.</p>
+            <p>Wherefore we beseech him to grant us true repentance and his Holy Spirit, that those things may please him which we do at this present, and that the rest of our life hereafter may be pure and holy; so that at the last we may come to his eternal joy; through Jesus Christ our Lord.</p>
+            <span class="rubric">The people shall answer here, and at the end of all other prayers:</span>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">Amen.</span></div>
+          </div>
+
+          <span class="rubric">Or, when no Priest is present, the Minister or person saying the Service may read Collect 11 on page 602:</span>
+          <p class="italic text-stone-600 dark:text-stone-400 mb-4">
+            <span class="versicle-label-wide">Minister.</span>GRANT, we beseech thee, merciful Father, to thy faithful people pardon and peace, that they may be cleansed from all their sins, and serve thee with a quiet mind; through Jesus Christ our Lord. <span class="font-bold">Amen.</span>
           </p>
+
+          <span class="rubric">Here the Lord's Prayer may be said; the people repeating it with the Minister.</span>
+          <div class="my-4 p-4 rounded-xl bg-stone-50 dark:bg-stone-800/30 border border-stone-200 dark:border-stone-800 font-medium">
+            <p>
+              <span class="versicle-label-wide">Minister &amp; People.</span>OUR Father who art in heaven, Hallowed be thy Name, Thy kingdom come, Thy will be done, on earth as it is in heaven. Give us this day our daily bread; And forgive us our trespasses, As we forgive them that trespass against us; And lead us not into temptation, But deliver us from evil. For thine is the kingdom, the power, and the glory, For ever and ever. Amen.
+            </p>
+          </div>
 
           <h3 class="section-header text-stone-900 dark:text-stone-100">The Preces</h3>
           <div class="space-y-1.5 my-3">
-            <div class="versicle"><span class="versicle-label">V.</span><span>O Lord, open thou our lips;</span></div>
-            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And our mouth shall shew forth thy praise.</span></div>
-            <div class="versicle"><span class="versicle-label">V.</span><span>O God, make speed to save us;</span></div>
-            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">O Lord, make haste to help us.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>O Lord, open thou our lips;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">And our mouth shall show forth thy praise.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>O God, make speed to save us;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">O Lord, make haste to help us.</span></div>
           </div>
 
-          <div class="my-3">
-            <p>Glory be to the Father, and to the Son : and to the Holy Ghost;</p>
-            <p class="font-bold">As it was in the beginning, is now, and ever shall be : world without end. Amen.</p>
-          </div>
-
+          <span class="rubric">Here, all standing up, the Minister shall say:</span>
           <div class="space-y-1.5 my-3">
-            <div class="versicle"><span class="versicle-label">V.</span><span>Praise ye the Lord;</span></div>
-            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">The Lord's Name be praised.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>GLORY be to the Father, and to the Son, and to the Holy Ghost;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">As it was in the beginning, is now, and ever shall be, world without end. Amen.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Praise ye the Lord;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">The Lord's Name be praised.</span></div>
           </div>
         </section>
 
         <!-- VENITE -->
         <section class="mb-8">
           <h3 class="section-header text-stone-900 dark:text-stone-100">Venite, Exultemus Domino (Psalm 95)</h3>
+          <span class="rubric">Then shall be said or sung this Psalm following; except on days for which Proper Anthems are provided. At the discretion of the Minister the last four verses may be omitted.</span>
           <div class="space-y-2 mb-4">
-            <p>O COME, let us sing unto the Lord : let us heartily rejoice in the strength of our salvation.</p>
-            <p>Let us come before his presence with thanksgiving : and shew ourselves glad in him with psalms.</p>
-            <p>For the Lord is a great God : and a great King above all gods.</p>
+            <p>O COME, let us sing unto the LORD : let us heartily rejoice in the strength of our salvation.</p>
+            <p>Let us come before his presence with thanksgiving : and show ourselves glad in him with psalms.</p>
+            <p>For the LORD is a great God : and a great King above all gods.</p>
             <p>In his hand are all the corners of the earth : and the strength of the hills is his also.</p>
             <p>The sea is his, and he made it : and his hands prepared the dry land.</p>
-            <p>O come, let us worship and fall down : and kneel before the Lord our Maker.</p>
+            <p>O COME, let us worship, and fall down : and kneel before the LORD our Maker.</p>
             <p>For he is the Lord our God : and we are the people of his pasture, and the sheep of his hand.</p>
-            <p>Glory be to the Father, and to the Son : and to the Holy Ghost;<br><span class="font-bold">As it was in the beginning, is now, and ever shall be : world without end. Amen.</span></p>
+            <p>TO-DAY, O that ye would hear his voice : ‘Harden not your hearts as in the Provocation, and as in the day of Temptation in the wilderness;</p>
+            <p>When your fathers tempted me : proved me, and saw my works.</p>
+            <p>Forty years long was I grieved with that generation, and said : “It is a people that do err in their hearts, for they have not known my ways”;</p>
+            <p>Unto whom I sware in my wrath : that they should not enter into my rest.’</p>
+            <p>GLORY be to the Father, and to the Son : and to the Holy Ghost;<br><span class="font-bold">As it was in the beginning, is now, and ever shall be : world without end. Amen.</span></p>
           </div>
         </section>
 
         <!-- PSALMS & LESSONS -->
         <section class="mb-8">
+          <span class="rubric">Then shall follow THE PSALMS in order as they be appointed.</span>
           ${renderPsalmsSection(lectionary.mPsalms, lectionary.scheduleLabel)}
 
           ${makeScriptureLink(lectionary.ot, "The First Lesson (Old Testament)")}
@@ -1348,21 +1428,39 @@
           <!-- TE DEUM -->
           <div class="my-6">
             <h3 class="section-header text-stone-900 dark:text-stone-100">Te Deum Laudamus</h3>
+            <span class="rubric">After the First Lesson shall be sung or said the Hymn Te Deum Laudamus (or Benedicite, Omnia Opera, p. 26). At the discretion of the Minister, the third section of Te Deum may be omitted.</span>
             <div class="space-y-2 mb-3">
               <p>WE praise thee, O God : we acknowledge thee to be the Lord.</p>
               <p>All the earth doth worship thee : the Father everlasting.</p>
               <p>To thee all Angels cry aloud : the Heavens, and all the Powers therein.</p>
-              <p>To thee Cherubin and Seraphin : continually do cry,</p>
-              <p class="font-bold">Holy, Holy, Holy : Lord God of Sabaoth;</p>
+              <p>To thee Cherubim and Seraphim : continually do cry,</p>
+              <p class="font-bold">Holy, Holy, Holy : Lord God of hosts;</p>
               <p>Heaven and earth are full of the Majesty : of thy glory.</p>
               <p>The glorious company of the Apostles : praise thee.</p>
               <p>The goodly fellowship of the Prophets : praise thee.</p>
               <p>The noble army of Martyrs : praise thee.</p>
-              <p>The holy Church throughout all the world : doth acknowledge thee;</p>
+              <p>The holy Church throughout all the world : doth acknowledge thee,</p>
               <p>The Father : of an infinite Majesty;</p>
               <p>Thine honourable, true : and only Son;</p>
               <p>Also the Holy Ghost : the Comforter.</p>
-              <p class="font-bold">THOU art the King of Glory : O Christ.<br>Thou art the everlasting Son : of the Father.</p>
+
+              <p class="pt-2 font-bold">THOU art the King of Glory : O Christ.</p>
+              <p>Thou art the everlasting Son : of the Father.</p>
+              <p>When thou tookest upon thee to deliver man : thou didst not abhor the Virgin's womb.</p>
+              <p>When thou hadst overcome the sharpness of death : thou didst open the kingdom of heaven to all believers.</p>
+              <p>Thou sittest at the right hand of God : in the glory of the Father.</p>
+              <p>We believe that thou shalt come : to be our Judge.</p>
+              <p>We therefore pray thee, help thy servants : whom thou hast redeemed with thy precious blood.</p>
+              <p>Make them to be numbered with thy Saints : in glory everlasting.</p>
+
+              <p class="pt-2">O LORD, save thy people : and bless thine heritage;</p>
+              <p>Govern them : and lift them up for ever.</p>
+              <p>Day by day : we magnify thee;</p>
+              <p>And we worship thy Name : ever world without end.</p>
+              <p>Vouchsafe, O Lord : to keep us this day without sin.</p>
+              <p>O Lord, have mercy upon us : have mercy upon us.</p>
+              <p>O Lord, let thy mercy lighten upon us : as our trust is in thee.</p>
+              <p>O Lord, in thee have I trusted : let me never be confounded.</p>
             </div>
           </div>
 
@@ -1370,23 +1468,31 @@
 
           <!-- BENEDICTUS -->
           <div class="my-6">
-            <h3 class="section-header text-stone-900 dark:text-stone-100">Benedictus (St. Luke 1. 68)</h3>
+            <h3 class="section-header text-stone-900 dark:text-stone-100">Benedictus (St. Luke 1. 68–79)</h3>
+            <span class="rubric">Then shall be sung or said the following Canticle (or Jubilate Deo, Psalm 100).</span>
             <div class="space-y-2 mb-3">
               <p>BLESSED be the Lord God of Israel : for he hath visited, and redeemed his people;</p>
               <p>And hath raised up a mighty salvation for us : in the house of his servant David;</p>
               <p>As he spake by the mouth of his holy Prophets : which have been since the world began;</p>
               <p>That we should be saved from our enemies : and from the hands of all that hate us;</p>
               <p>To perform the mercy promised to our forefathers : and to remember his holy covenant;</p>
-              <p>Glory be to the Father, and to the Son : and to the Holy Ghost;<br><span class="font-bold">As it was in the beginning, is now, and ever shall be : world without end. Amen.</span></p>
+              <p>To perform the oath which he sware to our forefather Abraham : that he would grant us</p>
+              <p>That we being delivered out of the hands of our enemies : might serve him without fear,</p>
+              <p>In holiness and righteousness before him : all the days of our life.</p>
+              <p>AND thou, child, shalt be called the Prophet of the Highest : for thou shalt go before the face of the Lord to prepare his ways;</p>
+              <p>To give knowledge of salvation unto his people : for the remission of their sins;</p>
+              <p>Through the tender mercy of our God : whereby the day-spring from on high hath visited us;</p>
+              <p>To give light to them that sit in darkness, and in the shadow of death : and to guide our feet into the way of peace.</p>
+              <p>GLORY be to the Father, and to the Son : and to the Holy Ghost;<br><span class="font-bold">As it was in the beginning, is now, and ever shall be : world without end. Amen.</span></p>
             </div>
           </div>
 
           <!-- THE CREED -->
           <div class="my-6">
             <h3 class="section-header text-stone-900 dark:text-stone-100">The Apostles' Creed</h3>
-            <span class="rubric">All standing.</span>
+            <span class="rubric">Then shall be said or sung the Confession of the Faith, called the Apostles' Creed, by the Minister and the people, standing.</span>
             <p class="font-medium">
-              I BELIEVE in God the Father Almighty, Maker of heaven and earth:<br>
+              <span class="versicle-label-wide">Minister &amp; People.</span>I BELIEVE in God the Father Almighty, Maker of heaven and earth:<br>
               And in Jesus Christ his only Son our Lord, Who was conceived by the Holy Ghost, Born of the Virgin Mary, Suffered under Pontius Pilate, Was crucified, dead, and buried: He descended into hell; The third day he rose again from the dead; He ascended into heaven, And sitteth on the right hand of God the Father Almighty; From thence he shall come to judge the quick and the dead.<br>
               I believe in the Holy Ghost; The holy Catholic Church; The Communion of Saints; The Forgiveness of sins; The Resurrection of the body, And the Life everlasting. Amen.
             </p>
@@ -1395,61 +1501,102 @@
 
         <!-- THE PRAYERS -->
         <section class="mb-8">
-          <h3 class="section-header text-stone-900 dark:text-stone-100">The Prayers & Suffrages</h3>
-          <span class="rubric">All devoutly kneeling.</span>
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Prayers &amp; Suffrages</h3>
+          <span class="rubric">And after the Creed these prayers following, all devoutly kneeling, the Minister first pronouncing:</span>
           <div class="space-y-1.5 my-3">
-            <div class="versicle"><span class="versicle-label">V.</span><span>The Lord be with you;</span></div>
-            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And with thy spirit.</span></div>
-            <div class="versicle"><span class="versicle-label"></span><span class="italic">Let us pray.</span></div>
-            <div class="versicle"><span class="versicle-label"></span><span>Lord, have mercy upon us.</span></div>
-            <div class="versicle"><span class="versicle-label"></span><span class="font-bold">Christ, have mercy upon us.</span></div>
-            <div class="versicle"><span class="versicle-label"></span><span>Lord, have mercy upon us.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>The Lord be with you;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">And with thy spirit.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span class="italic">Let us pray.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Lord, have mercy upon us.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">Christ, have mercy upon us.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Lord, have mercy upon us.</span></div>
           </div>
 
           <div class="my-4 font-medium">
             <h3 class="section-header text-stone-900 dark:text-stone-100">The Lord's Prayer</h3>
             <p>
-              OUR Father which art in heaven, Hallowed be thy Name, Thy kingdom come, Thy will be done, in earth as it is in heaven. Give us this day our daily bread; And forgive us our trespasses, As we forgive them that trespass against us; And lead us not into temptation, But deliver us from evil. Amen.
+              <span class="versicle-label-wide">Minister &amp; People.</span>OUR Father who art in heaven, Hallowed be thy Name, Thy kingdom come, Thy will be done, on earth as it is in heaven. Give us this day our daily bread; And forgive us our trespasses, As we forgive them that trespass against us; And lead us not into temptation, But deliver us from evil. Amen.
             </p>
           </div>
 
+          <span class="rubric">Then the Priest standing up shall say:</span>
           <div class="space-y-2 my-4">
-            <div class="versicle"><span class="versicle-label">V.</span><span>O Lord, shew thy mercy upon us;</span></div>
-            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And grant us thy salvation.</span></div>
-            <div class="versicle"><span class="versicle-label">V.</span><span>O Lord, save the King;</span></div>
-            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And mercifully hear us when we call upon thee.</span></div>
-            <div class="versicle"><span class="versicle-label">V.</span><span>Endue thy Ministers with righteousness;</span></div>
-            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And make thy chosen people joyful.</span></div>
-            <div class="versicle"><span class="versicle-label">V.</span><span>O Lord, save thy people;</span></div>
-            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And bless thine inheritance.</span></div>
-            <div class="versicle"><span class="versicle-label">V.</span><span>Give peace in our time, O Lord;</span></div>
-            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">Because there is none other that fighteth for us, but only thou, O God.</span></div>
-            <div class="versicle"><span class="versicle-label">V.</span><span>O God, make clean our hearts within us;</span></div>
-            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And take not thy Holy Spirit from us.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Priest.</span><span>O Lord, show thy mercy upon us;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">And grant us thy salvation.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Priest.</span><span>O Lord, save the Queen <em>[or King]</em>;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">And mercifully hear us when we call upon thee.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Priest.</span><span>Endue thy Ministers with righteousness;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">And make thy chosen people joyful.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Priest.</span><span>O Lord, save thy people;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">And bless thine inheritance.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Priest.</span><span>Give peace in our time, O Lord;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">And evermore mightily defend us.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Priest.</span><span>O God, make clean our hearts within us;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">And take not thy Holy Spirit from us.</span></div>
           </div>
 
-          <!-- THE COLLECTS -->
-          <div class="my-6 space-y-4">
+          <!-- THE THREE COLLECTS -->
+          <span class="rubric">Then shall follow THE COLLECT OF THE DAY, together with any other Collects appointed to be said, and these two prayers in order.</span>
+          <div class="my-6 space-y-5">
             <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">The First Collect: ${collectOfDay.title}</h3>
-              <p>${collectOfDay.text}</p>
+              <p><span class="versicle-label-wide">Minister.</span>${collectOfDay.text}</p>
             </div>
             <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">The Second Collect, for Peace</h3>
-              <p>O GOD, who art the author of peace and lover of concord, in knowledge of whom standeth our eternal life, whose service is perfect freedom: Defend us thy humble servants in all assaults of our enemies; that we, surely trusting in thy defence, may not fear the power of any adversaries; through the might of Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+              <p><span class="versicle-label-wide">Minister.</span>O GOD, who art the author of peace and lover of concord, in knowledge of whom standeth our eternal life, whose service is perfect freedom: Defend us thy humble servants in all assaults of our enemies; that we, surely trusting in thy defence, may not fear the power of any adversaries; through the might of Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
             </div>
             <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">The Third Collect, for Grace</h3>
-              <p>O LORD, our heavenly Father, Almighty and everlasting God, who hast safely brought us to the beginning of this day: Defend us in the same with thy mighty power; and grant that this day we fall into no sin, neither run into any kind of danger; but that all our doings may be ordered by thy governance, to do always that is righteous in thy sight; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+              <p><span class="versicle-label-wide">Minister.</span>O LORD our heavenly Father, Almighty and everlasting God, who hast safely brought us to the beginning of this day: Defend us in the same with thy mighty power; and grant that this day we fall into no sin, neither run into any kind of danger; but that all our doings may be ordered by thy governance, to do always that is righteous in thy sight; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+            </div>
+          </div>
+
+          <span class="rubric">Here may follow an Anthem or an Hymn. Then shall be read one of the Prayers for the Queen [or King], the Royal Family, and the Prayer for the Clergy and People. Before any of the prayers may be said by the Minister, “Let us pray for —”, and before any of the thanksgivings, “Let us give thanks for —”.</span>
+          <div class="my-6 space-y-5">
+            <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer for the Queen's [or King's] Majesty (BCP p. 14)</h3>
+              <p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for the Queen's <em>[or King's]</em> Majesty.</p>
+              <p><span class="versicle-label-wide">Minister.</span>O LORD our heavenly Father, high and mighty, King of kings, Lord of lords, the only Ruler of princes, who dost from thy throne behold all the dwellers upon earth: Most heartily we beseech thee with thy favour to behold our most gracious Sovereign Lady, Queen ELIZABETH <em>[or Sovereign Lord, King CHARLES]</em>; and so replenish her <em>[him]</em> with the grace of thy Holy Spirit, that she <em>[he]</em> may alway incline to thy will, and walk in thy way: Endue her <em>[him]</em> plenteously with heavenly gifts; grant her <em>[him]</em> in health and wealth long to live; strengthen her <em>[him]</em> that she <em>[he]</em> may vanquish and overcome all her <em>[his]</em> enemies; and finally after this life she <em>[he]</em> may attain everlasting joy and felicity; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">Or, A Prayer for the Queen [or King] and the Commonwealth (BCP p. 14)</h3>
+              <p><span class="versicle-label-wide">Minister.</span>ALMIGHTY God, the fountain of all goodness, we humbly beseech thee to bless our Sovereign Lady, Queen ELIZABETH <em>[or Sovereign Lord, King CHARLES]</em>, the Parliaments of the Commonwealth, and all who are set in authority under her <em>[him]</em>; that they may order all things in wisdom, righteousness, and peace, to the honour of thy holy Name, and the good of thy Church and people; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">Or, A Prayer for the Queen [or King] and all in Authority (BCP p. 14)</h3>
+              <p><span class="versicle-label-wide">Minister.</span>O LORD God Almighty, who rulest the nations of the earth, we humbly beseech thee with thy favour to behold our Sovereign Lady, Queen ELIZABETH <em>[or Sovereign Lord, King CHARLES]</em>, that in all things she <em>[he]</em> may be led by thy guidance and protected by thy power. We pray thee also to bless <em>[Philip Duke of Edinburgh, Elizabeth the Queen Mother, Charles Prince of Wales / Queen Camilla, William Prince of Wales, the Princess of Wales, and]</em> all the Royal Family. Endue with wisdom the Governor-General of this Dominion, the Lieutenant-Governors of the Provinces, the Legislators of the Commonwealth and Empire, and all who are set in authority; that all things may be so ordered and settled by their endeavours upon the best and surest foundations, that peace and happiness, truth and justice, religion and piety, may be established among us for all generations; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer for the Royal Family (BCP p. 48)</h3>
+              <p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for the Royal Family.</p>
+              <p><span class="versicle-label-wide">Minister.</span>ALMIGHTY God, the fountain of all goodness, we humbly beseech thee to bless <em>[Philip Duke of Edinburgh, Elizabeth the Queen Mother, Charles Prince of Wales / Queen Camilla, William Prince of Wales, the Princess of Wales, and]</em> all the Royal Family: Endue them with thy Holy Spirit; enrich them with thy heavenly grace; prosper them with all happiness; and bring them to thine everlasting kingdom; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer for the Clergy and People (BCP p. 14)</h3>
+              <p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for the Clergy and People.</p>
+              <p class="mb-2"><span class="versicle-label-wide">Minister.</span>ALMIGHTY and everlasting God, from whom cometh every good and perfect gift: Send down upon our Bishops and Clergy, and all Congregations committed to their charge, the healthful Spirit of thy grace; and that they may truly please thee, pour upon them the continual dew of thy blessing. Grant this, O Lord, for the honour of our Advocate and Mediator, Jesus Christ. <span class="font-bold">Amen.</span></p>
+              <p class="italic text-stone-600 dark:text-stone-400"><span class="versicle-label-wide">Or (1918/1662):</span>ALMIGHTY and everlasting God, who alone workest great marvels: Send down upon our Bishops and Curates, and all Congregations committed to their charge, the healthful Spirit of thy grace; and that they may truly please thee, pour upon them the continual dew of thy blessing. Grant this, O Lord, for the honour of our Advocate and Mediator, Jesus Christ. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer for All Conditions of Men</h3>
+              <p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for all conditions of men.</p>
+              <p><span class="versicle-label-wide">Minister.</span>O GOD, the Creator and Preserver of all mankind, we humbly beseech thee for all sorts and conditions of men; that thou wouldest be pleased to make thy ways known unto them, thy saving health unto all nations. More especially we pray for the good estate of the Catholic Church; that it may be so guided and governed by thy good Spirit, that all who profess and call themselves Christians may be led into the way of truth, and hold the faith in unity of spirit, in the bond of peace, and in righteousness of life. Finally we commend to thy fatherly goodness all those, who are any ways afflicted or distressed in mind, body, or estate; <em>[* especially those for whom our prayers are desired;]</em> that it may please thee to comfort and relieve them, according to their several necessities, giving them patience under their sufferings, and a happy issue out of all their afflictions. And this we beg for Jesus Christ his sake. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">A General Thanksgiving</h3>
+              <span class="rubric">To be said by the Minister alone, or by the Minister and people together.</span>
+              <p><span class="versicle-label-wide">Minister &amp; People.</span>ALMIGHTY God, Father of all mercies, We thine unworthy servants do give thee most humble and hearty thanks For all thy goodness and loving-kindness To us and to all men; <em>[* particularly to those who desire now to offer up their praises and thanksgivings.]</em> We bless thee for our creation, preservation, and all the blessings of this life; But above all for thine inestimable love In the redemption of the world by our Lord Jesus Christ; For the means of grace, And for the hope of glory. And we beseech thee, give us that due sense of all thy mercies, That our hearts may be unfeignedly thankful, And that we show forth thy praise, Not only with our lips, but in our lives; By giving up ourselves to thy service, And by walking before thee in holiness and righteousness all our days; Through Jesus Christ our Lord, To whom, with thee and the Holy Ghost, be all honour and glory, world without end. <span class="font-bold">Amen.</span></p>
             </div>
             <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer of Saint Chrysostom</h3>
-              <p>ALMIGHTY God, who hast given us grace at this time with one accord to make our common supplications unto thee; and dost promise that when two or three are gathered together in thy Name thou wilt grant their requests: Fulfil now, O Lord, the desires and petitions of thy servants, as may be most expedient for them; granting us in this world knowledge of thy truth, and in the world to come life everlasting. <span class="font-bold">Amen.</span></p>
+              <p><span class="versicle-label-wide">Minister.</span>ALMIGHTY God, who hast given us grace at this time with one accord to make our common supplications unto thee; and dost promise that when two or three are gathered together in thy Name thou wilt grant their requests: Fulfil now, O Lord, the desires and petitions of thy servants, as may be most expedient for them; granting us in this world knowledge of thy truth, and in the world to come life everlasting. <span class="font-bold">Amen.</span></p>
             </div>
           </div>
 
           <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800">
-            <p class="font-bold">THE grace of our Lord Jesus Christ, and the love of God, and the fellowship of the Holy Ghost, be with us all evermore. Amen. (2 Cor. 13. 14)</p>
+            <h3 class="section-header text-stone-900 dark:text-stone-100" style="margin-top:0;">The Grace (2 Corinthians 13. 14)</h3>
+            <p class="font-bold"><span class="versicle-label-wide">Minister &amp; People.</span>THE grace of our Lord Jesus Christ, and the love of God, and the fellowship of the Holy Ghost, be with us all evermore. Amen.</p>
           </div>
         </section>
       `;
@@ -1462,165 +1609,392 @@
       prayerContainer.innerHTML = `
         <header class="text-center mb-8 pb-4 border-b border-stone-200 dark:border-stone-800">
           <h2 class="office-title tracking-tight text-stone-900 dark:text-stone-100">The Order for Evening Prayer</h2>
-          <p class="font-sans font-medium text-stone-500 dark:text-stone-400">Evensong • Book of Common Prayer (1962 Canada), p. 17</p>
+          <p class="font-sans font-medium text-stone-500 dark:text-stone-400">Evensong Daily Throughout the Year • Book of Common Prayer (1962 Canada), pp. 17–24</p>
         </header>
 
         <section class="mb-8">
-          <h3 class="section-header text-stone-900 dark:text-stone-100">Opening Sentence & Preces</h3>
-          <p class="italic mb-4 text-purple-900 dark:text-purple-300 font-serif">“${openingSentence}”</p>
+          <h3 class="section-header text-stone-900 dark:text-stone-100">Opening Sentence &amp; The Exhortation</h3>
+          <span class="rubric">The Minister shall read aloud one or more of these Sentences of the Scriptures that follow, or at special seasons the appropriate Sentences in Morning Prayer.</span>
+          <p class="mb-4"><span class="versicle-label-wide">Minister.</span><span class="italic text-purple-900 dark:text-purple-300">“${openingSentence}”</span></p>
 
-          <div class="space-y-1.5 my-3">
-            <div class="versicle"><span class="versicle-label">V.</span><span>O Lord, open thou our lips;</span></div>
-            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And our mouth shall shew forth thy praise.</span></div>
-            <div class="versicle"><span class="versicle-label">V.</span><span>O God, make speed to save us;</span></div>
-            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">O Lord, make haste to help us.</span></div>
+          <span class="rubric">The Minister, turning to the people, shall say the Exhortation in the form following. Occasionally the second paragraph may be omitted, or in place of the Exhortation the Minister may say, Let us humbly confess our sins to Almighty God.</span>
+          <div class="my-3 space-y-2.5">
+            <p><span class="versicle-label-wide">Minister.</span>DEARLY beloved brethren, the Scripture moveth us in sundry places to acknowledge and confess our manifold sins and wickedness; and that we should not dissemble nor cloke them before the face of Almighty God our heavenly Father; but confess them with an humble, lowly, penitent, and obedient heart; to the end that we may obtain forgiveness of the same, by his infinite goodness and mercy.</p>
+            <p>And although we ought at all times humbly to acknowledge our sins before God; yet ought we most chiefly so to do, when we assemble and meet together to render thanks for the great benefits that we have received at his hands, to set forth his most worthy praise, to hear his most holy Word, and to ask those things which are requisite and necessary, as well for the body as the soul.</p>
+            <p>Wherefore I pray and beseech you, as many as are here present, to accompany me with a pure heart and humble voice unto the throne of the heavenly grace.</p>
+            <p class="italic text-stone-600 dark:text-stone-400"><span class="versicle-label-wide">Or:</span>Let us humbly confess our sins to Almighty God.</p>
           </div>
 
-          <div class="my-3">
-            <p>Glory be to the Father, and to the Son : and to the Holy Ghost;</p>
-            <p class="font-bold">As it was in the beginning, is now, and ever shall be : world without end. Amen.</p>
+          <h3 class="section-header text-stone-900 dark:text-stone-100">A General Confession</h3>
+          <span class="rubric">To be said of the whole Congregation with the Minister, all kneeling.</span>
+          <div class="my-4 p-4 rounded-xl bg-stone-100/70 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800">
+            <p class="font-medium">
+              <span class="versicle-label-wide">Minister &amp; People.</span>ALMIGHTY and most merciful Father, We have erred and strayed from thy ways like lost sheep, We have followed too much the devices and desires of our own hearts, We have offended against thy holy laws, We have left undone those things which we ought to have done, And we have done those things which we ought not to have done; And there is no health in us. But thou, O Lord, have mercy upon us, miserable offenders. Spare thou them, O God, which confess their faults. Restore thou them that are penitent; According to thy promises declared unto mankind in Christ Jesu our Lord. And grant, O most merciful Father, for his sake, That we may hereafter live a godly, righteous, and sober life, To the glory of thy holy Name. Amen.
+            </p>
           </div>
 
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Absolution, or Remission of Sins</h3>
+          <span class="rubric">To be pronounced by the Priest alone, standing: the people still kneeling.</span>
+          <div class="space-y-2.5 mb-3">
+            <p><span class="versicle-label-wide">Priest.</span>ALMIGHTY God, the Father of our Lord Jesus Christ, who desireth not the death of a sinner, but rather that he may turn from his wickedness, and live, hath given power and commandment to his Ministers, to declare and pronounce to his people, being penitent, the Absolution and Remission of their sins.</p>
+            <p>He pardoneth and absolveth all them that truly repent and unfeignedly believe his holy Gospel.</p>
+            <p>Wherefore we beseech him to grant us true repentance and his Holy Spirit, that those things may please him which we do at this present, and that the rest of our life hereafter may be pure and holy; so that at the last we may come to his eternal joy; through Jesus Christ our Lord.</p>
+            <span class="rubric">The people shall answer here, and at the end of all other prayers:</span>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">Amen.</span></div>
+          </div>
+
+          <span class="rubric">Or, when no Priest is present, the Minister or person saying the Service may read Collect 11 on page 602:</span>
+          <p class="italic text-stone-600 dark:text-stone-400 mb-4">
+            <span class="versicle-label-wide">Minister.</span>GRANT, we beseech thee, merciful Father, to thy faithful people pardon and peace, that they may be cleansed from all their sins, and serve thee with a quiet mind; through Jesus Christ our Lord. <span class="font-bold">Amen.</span>
+          </p>
+
+          <span class="rubric">Here the Lord's Prayer may be said; the people repeating it with the Minister.</span>
+          <div class="my-4 p-4 rounded-xl bg-stone-50 dark:bg-stone-800/30 border border-stone-200 dark:border-stone-800 font-medium">
+            <p>
+              <span class="versicle-label-wide">Minister &amp; People.</span>OUR Father who art in heaven, Hallowed be thy Name, Thy kingdom come, Thy will be done, on earth as it is in heaven. Give us this day our daily bread; And forgive us our trespasses, As we forgive them that trespass against us; And lead us not into temptation, But deliver us from evil. For thine is the kingdom, the power, and the glory, For ever and ever. Amen.
+            </p>
+          </div>
+
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Preces</h3>
           <div class="space-y-1.5 my-3">
-            <div class="versicle"><span class="versicle-label">V.</span><span>Praise ye the Lord;</span></div>
-            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">The Lord's Name be praised.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>O Lord, open thou our lips;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">And our mouth shall show forth thy praise.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>O God, make speed to save us;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">O Lord, make haste to help us.</span></div>
+          </div>
+
+          <span class="rubric">Here, all standing up, the Minister shall say:</span>
+          <div class="space-y-1.5 my-3">
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>GLORY be to the Father, and to the Son, and to the Holy Ghost;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">As it was in the beginning, is now, and ever shall be, world without end. Amen.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Praise ye the Lord;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">The Lord's Name be praised.</span></div>
           </div>
         </section>
 
         <!-- PSALMS & READINGS -->
         <section class="mb-8">
+          <span class="rubric">Then shall follow THE PSALMS.</span>
           ${renderPsalmsSection(lectionary.ePsalms, lectionary.scheduleLabel)}
 
-          ${makeScriptureLink(lectionary.ot, "The First Lesson")}
+          ${makeScriptureLink(lectionary.ot, "The First Lesson (Old Testament)")}
 
           <!-- MAGNIFICAT -->
           <div class="my-6">
-            <h3 class="section-header text-stone-900 dark:text-stone-100">Magnificat (St. Luke 1. 46)</h3>
+            <h3 class="section-header text-stone-900 dark:text-stone-100">Magnificat (St. Luke 1. 46–55)</h3>
+            <span class="rubric">And after the First Lesson shall be sung or said Magnificat (or Cantate Domino, Psalm 98, p. 455).</span>
             <div class="space-y-2 mb-3">
               <p>MY soul doth magnify the Lord : and my spirit hath rejoiced in God my Saviour.</p>
-              <p>For he hath regarded : the lowliness of his hand-maiden.</p>
+              <p>For he hath regarded : the lowliness of his handmaiden.</p>
               <p>For behold, from henceforth : all generations shall call me blessed.</p>
               <p>For he that is mighty hath magnified me : and holy is his Name.</p>
               <p>And his mercy is on them that fear him : throughout all generations.</p>
-              <p>He hath shewed strength with his arm : he hath scattered the proud in the imagination of their hearts.</p>
+              <p>He hath showed strength with his arm : he hath scattered the proud in the imagination of their hearts.</p>
               <p>He hath put down the mighty from their seat : and hath exalted the humble and meek.</p>
               <p>He hath filled the hungry with good things : and the rich he hath sent empty away.</p>
               <p>He remembering his mercy hath holpen his servant Israel : as he promised to our forefathers, Abraham and his seed for ever.</p>
-              <p>Glory be to the Father, and to the Son : and to the Holy Ghost;<br><span class="font-bold">As it was in the beginning, is now, and ever shall be : world without end. Amen.</span></p>
+              <p>GLORY be to the Father, and to the Son : and to the Holy Ghost;<br><span class="font-bold">As it was in the beginning, is now, and ever shall be : world without end. Amen.</span></p>
             </div>
           </div>
 
-          ${makeScriptureLink(lectionary.gospel, "The Second Lesson")}
+          ${makeScriptureLink(lectionary.gospel, "The Second Lesson (New Testament)")}
 
           <!-- NUNC DIMITTIS -->
           <div class="my-6">
-            <h3 class="section-header text-stone-900 dark:text-stone-100">Nunc Dimittis (St. Luke 2. 29)</h3>
+            <h3 class="section-header text-stone-900 dark:text-stone-100">Nunc Dimittis (St. Luke 2. 29–32)</h3>
+            <span class="rubric">And after the Second Lesson shall be sung or said Nunc Dimittis (or Deus Misereatur, Psalm 67, p. 409).</span>
             <div class="space-y-2 mb-3">
               <p>LORD, now lettest thou thy servant depart in peace : according to thy word.</p>
               <p>For mine eyes have seen : thy salvation,</p>
               <p>Which thou hast prepared : before the face of all people;</p>
               <p>To be a light to lighten the Gentiles : and to be the glory of thy people Israel.</p>
-              <p>Glory be to the Father, and to the Son : and to the Holy Ghost;<br><span class="font-bold">As it was in the beginning, is now, and ever shall be : world without end. Amen.</span></p>
+              <p>GLORY be to the Father, and to the Son : and to the Holy Ghost;<br><span class="font-bold">As it was in the beginning, is now, and ever shall be : world without end. Amen.</span></p>
             </div>
           </div>
 
           <!-- THE CREED -->
           <div class="my-6">
             <h3 class="section-header text-stone-900 dark:text-stone-100">The Apostles' Creed</h3>
+            <span class="rubric">Then shall be said or sung the Confession of the Faith, called the Apostles' Creed, by the Minister and the people, standing.</span>
             <p class="font-medium">
-              I BELIEVE in God the Father Almighty, Maker of heaven and earth...
+              <span class="versicle-label-wide">Minister &amp; People.</span>I BELIEVE in God the Father Almighty, Maker of heaven and earth:<br>
+              And in Jesus Christ his only Son our Lord, Who was conceived by the Holy Ghost, Born of the Virgin Mary, Suffered under Pontius Pilate, Was crucified, dead, and buried: He descended into hell; The third day he rose again from the dead; He ascended into heaven, And sitteth on the right hand of God the Father Almighty; From thence he shall come to judge the quick and the dead.<br>
+              I believe in the Holy Ghost; The holy Catholic Church; The Communion of Saints; The Forgiveness of sins; The Resurrection of the body, And the Life everlasting. Amen.
             </p>
           </div>
         </section>
 
         <!-- THE PRAYERS -->
         <section class="mb-8">
-          <h3 class="section-header text-stone-900 dark:text-stone-100">The Prayers & Collects</h3>
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Prayers &amp; Suffrages</h3>
+          <span class="rubric">And after the Creed these prayers following, all devoutly kneeling, the Minister first pronouncing:</span>
           <div class="space-y-1.5 my-3">
-            <div class="versicle"><span class="versicle-label">V.</span><span>The Lord be with you;</span></div>
-            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And with thy spirit.</span></div>
-            <div class="versicle"><span class="versicle-label"></span><span class="italic">Let us pray.</span></div>
-            <div class="versicle"><span class="versicle-label"></span><span>Lord, have mercy upon us.</span></div>
-            <div class="versicle"><span class="versicle-label"></span><span class="font-bold">Christ, have mercy upon us.</span></div>
-            <div class="versicle"><span class="versicle-label"></span><span>Lord, have mercy upon us.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>The Lord be with you;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">And with thy spirit.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span class="italic">Let us pray.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Lord, have mercy upon us.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">Christ, have mercy upon us.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Lord, have mercy upon us.</span></div>
           </div>
 
           <div class="my-4 font-medium">
-            <p>OUR Father which art in heaven, Hallowed be thy Name, Thy kingdom come, Thy will be done, in earth as it is in heaven. Give us this day our daily bread; And forgive us our trespasses, As we forgive them that trespass against us; And lead us not into temptation, But deliver us from evil. Amen.</p>
+            <h3 class="section-header text-stone-900 dark:text-stone-100">The Lord's Prayer</h3>
+            <p><span class="versicle-label-wide">Minister &amp; People.</span>OUR Father who art in heaven, Hallowed be thy Name, Thy kingdom come, Thy will be done, on earth as it is in heaven. Give us this day our daily bread; And forgive us our trespasses, As we forgive them that trespass against us; And lead us not into temptation, But deliver us from evil. Amen.</p>
           </div>
 
-          <div class="my-6 space-y-4">
+          <span class="rubric">Then the Priest standing up shall say:</span>
+          <div class="space-y-2 my-4">
+            <div class="versicle"><span class="versicle-label-wide">Priest.</span><span>O Lord, show thy mercy upon us;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">And grant us thy salvation.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Priest.</span><span>O Lord, save the Queen <em>[or King]</em>;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">And mercifully hear us when we call upon thee.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Priest.</span><span>Endue thy Ministers with righteousness;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">And make thy chosen people joyful.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Priest.</span><span>O Lord, save thy people;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">And bless thine inheritance.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Priest.</span><span>Give peace in our time, O Lord;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">And evermore mightily defend us.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Priest.</span><span>O God, make clean our hearts within us;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">And take not thy Holy Spirit from us.</span></div>
+          </div>
+
+          <span class="rubric">Then shall follow THE COLLECT OF THE DAY, together with any other Collects appointed to be said, and these two prayers in order.</span>
+          <div class="my-6 space-y-5">
             <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">The First Collect: ${collectOfDay.title}</h3>
-              <p>${collectOfDay.text}</p>
+              <p><span class="versicle-label-wide">Minister.</span>${collectOfDay.text}</p>
             </div>
             <div>
-              <h3 class="section-header text-stone-900 dark:text-stone-100">The Second Collect at Evening Prayer (for Peace)</h3>
-              <p>O GOD, from whom all holy desires, all good counsels, and all just works do proceed: Give unto thy servants that peace which the world cannot give; that both our hearts may be set to obey thy commandments, and also that by thee we being defended from the fear of our enemies may pass our time in rest and quietness; through the merits of Jesus Christ our Saviour. <span class="font-bold">Amen.</span></p>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">The Second Collect, for Peace</h3>
+              <p><span class="versicle-label-wide">Minister.</span>O GOD, from whom all holy desires, all good counsels, and all just works do proceed: Give unto thy servants that peace which the world cannot give; that our hearts may be set to obey thy commandments, and also that by thee we being defended from the fear of our enemies may pass our time in rest and quietness; through the merits of Jesus Christ our Saviour. <span class="font-bold">Amen.</span></p>
             </div>
             <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">The Third Collect, for Aid against all Perils</h3>
-              <p>LIGHTEN our darkness, we beseech thee, O Lord; and by thy great mercy defend us from all perils and dangers of this night; for the love of thy only Son, our Saviour Jesus Christ. <span class="font-bold">Amen.</span></p>
+              <p><span class="versicle-label-wide">Minister.</span>LIGHTEN our darkness, we beseech thee, O Lord; and by thy great mercy defend us from all perils and dangers of this night; for the love of thy only Son, our Saviour Jesus Christ. <span class="font-bold">Amen.</span></p>
+            </div>
+          </div>
+
+          <span class="rubric">Here may follow an Anthem or a Hymn. Here may be said the prayers found at this point in Morning Prayer or selections from the Prayers and Thanksgivings, always ending with the Prayer of St. Chrysostom and the Grace.</span>
+          <div class="my-6 space-y-5">
+            <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer for the Queen's [or King's] Majesty (BCP p. 14)</h3>
+              <p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for the Queen's <em>[or King's]</em> Majesty.</p>
+              <p><span class="versicle-label-wide">Minister.</span>O LORD our heavenly Father, high and mighty, King of kings, Lord of lords, the only Ruler of princes, who dost from thy throne behold all the dwellers upon earth: Most heartily we beseech thee with thy favour to behold our most gracious Sovereign Lady, Queen ELIZABETH <em>[or Sovereign Lord, King CHARLES]</em>; and so replenish her <em>[him]</em> with the grace of thy Holy Spirit, that she <em>[he]</em> may alway incline to thy will, and walk in thy way: Endue her <em>[him]</em> plenteously with heavenly gifts; grant her <em>[him]</em> in health and wealth long to live; strengthen her <em>[him]</em> that she <em>[he]</em> may vanquish and overcome all her <em>[his]</em> enemies; and finally after this life she <em>[he]</em> may attain everlasting joy and felicity; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">Or, A Prayer for the Queen [or King] and the Commonwealth (BCP p. 14)</h3>
+              <p><span class="versicle-label-wide">Minister.</span>ALMIGHTY God, the fountain of all goodness, we humbly beseech thee to bless our Sovereign Lady, Queen ELIZABETH <em>[or Sovereign Lord, King CHARLES]</em>, the Parliaments of the Commonwealth, and all who are set in authority under her <em>[him]</em>; that they may order all things in wisdom, righteousness, and peace, to the honour of thy holy Name, and the good of thy Church and people; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">Or, A Prayer for the Queen [or King] and all in Authority (BCP p. 14)</h3>
+              <p><span class="versicle-label-wide">Minister.</span>O LORD God Almighty, who rulest the nations of the earth, we humbly beseech thee with thy favour to behold our Sovereign Lady, Queen ELIZABETH <em>[or Sovereign Lord, King CHARLES]</em>, that in all things she <em>[he]</em> may be led by thy guidance and protected by thy power. We pray thee also to bless <em>[Philip Duke of Edinburgh, Elizabeth the Queen Mother, Charles Prince of Wales / Queen Camilla, William Prince of Wales, the Princess of Wales, and]</em> all the Royal Family. Endue with wisdom the Governor-General of this Dominion, the Lieutenant-Governors of the Provinces, the Legislators of the Commonwealth and Empire, and all who are set in authority; that all things may be so ordered and settled by their endeavours upon the best and surest foundations, that peace and happiness, truth and justice, religion and piety, may be established among us for all generations; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer for the Royal Family (BCP p. 48)</h3>
+              <p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for the Royal Family.</p>
+              <p><span class="versicle-label-wide">Minister.</span>ALMIGHTY God, the fountain of all goodness, we humbly beseech thee to bless <em>[Philip Duke of Edinburgh, Elizabeth the Queen Mother, Charles Prince of Wales / Queen Camilla, William Prince of Wales, the Princess of Wales, and]</em> all the Royal Family: Endue them with thy Holy Spirit; enrich them with thy heavenly grace; prosper them with all happiness; and bring them to thine everlasting kingdom; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer for the Clergy and People (BCP p. 14)</h3>
+              <p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for the Clergy and People.</p>
+              <p class="mb-2"><span class="versicle-label-wide">Minister.</span>ALMIGHTY and everlasting God, from whom cometh every good and perfect gift: Send down upon our Bishops and Clergy, and all Congregations committed to their charge, the healthful Spirit of thy grace; and that they may truly please thee, pour upon them the continual dew of thy blessing. Grant this, O Lord, for the honour of our Advocate and Mediator, Jesus Christ. <span class="font-bold">Amen.</span></p>
+              <p class="italic text-stone-600 dark:text-stone-400"><span class="versicle-label-wide">Or (1918/1662):</span>ALMIGHTY and everlasting God, who alone workest great marvels: Send down upon our Bishops and Curates, and all Congregations committed to their charge, the healthful Spirit of thy grace; and that they may truly please thee, pour upon them the continual dew of thy blessing. Grant this, O Lord, for the honour of our Advocate and Mediator, Jesus Christ. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer for All Conditions of Men</h3>
+              <p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for all conditions of men.</p>
+              <p><span class="versicle-label-wide">Minister.</span>O GOD, the Creator and Preserver of all mankind, we humbly beseech thee for all sorts and conditions of men; that thou wouldest be pleased to make thy ways known unto them, thy saving health unto all nations. More especially we pray for the good estate of the Catholic Church; that it may be so guided and governed by thy good Spirit, that all who profess and call themselves Christians may be led into the way of truth, and hold the faith in unity of spirit, in the bond of peace, and in righteousness of life. Finally we commend to thy fatherly goodness all those, who are any ways afflicted or distressed in mind, body, or estate; <em>[* especially those for whom our prayers are desired;]</em> that it may please thee to comfort and relieve them, according to their several necessities, giving them patience under their sufferings, and a happy issue out of all their afflictions. And this we beg for Jesus Christ his sake. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">A General Thanksgiving</h3>
+              <p><span class="versicle-label-wide">Minister &amp; People.</span>ALMIGHTY God, Father of all mercies, We thine unworthy servants do give thee most humble and hearty thanks For all thy goodness and loving-kindness To us and to all men; We bless thee for our creation, preservation, and all the blessings of this life; But above all for thine inestimable love In the redemption of the world by our Lord Jesus Christ; For the means of grace, And for the hope of glory. And we beseech thee, give us that due sense of all thy mercies, That our hearts may be unfeignedly thankful, And that we show forth thy praise, Not only with our lips, but in our lives; By giving up ourselves to thy service, And by walking before thee in holiness and righteousness all our days; Through Jesus Christ our Lord, To whom, with thee and the Holy Ghost, be all honour and glory, world without end. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer of Saint Chrysostom</h3>
+              <p><span class="versicle-label-wide">Minister.</span>ALMIGHTY God, who hast given us grace at this time with one accord to make our common supplications unto thee; and dost promise that when two or three are gathered together in thy Name thou wilt grant their requests: Fulfil now, O Lord, the desires and petitions of thy servants, as may be most expedient for them; granting us in this world knowledge of thy truth, and in the world to come life everlasting. <span class="font-bold">Amen.</span></p>
             </div>
           </div>
 
           <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800">
-            <p class="font-bold">THE grace of our Lord Jesus Christ, and the love of God, and the fellowship of the Holy Ghost, be with us all evermore. Amen.</p>
+            <h3 class="section-header text-stone-900 dark:text-stone-100" style="margin-top:0;">The Grace (2 Corinthians 13. 14)</h3>
+            <p class="font-bold"><span class="versicle-label-wide">Minister &amp; People.</span>THE grace of our Lord Jesus Christ, and the love of God, and the fellowship of the Holy Ghost, be with us all evermore. Amen.</p>
           </div>
         </section>
       `;
     }
 
     function renderBcpCompline(lit) {
+      const collectOfDay = getCollectOfTheDay(lit, true);
       prayerContainer.innerHTML = `
         <header class="text-center mb-8 pb-4 border-b border-stone-200 dark:border-stone-800">
           <h2 class="office-title tracking-tight text-stone-900 dark:text-stone-100">An Order for Compline</h2>
-          <p class="font-sans font-medium text-stone-500 dark:text-stone-400">Night Prayer • Book of Common Prayer (1962 Canada), p. 722</p>
+          <p class="font-sans font-medium text-stone-500 dark:text-stone-400">Night Prayer • Book of Common Prayer (1962 Canada), pp. 722–727</p>
         </header>
 
         <section class="mb-8">
-          <h3 class="section-header text-stone-900 dark:text-stone-100">The Gathering (${lit.dayName} Night)</h3>
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Preparation (${lit.dayName} Night)</h3>
+          <span class="rubric">This Service may be used when Evening Prayer has been previously said. All standing up, the Minister shall say:</span>
           <div class="space-y-1.5 my-3">
-            <div class="versicle"><span class="versicle-label">V.</span><span>The Lord Almighty grant us a quiet night and a perfect end.</span></div>
-            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">Amen.</span></div>
-            <div class="versicle"><span class="versicle-label">V.</span><span>Turn us then, O God our Saviour;</span></div>
-            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And let thine anger cease from us.</span></div>
-            <div class="versicle"><span class="versicle-label">V.</span><span>O God, make speed to save us;</span></div>
-            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">O Lord, make haste to help us.</span></div>
-          </div>
-
-          <div class="my-3">
-            <p>Glory be to the Father, and to the Son : and to the Holy Ghost;</p>
-            <p class="font-bold">As it was in the beginning, is now, and ever shall be : world without end. Amen.</p>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>THE Lord Almighty grant us a quiet night and a perfect end. <span class="font-bold">Amen.</span></span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>O God, make speed to save us;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">O Lord, make haste to help us.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Glory be to the Father, and to the Son, and to the Holy Ghost;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">As it was in the beginning, is now, and ever shall be, world without end. Amen.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Praise ye the Lord;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">The Lord's Name be praised.</span></div>
           </div>
         </section>
 
         <!-- PSALMS -->
         <section class="mb-8">
+          <span class="rubric">Then shall be said or sung one or more of the following Psalms: Psalm 4; Psalm 31. 1–6; Psalm 91; Psalm 134; or any other Psalm or Psalms.</span>
           ${renderPsalmBlock("Psalm 4")}
           ${renderPsalmBlock("Psalm 91")}
           ${renderPsalmBlock("Psalm 134")}
         </section>
 
-        <!-- PRAYERS -->
+        <!-- SHORT LESSON, RESPOND, HYMN & NUNC DIMITTIS -->
         <section class="mb-8">
-          <h3 class="section-header text-stone-900 dark:text-stone-100">The Prayers</h3>
-          <div class="space-y-2 my-4">
-            <div class="versicle"><span class="versicle-label">V.</span><span>Into thy hands, O Lord, I commend my spirit;</span></div>
-            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">For thou hast redeemed me, O Lord, thou God of truth.</span></div>
-            <div class="versicle"><span class="versicle-label">V.</span><span>Keep me as the apple of an eye;</span></div>
-            <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">Hide me under the shadow of thy wings.</span></div>
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Short Lesson &amp; Respond</h3>
+          <span class="rubric">Then shall be read one of the following short Lessons, or some other passage of holy Scripture at the discretion of the Minister:</span>
+          <div class="space-y-3 my-3">
+            <p><span class="versicle-label-wide">Minister.</span>THOU, O LORD, art in the midst of us, and we are called by thy name. Leave us not, O LORD our God. <em>(Jeremiah 14. 9)</em></p>
+            <p class="italic text-stone-600 dark:text-stone-400"><span class="versicle-label-wide">Or:</span>COME unto me, all ye that labour and are heavy laden, and I will give you rest. Take my yoke upon you, and learn of me; for I am meek and lowly in heart; and ye shall find rest unto your souls. For my yoke is easy, and my burden is light. <em>(St. Matthew 11. 28–30)</em></p>
+            <span class="rubric">To which the people shall answer:</span>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">Thanks be to God.</span></div>
           </div>
 
+          <span class="rubric">Then may be said the following Respond:</span>
+          <div class="space-y-1.5 my-4">
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Into thy hands, O Lord, I commend my spirit;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">Into thy hands, O Lord, I commend my spirit.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>For thou hast redeemed me, O Lord, thou God of truth;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">I commend my spirit.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Glory be to the Father, and to the Son, and to the Holy Ghost;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">Into thy hands, O Lord, I commend my spirit.</span></div>
+          </div>
+
+          <h3 class="section-header text-stone-900 dark:text-stone-100">Office Hymn (Te lucis ante terminum)</h3>
+          <span class="rubric">Here may follow this or some other Hymn.</span>
+          <div class="space-y-2 my-3 italic">
+            <p>BEFORE the ending of the day, Creator of the world, we pray<br>That with thy wonted favour thou Wouldst be our guard and keeper now.</p>
+            <p>From all ill dreams defend our eyes, From nightly fears and fantasies;<br>Tread under foot our ghostly foe, That no pollution we may know.</p>
+            <p>O Father, that we ask be done, Through Jesus Christ, thine only Son;<br>Who, with the Holy Ghost and thee, Doth live and reign eternally. Amen.</p>
+          </div>
+
+          <div class="space-y-1.5 my-4">
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Keep us as the apple of an eye;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">Hide us under the shadow of thy wings.</span></div>
+          </div>
+
+          <h3 class="section-header text-stone-900 dark:text-stone-100">Nunc Dimittis (St. Luke 2. 29–32)</h3>
+          <p class="font-semibold text-purple-900 dark:text-purple-300 mb-3">
+            Anthem: Preserve us, O Lord, waking, and guard us sleeping, that awake we may watch with Christ, and asleep we may rest in peace.
+          </p>
+          <div class="space-y-2 mb-3">
+            <p>LORD, now lettest thou thy servant depart in peace : according to thy word.</p>
+            <p>For mine eyes have seen thy salvation : which thou hast prepared before the face of all people;</p>
+            <p>To be a light to lighten the Gentiles : and to be the glory of thy people Israel.</p>
+            <p>GLORY be to the Father, and to the Son : and to the Holy Ghost;<br><span class="font-bold">As it was in the beginning, is now, and ever shall be : world without end. Amen.</span></p>
+          </div>
+          <p class="font-semibold text-purple-900 dark:text-purple-300 mb-4">
+            Anthem: Preserve us, O Lord, waking, and guard us sleeping, that awake we may watch with Christ, and asleep we may rest in peace.
+          </p>
+
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Apostles' Creed</h3>
+          <span class="rubric">Then shall be said the Apostles' Creed by the Minister and people, standing.</span>
+          <p class="font-medium">
+            <span class="versicle-label-wide">Minister &amp; People.</span>I BELIEVE in God the Father Almighty, Maker of heaven and earth:<br>
+            And in Jesus Christ his only Son our Lord, Who was conceived by the Holy Ghost, Born of the Virgin Mary, Suffered under Pontius Pilate, Was crucified, dead, and buried: He descended into hell; The third day he rose again from the dead; He ascended into heaven, And sitteth on the right hand of God the Father Almighty; From thence he shall come to judge the quick and the dead.<br>
+            I believe in the Holy Ghost; The holy Catholic Church; The Communion of Saints; The Forgiveness of sins; The Resurrection of the body, And the Life everlasting. Amen.
+          </p>
+        </section>
+
+        <!-- PRAYERS, CONFESSION & ABSOLUTION -->
+        <section class="mb-8">
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Prayers, Confession &amp; Absolution</h3>
+          <span class="rubric">And after that these Prayers following, all devoutly kneeling:</span>
+          <div class="space-y-1.5 my-3">
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span class="italic">Let us pray.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Lord, have mercy upon us.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">Christ, have mercy upon us.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Lord, have mercy upon us.</span></div>
+          </div>
+
+          <div class="my-4 font-medium">
+            <p><span class="versicle-label-wide">Minister &amp; People.</span>OUR Father who art in heaven, Hallowed be thy Name, Thy kingdom come, Thy will be done, on earth as it is in heaven. Give us this day our daily bread; And forgive us our trespasses, As we forgive them that trespass against us; And lead us not into temptation, But deliver us from evil. Amen.</p>
+          </div>
+
+          <div class="space-y-2 my-4">
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Blessed art thou, Lord God of our fathers;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">To be praised and glorified above all for ever.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Let us bless the Father, the Son, and the Holy Ghost;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">Let us praise him and magnify him for ever.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Blessed art thou, O Lord, in the firmament of heaven;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">To be praised and glorified above all for ever.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>The Almighty and most merciful Lord guard us and give us his blessing.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">Amen.</span></div>
+          </div>
+
+          <span class="rubric">Then shall the Minister and people say together the Confession and the Prayer for Forgiveness following.</span>
+          <div class="my-4 p-4 rounded-xl bg-stone-100/70 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 space-y-2">
+            <p class="font-medium">
+              <span class="versicle-label-wide">Minister &amp; People.</span>WE confess to God Almighty, the Father, the Son, and the Holy Ghost, that we have sinned in thought, word, and deed, through our own grievous fault. Wherefore we pray God to have mercy upon us.
+            </p>
+            <p class="font-medium">
+              Almighty God, have mercy upon us, forgive us all our sins and deliver us from all evil, confirm and strengthen us in all goodness, and bring us to life everlasting; through Jesus Christ our Lord. Amen.
+            </p>
+          </div>
+
+          <span class="rubric">If a Priest be present, he shall stand and pronounce the following Absolution:</span>
+          <p class="mb-4">
+            <span class="versicle-label-wide">Priest.</span>MAY the Almighty and merciful Lord grant unto you pardon and remission of all your sins, time for amendment of life, and the grace and comfort of the Holy Spirit. <span class="font-bold">Amen.</span>
+          </p>
+
+          <span class="rubric">Then shall be said:</span>
+          <div class="space-y-2 my-4">
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Wilt thou not turn again and quicken us;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">That thy people may rejoice in thee?</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>O Lord, show thy mercy upon us;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">And grant us thy salvation.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Vouchsafe, O Lord, to keep us this night without sin;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">O Lord, have mercy upon us, have mercy upon us.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>O Lord, hear our prayer;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">And let our cry come unto thee.</span></div>
+          </div>
+
+          <span class="rubric">Then shall follow the Collect for Protection, with which may be said the Collect of the Day.</span>
           <div class="my-6 space-y-4">
             <div>
-              <h3 class="section-header text-stone-900 dark:text-stone-100">The Collect</h3>
-              <p>VISIT, we beseech thee, O Lord, this place, and drive from it all the snares of the enemy; let thy holy angels dwell herein to preserve us in peace; and may thy blessing be upon us evermore; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">The Collect for Protection</h3>
+              <p><span class="versicle-label-wide">Minister.</span>VISIT, we beseech thee, O Lord, this place, and drive from it all the snares of the enemy; let thy holy angels dwell herein to preserve us in peace; and may thy blessing be upon us evermore; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">Or this Collect</h3>
+              <p><span class="versicle-label-wide">Minister.</span>LIGHTEN our darkness, we beseech thee, O Lord; and by thy great mercy defend us from all perils and dangers of this night; for the love of thy only Son, our Saviour Jesus Christ. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">${collectOfDay.title}</h3>
+              <p><span class="versicle-label-wide">Minister.</span>${collectOfDay.text}</p>
+            </div>
+            <div>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">Additional Night Prayers</h3>
+              <p class="mb-2"><span class="versicle-label-wide">Minister.</span>LOOK down, O Lord, from thy heavenly throne, illuminate the darkness of this night with thy celestial brightness, and from the sons of light banish the deeds of darkness; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+              <p><span class="versicle-label-wide">Minister.</span>BE present, O merciful God, and protect us through the silent hours of this night, so that we who are wearied by the changes and chances of this fleeting world, may repose upon thy eternal changelessness; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
             </div>
           </div>
 
-          <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800">
-            <p class="font-bold">THE Almighty and merciful Lord, the Father, the Son, and the Holy Ghost, bless us and keep us. Amen.</p>
+          <div class="space-y-2 my-4 pt-3 border-t border-stone-200 dark:border-stone-800">
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>We will lay us down in peace and take our rest;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">For it is thou, Lord, only, that makest us dwell in safety.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>The Lord be with you;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">And with thy spirit.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Let us bless the Lord;</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">Thanks be to God.</span></div>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-stone-200 dark:border-stone-800">
+            <p class="font-bold"><span class="versicle-label-wide">Minister.</span>THE Almighty and merciful Lord, the Father, the Son, and the Holy Ghost, bless and preserve us. Amen.</p>
           </div>
         </section>
       `;
@@ -1759,7 +2133,7 @@
           <div class="my-6">
             <h3 class="section-header text-stone-900 dark:text-stone-100">The Apostles' Creed</h3>
             <p class="font-medium">
-              I believe in God, the Father almighty, creator of heaven and earth. I believe in Jesus Christ, his only Son, our Lord...
+              I believe in God, the Father almighty, creator of heaven and earth. I believe in Jesus Christ, his only Son, our Lord. He was conceived by the power of the Holy Spirit and born of the Virgin Mary. He suffered under Pontius Pilate, was crucified, died, and was buried. He descended to the dead. On the third day he rose again. He ascended into heaven, and is seated at the right hand of the Father. He will come again to judge the living and the dead. I believe in the Holy Spirit, the holy catholic Church, the communion of saints, the forgiveness of sins, the resurrection of the body, and the life everlasting. Amen.
             </p>
           </div>
         </section>
@@ -2164,7 +2538,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js?v=10', { scope: '/', updateViaCache: 'none' }).catch(err => {
+        navigator.serviceWorker.register('/sw.js?v=12', { scope: '/', updateViaCache: 'none' }).catch(err => {
           console.log('SW registration skipped in preview frame.');
         });
       });
