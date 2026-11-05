@@ -6,7 +6,7 @@
   <title>ACC Daily Office • Anglican Church of Canada</title>
   <meta name="description" content="Daily Office (Morning Prayer/Mattins, Evening Prayer/Evensong, Compline) according to the Book of Alternative Services (1985) and the Book of Common Prayer (1962).">
   <link rel="canonical" href="https://dailyoffice.benpeltz.ca/">
-  <link rel="manifest" href="/manifest.json?v=12">
+  <link rel="manifest" href="/manifest.json?v=13">
   <meta name="theme-color" content="#4c1d95">
   <meta name="application-name" content="ACC Daily Office">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -108,6 +108,9 @@
     .dark .versicle-label,
     .dark .versicle-label-wide {
       color: #f87171;
+    }
+    .solo-mode .versicle-label-wide {
+      display: none;
     }
     .psalm-colon {
       color: #b91c1c;
@@ -377,6 +380,15 @@
         </div>
         <input type="range" id="fontSizeSlider" min="14" max="28" value="18" class="w-full accent-purple-700">
         <p class="text-[11px] text-stone-400 mt-1">Scales all prayers, psalms, rubrics, and section headers together.</p>
+      </div>
+
+      <!-- Individual / Solo Prayer Mode Toggle -->
+      <div class="flex items-center justify-between pt-3 border-t border-stone-200 dark:border-stone-800 mb-3">
+        <div class="pr-3">
+          <span class="text-xs font-semibold text-stone-800 dark:text-stone-200">Individual / Solo Prayer Mode</span>
+          <p class="text-[11px] text-stone-400 leading-snug">Adapts offices for praying alone (omits Exhortation, lesson announcements &amp; St. Chrysostom; uses solo/lay pardon prayer &amp; “O Lord, hear my prayer”)</p>
+        </div>
+        <input type="checkbox" id="toggleSoloMode" class="w-4 h-4 accent-purple-700 rounded flex-shrink-0">
       </div>
 
       <!-- Rubrics Toggle -->
@@ -1069,12 +1081,14 @@
     let currentPsalter = 'inclusive'; // 'inclusive' or 'bas1985'
     let bcpTableMode = 'monthly30'; // 'monthly30' (Day 1-30) or 'table1962' (BCP Tables of Psalms pp. xlvi-lv)
     let showRubrics = true;
+    let soloMode = false;
     let fontSize = 18;
 
     try {
       if (localStorage.getItem('bas_bookMode')) currentBookMode = localStorage.getItem('bas_bookMode');
       if (localStorage.getItem('bas_psalter')) currentPsalter = localStorage.getItem('bas_psalter');
       if (localStorage.getItem('bcp_tableMode')) bcpTableMode = localStorage.getItem('bcp_tableMode');
+      if (localStorage.getItem('bas_soloMode')) soloMode = (localStorage.getItem('bas_soloMode') === 'true');
       if (localStorage.getItem('bas_fontsize')) fontSize = parseInt(localStorage.getItem('bas_fontsize'));
       if (localStorage.getItem('bas_theme')) setTheme(localStorage.getItem('bas_theme'));
     } catch(e) {}
@@ -1101,7 +1115,7 @@
     function updateBookModeUI() {
       if (currentBookMode === 'bcp') {
         headerAppTitle.textContent = "BCP Daily Office (1962)";
-        bannerBookBadge.textContent = "BCP 1962 • Coverdale";
+        bannerBookBadge.textContent = soloMode ? "BCP 1962 • Solo Use" : "BCP 1962 • Coverdale";
         tabMorning.textContent = "Mattins";
         tabEvening.textContent = "Evensong";
         btnSwitchBCP.className = "px-2.5 py-1 rounded-md transition shadow-sm bg-purple-700 text-white";
@@ -1111,7 +1125,8 @@
         groupBasLanguage.style.display = 'none';
       } else {
         headerAppTitle.textContent = "ACC Daily Office";
-        bannerBookBadge.textContent = (currentPsalter === 'inclusive') ? "BAS • Inclusive (2019)" : "BAS (1985)";
+        const baseBasLabel = (currentPsalter === 'inclusive') ? "BAS • Inclusive (2019)" : "BAS (1985)";
+        bannerBookBadge.textContent = soloMode ? `${baseBasLabel} • Solo Use` : baseBasLabel;
         tabMorning.textContent = "Morning Prayer";
         tabEvening.textContent = "Evening Prayer";
         btnSwitchBAS.className = "px-2.5 py-1 rounded-md transition shadow-sm bg-purple-700 text-white";
@@ -1201,7 +1216,7 @@
 
       return `
         <div class="my-5 p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-800/40">
-          ${isBcp ? `
+          ${(isBcp && !soloMode) ? `
             <span class="rubric" style="margin-top:0;">Then shall be read ${headingLabel || 'the Lesson'} as appointed, and before the Lesson the Minister shall say:</span>
             <p class="mb-3"><span class="versicle-label-wide">Minister.</span>${bcpStatements.before}</p>
           ` : ''}
@@ -1220,17 +1235,21 @@
               </a>
             </div>
           </div>
-          ${isBcp ? `
+          ${isBcp ? (soloMode ? '' : `
             <div class="mt-3 pt-2.5 border-t border-stone-200/80 dark:border-stone-700/80">
               <span class="rubric" style="margin-top:0;">And after the Lesson the Minister shall say:</span>
               <p><span class="versicle-label-wide">Minister.</span>${bcpStatements.after}</p>
+            </div>
+          `) : (soloMode ? `
+            <div class="mt-3 pt-2.5 border-t border-stone-200/80 dark:border-stone-700/80">
+              <p class="italic text-stone-600 dark:text-stone-400">The word of the Lord. <span class="font-bold not-italic text-stone-800 dark:text-stone-200">Thanks be to God.</span></p>
             </div>
           ` : `
             <div class="mt-3 pt-2.5 border-t border-stone-200/80 dark:border-stone-700/80 space-y-1">
               <div class="versicle"><span class="versicle-label-wide">Reader.</span><span>The word of the Lord.</span></div>
               <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">Thanks be to God.</span></div>
             </div>
-          `}
+          `)}
         </div>
       `;
     }
@@ -1339,10 +1358,11 @@
         </header>
 
         <section class="mb-8">
-          <h3 class="section-header text-stone-900 dark:text-stone-100">Opening Sentence &amp; The Exhortation</h3>
-          <span class="rubric">The Minister shall read aloud one or more of these Sentences of the Scriptures that follow.</span>
+          <h3 class="section-header text-stone-900 dark:text-stone-100">${soloMode ? 'Opening Sentence &amp; Confession' : 'Opening Sentence &amp; The Exhortation'}</h3>
+          <span class="rubric">${soloMode ? 'Begin with one or more of the Sentences of the Scriptures.' : 'The Minister shall read aloud one or more of these Sentences of the Scriptures that follow.'}</span>
           <p class="mb-4"><span class="versicle-label-wide">Minister.</span><span class="italic text-purple-900 dark:text-purple-300">“${openingSentence}”</span></p>
 
+          ${soloMode ? '' : `
           <span class="rubric">The Minister, turning to the people, shall say the Exhortation in the form following. Occasionally the second paragraph may be omitted, or in place of the Exhortation the Minister may say, Let us humbly confess our sins to Almighty God.</span>
           <div class="my-3 space-y-2.5">
             <p><span class="versicle-label-wide">Minister.</span>DEARLY beloved brethren, the Scripture moveth us in sundry places to acknowledge and confess our manifold sins and wickedness; and that we should not dissemble nor cloke them before the face of Almighty God our heavenly Father; but confess them with an humble, lowly, penitent, and obedient heart; to the end that we may obtain forgiveness of the same, by his infinite goodness and mercy.</p>
@@ -1350,15 +1370,23 @@
             <p>Wherefore I pray and beseech you, as many as are here present, to accompany me with a pure heart and humble voice unto the throne of the heavenly grace.</p>
             <p class="italic text-stone-600 dark:text-stone-400"><span class="versicle-label-wide">Or:</span>Let us humbly confess our sins to Almighty God.</p>
           </div>
+          `}
 
           <h3 class="section-header text-stone-900 dark:text-stone-100">A General Confession</h3>
-          <span class="rubric">To be said of the whole Congregation with the Minister, all kneeling.</span>
+          <span class="rubric">${soloMode ? 'To be said kneeling.' : 'To be said of the whole Congregation with the Minister, all kneeling.'}</span>
           <div class="my-4 p-4 rounded-xl bg-stone-100/70 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800">
             <p class="font-medium">
               <span class="versicle-label-wide">Minister &amp; People.</span>ALMIGHTY and most merciful Father, We have erred and strayed from thy ways like lost sheep, We have followed too much the devices and desires of our own hearts, We have offended against thy holy laws, We have left undone those things which we ought to have done, And we have done those things which we ought not to have done; And there is no health in us. But thou, O Lord, have mercy upon us, miserable offenders. Spare thou them, O God, which confess their faults. Restore thou them that are penitent; According to thy promises declared unto mankind in Christ Jesu our Lord. And grant, O most merciful Father, for his sake, That we may hereafter live a godly, righteous, and sober life, To the glory of thy holy Name. Amen.
             </p>
           </div>
 
+          ${soloMode ? `
+          <h3 class="section-header text-stone-900 dark:text-stone-100">Prayer for Pardon and Peace (BCP p. 602)</h3>
+          <span class="rubric">When saying the Office alone or when no Priest is present, this Collect is said instead of the priestly Absolution:</span>
+          <p class="mb-4">
+            GRANT, we beseech thee, merciful Father, to thy faithful people pardon and peace, that we may be cleansed from all our sins, and serve thee with a quiet mind; through Jesus Christ our Lord. <span class="font-bold">Amen.</span>
+          </p>
+          ` : `
           <h3 class="section-header text-stone-900 dark:text-stone-100">The Absolution, or Remission of Sins</h3>
           <span class="rubric">To be pronounced by the Priest alone, standing: the people still kneeling.</span>
           <div class="space-y-2.5 mb-3">
@@ -1373,6 +1401,7 @@
           <p class="italic text-stone-600 dark:text-stone-400 mb-4">
             <span class="versicle-label-wide">Minister.</span>GRANT, we beseech thee, merciful Father, to thy faithful people pardon and peace, that they may be cleansed from all their sins, and serve thee with a quiet mind; through Jesus Christ our Lord. <span class="font-bold">Amen.</span>
           </p>
+          `}
 
           <span class="rubric">Here the Lord's Prayer may be said; the people repeating it with the Minister.</span>
           <div class="my-4 p-4 rounded-xl bg-stone-50 dark:bg-stone-800/30 border border-stone-200 dark:border-stone-800 font-medium">
@@ -1502,11 +1531,16 @@
         <!-- THE PRAYERS -->
         <section class="mb-8">
           <h3 class="section-header text-stone-900 dark:text-stone-100">The Prayers &amp; Suffrages</h3>
-          <span class="rubric">And after the Creed these prayers following, all devoutly kneeling, the Minister first pronouncing:</span>
+          <span class="rubric">${soloMode ? 'And after the Creed these prayers following, kneeling:' : 'And after the Creed these prayers following, all devoutly kneeling, the Minister first pronouncing:'}</span>
           <div class="space-y-1.5 my-3">
+            ${soloMode ? `
+            <div class="versicle"><span>O Lord, hear my prayer;</span></div>
+            <div class="versicle"><span class="font-bold">And let my cry come unto thee.</span></div>
+            ` : `
             <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>The Lord be with you;</span></div>
             <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">And with thy spirit.</span></div>
             <div class="versicle"><span class="versicle-label-wide">Minister.</span><span class="italic">Let us pray.</span></div>
+            `}
             <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Lord, have mercy upon us.</span></div>
             <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">Christ, have mercy upon us.</span></div>
             <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Lord, have mercy upon us.</span></div>
@@ -1556,7 +1590,7 @@
           <div class="my-6 space-y-5">
             <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer for the Queen's [or King's] Majesty (BCP p. 14)</h3>
-              <p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for the Queen's <em>[or King's]</em> Majesty.</p>
+              ${soloMode ? "" : `<p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for the Queen's <em>[or King's]</em> Majesty.</p>`}
               <p><span class="versicle-label-wide">Minister.</span>O LORD our heavenly Father, high and mighty, King of kings, Lord of lords, the only Ruler of princes, who dost from thy throne behold all the dwellers upon earth: Most heartily we beseech thee with thy favour to behold our most gracious Sovereign Lady, Queen ELIZABETH <em>[or Sovereign Lord, King CHARLES]</em>; and so replenish her <em>[him]</em> with the grace of thy Holy Spirit, that she <em>[he]</em> may alway incline to thy will, and walk in thy way: Endue her <em>[him]</em> plenteously with heavenly gifts; grant her <em>[him]</em> in health and wealth long to live; strengthen her <em>[him]</em> that she <em>[he]</em> may vanquish and overcome all her <em>[his]</em> enemies; and finally after this life she <em>[he]</em> may attain everlasting joy and felicity; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
             </div>
             <div>
@@ -1569,18 +1603,18 @@
             </div>
             <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer for the Royal Family (BCP p. 48)</h3>
-              <p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for the Royal Family.</p>
+              ${soloMode ? "" : `<p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for the Royal Family.</p>`}
               <p><span class="versicle-label-wide">Minister.</span>ALMIGHTY God, the fountain of all goodness, we humbly beseech thee to bless <em>[Philip Duke of Edinburgh, Elizabeth the Queen Mother, Charles Prince of Wales / Queen Camilla, William Prince of Wales, the Princess of Wales, and]</em> all the Royal Family: Endue them with thy Holy Spirit; enrich them with thy heavenly grace; prosper them with all happiness; and bring them to thine everlasting kingdom; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
             </div>
             <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer for the Clergy and People (BCP p. 14)</h3>
-              <p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for the Clergy and People.</p>
+              ${soloMode ? "" : `<p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for the Clergy and People.</p>`}
               <p class="mb-2"><span class="versicle-label-wide">Minister.</span>ALMIGHTY and everlasting God, from whom cometh every good and perfect gift: Send down upon our Bishops and Clergy, and all Congregations committed to their charge, the healthful Spirit of thy grace; and that they may truly please thee, pour upon them the continual dew of thy blessing. Grant this, O Lord, for the honour of our Advocate and Mediator, Jesus Christ. <span class="font-bold">Amen.</span></p>
               <p class="italic text-stone-600 dark:text-stone-400"><span class="versicle-label-wide">Or (1918/1662):</span>ALMIGHTY and everlasting God, who alone workest great marvels: Send down upon our Bishops and Curates, and all Congregations committed to their charge, the healthful Spirit of thy grace; and that they may truly please thee, pour upon them the continual dew of thy blessing. Grant this, O Lord, for the honour of our Advocate and Mediator, Jesus Christ. <span class="font-bold">Amen.</span></p>
             </div>
             <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer for All Conditions of Men</h3>
-              <p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for all conditions of men.</p>
+              ${soloMode ? "" : `<p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for all conditions of men.</p>`}
               <p><span class="versicle-label-wide">Minister.</span>O GOD, the Creator and Preserver of all mankind, we humbly beseech thee for all sorts and conditions of men; that thou wouldest be pleased to make thy ways known unto them, thy saving health unto all nations. More especially we pray for the good estate of the Catholic Church; that it may be so guided and governed by thy good Spirit, that all who profess and call themselves Christians may be led into the way of truth, and hold the faith in unity of spirit, in the bond of peace, and in righteousness of life. Finally we commend to thy fatherly goodness all those, who are any ways afflicted or distressed in mind, body, or estate; <em>[* especially those for whom our prayers are desired;]</em> that it may please thee to comfort and relieve them, according to their several necessities, giving them patience under their sufferings, and a happy issue out of all their afflictions. And this we beg for Jesus Christ his sake. <span class="font-bold">Amen.</span></p>
             </div>
             <div>
@@ -1588,10 +1622,12 @@
               <span class="rubric">To be said by the Minister alone, or by the Minister and people together.</span>
               <p><span class="versicle-label-wide">Minister &amp; People.</span>ALMIGHTY God, Father of all mercies, We thine unworthy servants do give thee most humble and hearty thanks For all thy goodness and loving-kindness To us and to all men; <em>[* particularly to those who desire now to offer up their praises and thanksgivings.]</em> We bless thee for our creation, preservation, and all the blessings of this life; But above all for thine inestimable love In the redemption of the world by our Lord Jesus Christ; For the means of grace, And for the hope of glory. And we beseech thee, give us that due sense of all thy mercies, That our hearts may be unfeignedly thankful, And that we show forth thy praise, Not only with our lips, but in our lives; By giving up ourselves to thy service, And by walking before thee in holiness and righteousness all our days; Through Jesus Christ our Lord, To whom, with thee and the Holy Ghost, be all honour and glory, world without end. <span class="font-bold">Amen.</span></p>
             </div>
+            ${soloMode ? '' : `
             <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer of Saint Chrysostom</h3>
               <p><span class="versicle-label-wide">Minister.</span>ALMIGHTY God, who hast given us grace at this time with one accord to make our common supplications unto thee; and dost promise that when two or three are gathered together in thy Name thou wilt grant their requests: Fulfil now, O Lord, the desires and petitions of thy servants, as may be most expedient for them; granting us in this world knowledge of thy truth, and in the world to come life everlasting. <span class="font-bold">Amen.</span></p>
             </div>
+            `}
           </div>
 
           <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800">
@@ -1613,10 +1649,11 @@
         </header>
 
         <section class="mb-8">
-          <h3 class="section-header text-stone-900 dark:text-stone-100">Opening Sentence &amp; The Exhortation</h3>
-          <span class="rubric">The Minister shall read aloud one or more of these Sentences of the Scriptures that follow, or at special seasons the appropriate Sentences in Morning Prayer.</span>
+          <h3 class="section-header text-stone-900 dark:text-stone-100">${soloMode ? 'Opening Sentence &amp; Confession' : 'Opening Sentence &amp; The Exhortation'}</h3>
+          <span class="rubric">${soloMode ? 'Begin with one or more of the Sentences of the Scriptures.' : 'The Minister shall read aloud one or more of these Sentences of the Scriptures that follow, or at special seasons the appropriate Sentences in Morning Prayer.'}</span>
           <p class="mb-4"><span class="versicle-label-wide">Minister.</span><span class="italic text-purple-900 dark:text-purple-300">“${openingSentence}”</span></p>
 
+          ${soloMode ? '' : `
           <span class="rubric">The Minister, turning to the people, shall say the Exhortation in the form following. Occasionally the second paragraph may be omitted, or in place of the Exhortation the Minister may say, Let us humbly confess our sins to Almighty God.</span>
           <div class="my-3 space-y-2.5">
             <p><span class="versicle-label-wide">Minister.</span>DEARLY beloved brethren, the Scripture moveth us in sundry places to acknowledge and confess our manifold sins and wickedness; and that we should not dissemble nor cloke them before the face of Almighty God our heavenly Father; but confess them with an humble, lowly, penitent, and obedient heart; to the end that we may obtain forgiveness of the same, by his infinite goodness and mercy.</p>
@@ -1624,15 +1661,23 @@
             <p>Wherefore I pray and beseech you, as many as are here present, to accompany me with a pure heart and humble voice unto the throne of the heavenly grace.</p>
             <p class="italic text-stone-600 dark:text-stone-400"><span class="versicle-label-wide">Or:</span>Let us humbly confess our sins to Almighty God.</p>
           </div>
+          `}
 
           <h3 class="section-header text-stone-900 dark:text-stone-100">A General Confession</h3>
-          <span class="rubric">To be said of the whole Congregation with the Minister, all kneeling.</span>
+          <span class="rubric">${soloMode ? 'To be said kneeling.' : 'To be said of the whole Congregation with the Minister, all kneeling.'}</span>
           <div class="my-4 p-4 rounded-xl bg-stone-100/70 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800">
             <p class="font-medium">
               <span class="versicle-label-wide">Minister &amp; People.</span>ALMIGHTY and most merciful Father, We have erred and strayed from thy ways like lost sheep, We have followed too much the devices and desires of our own hearts, We have offended against thy holy laws, We have left undone those things which we ought to have done, And we have done those things which we ought not to have done; And there is no health in us. But thou, O Lord, have mercy upon us, miserable offenders. Spare thou them, O God, which confess their faults. Restore thou them that are penitent; According to thy promises declared unto mankind in Christ Jesu our Lord. And grant, O most merciful Father, for his sake, That we may hereafter live a godly, righteous, and sober life, To the glory of thy holy Name. Amen.
             </p>
           </div>
 
+          ${soloMode ? `
+          <h3 class="section-header text-stone-900 dark:text-stone-100">Prayer for Pardon and Peace (BCP p. 602)</h3>
+          <span class="rubric">When saying the Office alone or when no Priest is present, this Collect is said instead of the priestly Absolution:</span>
+          <p class="mb-4">
+            GRANT, we beseech thee, merciful Father, to thy faithful people pardon and peace, that we may be cleansed from all our sins, and serve thee with a quiet mind; through Jesus Christ our Lord. <span class="font-bold">Amen.</span>
+          </p>
+          ` : `
           <h3 class="section-header text-stone-900 dark:text-stone-100">The Absolution, or Remission of Sins</h3>
           <span class="rubric">To be pronounced by the Priest alone, standing: the people still kneeling.</span>
           <div class="space-y-2.5 mb-3">
@@ -1647,6 +1692,7 @@
           <p class="italic text-stone-600 dark:text-stone-400 mb-4">
             <span class="versicle-label-wide">Minister.</span>GRANT, we beseech thee, merciful Father, to thy faithful people pardon and peace, that they may be cleansed from all their sins, and serve thee with a quiet mind; through Jesus Christ our Lord. <span class="font-bold">Amen.</span>
           </p>
+          `}
 
           <span class="rubric">Here the Lord's Prayer may be said; the people repeating it with the Minister.</span>
           <div class="my-4 p-4 rounded-xl bg-stone-50 dark:bg-stone-800/30 border border-stone-200 dark:border-stone-800 font-medium">
@@ -1727,11 +1773,16 @@
         <!-- THE PRAYERS -->
         <section class="mb-8">
           <h3 class="section-header text-stone-900 dark:text-stone-100">The Prayers &amp; Suffrages</h3>
-          <span class="rubric">And after the Creed these prayers following, all devoutly kneeling, the Minister first pronouncing:</span>
+          <span class="rubric">${soloMode ? 'And after the Creed these prayers following, kneeling:' : 'And after the Creed these prayers following, all devoutly kneeling, the Minister first pronouncing:'}</span>
           <div class="space-y-1.5 my-3">
+            ${soloMode ? `
+            <div class="versicle"><span>O Lord, hear my prayer;</span></div>
+            <div class="versicle"><span class="font-bold">And let my cry come unto thee.</span></div>
+            ` : `
             <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>The Lord be with you;</span></div>
             <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">And with thy spirit.</span></div>
             <div class="versicle"><span class="versicle-label-wide">Minister.</span><span class="italic">Let us pray.</span></div>
+            `}
             <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Lord, have mercy upon us.</span></div>
             <div class="versicle"><span class="versicle-label-wide">People.</span><span class="font-bold">Christ, have mercy upon us.</span></div>
             <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Lord, have mercy upon us.</span></div>
@@ -1778,7 +1829,7 @@
           <div class="my-6 space-y-5">
             <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer for the Queen's [or King's] Majesty (BCP p. 14)</h3>
-              <p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for the Queen's <em>[or King's]</em> Majesty.</p>
+              ${soloMode ? "" : `<p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for the Queen's <em>[or King's]</em> Majesty.</p>`}
               <p><span class="versicle-label-wide">Minister.</span>O LORD our heavenly Father, high and mighty, King of kings, Lord of lords, the only Ruler of princes, who dost from thy throne behold all the dwellers upon earth: Most heartily we beseech thee with thy favour to behold our most gracious Sovereign Lady, Queen ELIZABETH <em>[or Sovereign Lord, King CHARLES]</em>; and so replenish her <em>[him]</em> with the grace of thy Holy Spirit, that she <em>[he]</em> may alway incline to thy will, and walk in thy way: Endue her <em>[him]</em> plenteously with heavenly gifts; grant her <em>[him]</em> in health and wealth long to live; strengthen her <em>[him]</em> that she <em>[he]</em> may vanquish and overcome all her <em>[his]</em> enemies; and finally after this life she <em>[he]</em> may attain everlasting joy and felicity; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
             </div>
             <div>
@@ -1791,28 +1842,30 @@
             </div>
             <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer for the Royal Family (BCP p. 48)</h3>
-              <p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for the Royal Family.</p>
+              ${soloMode ? "" : `<p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for the Royal Family.</p>`}
               <p><span class="versicle-label-wide">Minister.</span>ALMIGHTY God, the fountain of all goodness, we humbly beseech thee to bless <em>[Philip Duke of Edinburgh, Elizabeth the Queen Mother, Charles Prince of Wales / Queen Camilla, William Prince of Wales, the Princess of Wales, and]</em> all the Royal Family: Endue them with thy Holy Spirit; enrich them with thy heavenly grace; prosper them with all happiness; and bring them to thine everlasting kingdom; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
             </div>
             <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer for the Clergy and People (BCP p. 14)</h3>
-              <p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for the Clergy and People.</p>
+              ${soloMode ? "" : `<p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for the Clergy and People.</p>`}
               <p class="mb-2"><span class="versicle-label-wide">Minister.</span>ALMIGHTY and everlasting God, from whom cometh every good and perfect gift: Send down upon our Bishops and Clergy, and all Congregations committed to their charge, the healthful Spirit of thy grace; and that they may truly please thee, pour upon them the continual dew of thy blessing. Grant this, O Lord, for the honour of our Advocate and Mediator, Jesus Christ. <span class="font-bold">Amen.</span></p>
               <p class="italic text-stone-600 dark:text-stone-400"><span class="versicle-label-wide">Or (1918/1662):</span>ALMIGHTY and everlasting God, who alone workest great marvels: Send down upon our Bishops and Curates, and all Congregations committed to their charge, the healthful Spirit of thy grace; and that they may truly please thee, pour upon them the continual dew of thy blessing. Grant this, O Lord, for the honour of our Advocate and Mediator, Jesus Christ. <span class="font-bold">Amen.</span></p>
             </div>
             <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer for All Conditions of Men</h3>
-              <p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for all conditions of men.</p>
+              ${soloMode ? "" : `<p class="italic text-stone-600 dark:text-stone-400 mb-1"><span class="versicle-label-wide">Minister.</span>Let us pray for all conditions of men.</p>`}
               <p><span class="versicle-label-wide">Minister.</span>O GOD, the Creator and Preserver of all mankind, we humbly beseech thee for all sorts and conditions of men; that thou wouldest be pleased to make thy ways known unto them, thy saving health unto all nations. More especially we pray for the good estate of the Catholic Church; that it may be so guided and governed by thy good Spirit, that all who profess and call themselves Christians may be led into the way of truth, and hold the faith in unity of spirit, in the bond of peace, and in righteousness of life. Finally we commend to thy fatherly goodness all those, who are any ways afflicted or distressed in mind, body, or estate; <em>[* especially those for whom our prayers are desired;]</em> that it may please thee to comfort and relieve them, according to their several necessities, giving them patience under their sufferings, and a happy issue out of all their afflictions. And this we beg for Jesus Christ his sake. <span class="font-bold">Amen.</span></p>
             </div>
             <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">A General Thanksgiving</h3>
               <p><span class="versicle-label-wide">Minister &amp; People.</span>ALMIGHTY God, Father of all mercies, We thine unworthy servants do give thee most humble and hearty thanks For all thy goodness and loving-kindness To us and to all men; We bless thee for our creation, preservation, and all the blessings of this life; But above all for thine inestimable love In the redemption of the world by our Lord Jesus Christ; For the means of grace, And for the hope of glory. And we beseech thee, give us that due sense of all thy mercies, That our hearts may be unfeignedly thankful, And that we show forth thy praise, Not only with our lips, but in our lives; By giving up ourselves to thy service, And by walking before thee in holiness and righteousness all our days; Through Jesus Christ our Lord, To whom, with thee and the Holy Ghost, be all honour and glory, world without end. <span class="font-bold">Amen.</span></p>
             </div>
+            ${soloMode ? '' : `
             <div>
               <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer of Saint Chrysostom</h3>
               <p><span class="versicle-label-wide">Minister.</span>ALMIGHTY God, who hast given us grace at this time with one accord to make our common supplications unto thee; and dost promise that when two or three are gathered together in thy Name thou wilt grant their requests: Fulfil now, O Lord, the desires and petitions of thy servants, as may be most expedient for them; granting us in this world knowledge of thy truth, and in the world to come life everlasting. <span class="font-bold">Amen.</span></p>
             </div>
+            `}
           </div>
 
           <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800">
@@ -1946,10 +1999,12 @@
             </p>
           </div>
 
+          ${soloMode ? '' : `
           <span class="rubric">If a Priest be present, he shall stand and pronounce the following Absolution:</span>
           <p class="mb-4">
             <span class="versicle-label-wide">Priest.</span>MAY the Almighty and merciful Lord grant unto you pardon and remission of all your sins, time for amendment of life, and the grace and comfort of the Holy Spirit. <span class="font-bold">Amen.</span>
           </p>
+          `}
 
           <span class="rubric">Then shall be said:</span>
           <div class="space-y-2 my-4">
@@ -1959,8 +2014,8 @@
             <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">And grant us thy salvation.</span></div>
             <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Vouchsafe, O Lord, to keep us this night without sin;</span></div>
             <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">O Lord, have mercy upon us, have mercy upon us.</span></div>
-            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>O Lord, hear our prayer;</span></div>
-            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">And let our cry come unto thee.</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>${soloMode ? 'O Lord, hear my prayer;' : 'O Lord, hear our prayer;'}</span></div>
+            <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">${soloMode ? 'And let my cry come unto thee.' : 'And let our cry come unto thee.'}</span></div>
           </div>
 
           <span class="rubric">Then shall follow the Collect for Protection, with which may be said the Collect of the Day.</span>
@@ -1987,8 +2042,10 @@
           <div class="space-y-2 my-4 pt-3 border-t border-stone-200 dark:border-stone-800">
             <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>We will lay us down in peace and take our rest;</span></div>
             <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">For it is thou, Lord, only, that makest us dwell in safety.</span></div>
+            ${soloMode ? '' : `
             <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>The Lord be with you;</span></div>
             <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">And with thy spirit.</span></div>
+            `}
             <div class="versicle"><span class="versicle-label-wide">Minister.</span><span>Let us bless the Lord;</span></div>
             <div class="versicle"><span class="versicle-label-wide">Answer.</span><span class="font-bold">Thanks be to God.</span></div>
           </div>
@@ -2141,9 +2198,14 @@
         <section class="mb-8">
           <h3 class="section-header text-stone-900 dark:text-stone-100">The Prayers of the People</h3>
           <div class="space-y-1.5 my-3">
+            ${soloMode ? `
+            <div class="versicle"><span>Lord, hear my prayer,</span></div>
+            <div class="versicle"><span class="font-bold">And let my cry come to you.</span></div>
+            ` : `
             <div class="versicle"><span class="versicle-label">V.</span><span>The Lord be with you.</span></div>
             <div class="versicle"><span class="versicle-label">R.</span><span class="font-bold">And also with you.</span></div>
             <div class="versicle"><span class="versicle-label"></span><span class="italic">Let us pray.</span></div>
+            `}
           </div>
 
           <div class="my-4 font-medium">
@@ -2265,7 +2327,7 @@
               Most merciful God, we confess that we have sinned against you in thought, word, and deed, by what we have done, and by what we have left undone. We have not loved you with our whole heart; we have not loved our neighbours as ourselves. We are truly sorry and we humbly repent. For the sake of your Son Jesus Christ, have mercy on us and forgive us; that we may delight in your will, and walk in your ways, to the glory of your name. Amen.
             </p>
             <p class="italic">
-              Officiant: The almighty and merciful God grant us pardon and forgiveness of all our sins, time for amendment of life, and the grace and comfort of the Holy Spirit. <span class="font-bold">Amen.</span>
+              ${soloMode ? 'May the almighty and merciful God grant us pardon and forgiveness of all our sins, time for amendment of life, and the grace and comfort of the Holy Spirit.' : 'Officiant: The almighty and merciful God grant us pardon and forgiveness of all our sins, time for amendment of life, and the grace and comfort of the Holy Spirit.'} <span class="font-bold">Amen.</span>
             </p>
           </div>
         </section>
@@ -2316,6 +2378,11 @@
       prayerContainer.style.fontSize = fontSize + 'px';
       if (liturgicalBanner) {
         liturgicalBanner.style.fontSize = fontSize + 'px';
+      }
+      if (soloMode) {
+        prayerContainer.classList.add('solo-mode');
+      } else {
+        prayerContainer.classList.remove('solo-mode');
       }
       const rubrics = document.querySelectorAll('.rubric');
       rubrics.forEach(r => r.style.display = showRubrics ? 'block' : 'none');
@@ -2494,6 +2561,7 @@
       document.getElementById('settingPsalter').value = currentPsalter;
       document.getElementById('fontSizeSlider').value = fontSize;
       document.getElementById('fontSizeDisplay').textContent = fontSize + 'px';
+      document.getElementById('toggleSoloMode').checked = soloMode;
       document.getElementById('toggleRubrics').checked = showRubrics;
       modalSettings.classList.remove('hidden');
     });
@@ -2531,6 +2599,13 @@
       applyFormatting();
     });
 
+    document.getElementById('toggleSoloMode').addEventListener('change', (e) => {
+      soloMode = e.target.checked;
+      try { localStorage.setItem('bas_soloMode', String(soloMode)); } catch(err) {}
+      renderOffice();
+      showToast(soloMode ? 'Individual / Solo Prayer Mode Enabled' : 'Communal / Public Prayer Mode Enabled');
+    });
+
     document.getElementById('toggleRubrics').addEventListener('change', (e) => {
       showRubrics = e.target.checked;
       applyFormatting();
@@ -2538,7 +2613,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js?v=12', { scope: '/', updateViaCache: 'none' }).catch(err => {
+        navigator.serviceWorker.register('/sw.js?v=13', { scope: '/', updateViaCache: 'none' }).catch(err => {
           console.log('SW registration skipped in preview frame.');
         });
       });
