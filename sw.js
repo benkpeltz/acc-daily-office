@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'acc-daily-office-';
-const CACHE_NAME = `${CACHE_PREFIX}v14`;
+const CACHE_NAME = `${CACHE_PREFIX}v16`;
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
