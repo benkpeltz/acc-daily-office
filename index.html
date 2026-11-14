@@ -6,7 +6,7 @@
   <title>ACC Daily Office • Anglican Church of Canada</title>
   <meta name="description" content="Daily Office (Morning Prayer/Mattins, Evening Prayer/Evensong, Compline) according to the Book of Alternative Services (1985) and the Book of Common Prayer (1962).">
   <link rel="canonical" href="https://dailyoffice.benpeltz.ca/">
-  <link rel="manifest" href="/manifest.json?v=17">
+  <link rel="manifest" href="/manifest.json?v=18">
   <meta name="theme-color" content="#4c1d95">
   <meta name="application-name" content="ACC Daily Office">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1515,22 +1515,30 @@
 
     function formatBcpLessonAnnouncement(citation, lessonNumber) {
       if (soloPrayerMode) {
-        return "";
+        return `
+          <p class="rubric" style="margin-top:0; margin-bottom:0.35em;">
+            Then shall be read the ${lessonNumber} Lesson as appointed (sitting — BCP p. ${lessonNumber === 'First' ? '7' : '9'}):
+          </p>
+        `;
       }
       return `
         <p class="rubric" style="margin-top:0; margin-bottom:0.35em;">
-          Before the Lesson the Minister shall say: <span class="not-italic font-semibold text-stone-800 dark:text-stone-200">“The ${lessonNumber} Lesson is written in ${citation}.”</span>
+          Then shall be read the ${lessonNumber} Lesson as appointed, and before each Lesson the Minister shall say: <span class="not-italic font-semibold text-stone-800 dark:text-stone-200">“The ${lessonNumber} Lesson is written in ${citation}.”</span>
         </p>
       `;
     }
 
     function formatBcpLessonEnding(lessonNumber) {
       if (soloPrayerMode) {
-        return "";
+        return `
+          <p class="rubric" style="margin-top:0.4em; margin-bottom:0;">
+            Here endeth the ${lessonNumber} Lesson.
+          </p>
+        `;
       }
       return `
         <p class="rubric" style="margin-top:0.4em; margin-bottom:0;">
-          And after the Lesson the Minister shall say: <span class="not-italic font-semibold text-stone-800 dark:text-stone-200">“Here endeth the ${lessonNumber} Lesson.”</span>
+          And after the Lesson he shall say: <span class="not-italic font-semibold text-stone-800 dark:text-stone-200">“Here endeth the ${lessonNumber} Lesson.”</span>
         </p>
       `;
     }
@@ -1737,7 +1745,7 @@
     }
 
     // ==========================================
-    // 8. BCP 1962 LITURGIES (Complete Canadian 1962 Text, pp. 1-24, 48-49, 722, 730)
+    // 8. BCP 1962 LITURGIES (Complete Canadian 1962 Text, pp. lvi, 1-24, 48-49, 722-728, 730)
     // ==========================================
     function bcpRolePrefix(label) {
       return soloPrayerMode ? '' : `<span class="font-bold text-red-700 dark:text-red-400">${label}</span> `;
@@ -1752,26 +1760,34 @@
       `;
     }
 
-    function renderBcpPenitentialSection() {
+    function renderBcpPenitentialSection(isMorning) {
+      const pageExhort = isMorning ? 'p. 4' : 'p. 18';
+      const pageConf = isMorning ? 'p. 4' : 'p. 19';
+      const pageAbs = isMorning ? 'p. 5' : 'p. 20';
+      const christName = isMorning ? 'Christ Jesu our Lord' : 'Christ Jesus our Lord';
+
       if (soloPrayerMode) {
         return `
-          <span class="rubric">Kneel and confess your sins to Almighty God:</span>
+          <span class="rubric">Say the Exhortation in the form following (occasionally the second paragraph may be omitted), or in place of the Exhortation you may say, “Let us humbly confess our sins to Almighty God” (BCP ${pageExhort}):</span>
+          <p class="mb-3 font-semibold text-stone-800 dark:text-stone-200">Let us humbly confess our sins to Almighty God.</p>
+
+          <span class="rubric">A general Confession, to be said kneeling (BCP ${pageConf}):</span>
           <div class="my-4 p-4 rounded-xl bg-stone-100/70 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800">
             <p class="font-medium">
-              ALMIGHTY and most merciful Father, We have erred and strayed from thy ways like lost sheep, We have followed too much the devices and desires of our own hearts, We have offended against thy holy laws, We have left undone those things which we ought to have done, And we have done those things which we ought not to have done; And there is no health in us. But thou, O Lord, have mercy upon us, miserable offenders. Spare thou them, O God, which confess their faults. Restore thou them that are penitent; According to thy promises declared unto mankind in Christ Jesu our Lord. And grant, O most merciful Father, for his sake, That we may hereafter live a godly, righteous, and sober life, To the glory of thy holy Name. <span class="font-bold">Amen.</span>
+              ALMIGHTY and most merciful Father, We have erred and strayed from thy ways like lost sheep, We have followed too much the devices and desires of our own hearts, We have offended against thy holy laws, We have left undone those things which we ought to have done, And we have done those things which we ought not to have done; And there is no health in us. But thou, O Lord, have mercy upon us, miserable offenders. Spare thou them, O God, which confess their faults. Restore thou them that are penitent; According to thy promises declared unto mankind in ${christName}. And grant, O most merciful Father, for his sake, That we may hereafter live a godly, righteous, and sober life, To the glory of thy holy Name. <span class="font-bold">Amen.</span>
             </p>
           </div>
 
-          <span class="rubric">Remain kneeling and pray for pardon and peace (BCP p. 730 / p. 249):</span>
+          <span class="rubric">Still kneeling, say one of the following prayers for pardon and remission of sins (BCP p. 730 / p. 249); and answer Amen here, and at the end of all other prayers (BCP ${pageAbs}):</span>
           <div class="my-4 space-y-3">
             <div>
-              <h4 class="font-bold text-stone-900 dark:text-stone-100">A Prayer for Pardon through the Cross (BCP p. 730)</h4>
+              <h4 class="font-bold text-stone-900 dark:text-stone-100">A Prayer for Pardon through the Cross (BCP Family Prayer, p. 730)</h4>
               <p>
                 ALMIGHTY Father, who of thy great love to men didst give sentence against thine only Son for the sins of the whole world: Let his blood cleanse us from all sin, and his spirit give us power to walk in newness of life; through the same Jesus Christ our Lord. <span class="font-bold">Amen.</span>
               </p>
             </div>
             <div>
-              <h4 class="font-bold text-stone-900 dark:text-stone-100">Or the Collect for Pardon and Peace (BCP p. 249)</h4>
+              <h4 class="font-bold text-stone-900 dark:text-stone-100">Or the Collect for Pardon and Peace (Trinity XXI, BCP p. 249)</h4>
               <p>
                 GRANT, we beseech thee, merciful Lord, to thy faithful people pardon and peace; that they may be cleansed from all their sins, and serve thee with a quiet mind; through Jesus Christ our Lord. <span class="font-bold">Amen.</span>
               </p>
@@ -1781,7 +1797,7 @@
       }
 
       return `
-        <span class="rubric">The Minister, turning to the people, shall say the Exhortation in the form following. Occasionally the second paragraph may be omitted, or in place of the Exhortation the Minister may say, Let us humbly confess our sins to Almighty God. (BCP p. 4)</span>
+        <span class="rubric">The Minister, turning to the people, shall say the Exhortation in the form following. Occasionally the second paragraph may be omitted, or in place of the Exhortation the Minister may say, Let us humbly confess our sins to Almighty God. (BCP ${pageExhort})</span>
         <div class="my-3 p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-white/60 dark:bg-stone-900/40 space-y-2">
           <p><span class="font-bold text-red-700 dark:text-red-400">Minister.</span> DEARLY beloved brethren, the Scripture moveth us in sundry places to acknowledge and confess our manifold sins and wickedness; and that we should not dissemble nor cloke them before the face of Almighty God our heavenly Father; but confess them with an humble, lowly, penitent, and obedient heart; to the end that we may obtain forgiveness of the same, by his infinite goodness and mercy.</p>
           <p>And although we ought at all times humbly to acknowledge our sins before God; yet ought we most chiefly so to do, when we assemble and meet together to render thanks for the great benefits that we have received at his hands, to set forth his most worthy praise, to hear his most holy Word, and to ask those things which are requisite and necessary, as well for the body as the soul.</p>
@@ -1789,14 +1805,14 @@
           <p class="italic text-stone-600 dark:text-stone-400 pt-1">Or the Minister may say: <span class="not-italic font-semibold">Let us humbly confess our sins to Almighty God.</span></p>
         </div>
 
-        <span class="rubric">A general Confession to be said of the whole Congregation with the Minister, all kneeling. (BCP p. 4)</span>
+        <span class="rubric">A general Confession to be said of the whole Congregation with the Minister, all kneeling. (BCP ${pageConf})</span>
         <div class="my-4 p-4 rounded-xl bg-stone-100/70 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800">
           <p class="font-medium">
-            <span class="font-bold text-red-700 dark:text-red-400">Minister and People.</span> ALMIGHTY and most merciful Father, We have erred and strayed from thy ways like lost sheep, We have followed too much the devices and desires of our own hearts, We have offended against thy holy laws, We have left undone those things which we ought to have done, And we have done those things which we ought not to have done; And there is no health in us. But thou, O Lord, have mercy upon us, miserable offenders. Spare thou them, O God, which confess their faults. Restore thou them that are penitent; According to thy promises declared unto mankind in Christ Jesu our Lord. And grant, O most merciful Father, for his sake, That we may hereafter live a godly, righteous, and sober life, To the glory of thy holy Name. <span class="font-bold">Amen.</span>
+            <span class="font-bold text-red-700 dark:text-red-400">Minister and People.</span> ALMIGHTY and most merciful Father, We have erred and strayed from thy ways like lost sheep, We have followed too much the devices and desires of our own hearts, We have offended against thy holy laws, We have left undone those things which we ought to have done, And we have done those things which we ought not to have done; And there is no health in us. But thou, O Lord, have mercy upon us, miserable offenders. Spare thou them, O God, which confess their faults. Restore thou them that are penitent; According to thy promises declared unto mankind in ${christName}. And grant, O most merciful Father, for his sake, That we may hereafter live a godly, righteous, and sober life, To the glory of thy holy Name. <span class="font-bold">Amen.</span>
           </p>
         </div>
 
-        <span class="rubric">The Absolution, or Remission of sins, to be pronounced by the Priest alone, standing: the people still kneeling. (BCP p. 5)</span>
+        <span class="rubric">The Absolution, or Remission of sins, to be pronounced by the Priest alone, standing: the people still kneeling. (BCP ${pageAbs})</span>
         <div class="my-4 space-y-2">
           <p>
             <span class="font-bold text-red-700 dark:text-red-400">Priest.</span> ALMIGHTY God, the Father of our Lord Jesus Christ, who desireth not the death of a sinner, but rather that he may turn from his wickedness, and live, hath given power and commandment to his Ministers, to declare and pronounce to his people, being penitent, the Absolution and Remission of their sins.
@@ -1807,19 +1823,22 @@
           <p>
             Wherefore we beseech him to grant us true repentance and his Holy Spirit, that those things may please him which we do at this present, and that the rest of our life hereafter may be pure and holy; so that at the last we may come to his eternal joy; through Jesus Christ our Lord.
           </p>
-          <span class="rubric">The people shall answer here, and at the end of all other prayers:</span>
+          <span class="rubric">${isMorning ? 'The people shall answer here, and at the end of all other prayers:' : ''}</span>
           <p><span class="font-bold text-red-700 dark:text-red-400">People.</span> <span class="font-bold">Amen.</span></p>
         </div>
       `;
     }
 
-    function renderBcpPrecesSection() {
+    function renderBcpPrecesSection(isMorning) {
+      const pageLp = isMorning ? 'p. 5' : 'p. 20';
+      const pageStand = isMorning ? 'p. 6' : 'p. 21';
+
       const lpRubric = soloPrayerMode
-        ? "Say the Lord's Prayer (BCP p. 5):"
-        : "Here the Lord's Prayer may be said; the people repeating it with the Minister. (BCP p. 5)";
+        ? `Here the Lord's Prayer may be said, still kneeling (optional — BCP ${pageLp}):`
+        : `Here the Lord's Prayer may be said; the people repeating it with the Minister. (BCP ${pageLp})`;
       const standRubric = soloPrayerMode
-        ? "Stand and say:"
-        : "Here, all standing up, the Minister shall say:";
+        ? `Here, standing up, say (BCP ${pageStand}):`
+        : `Here, all standing up, the Minister shall say: (BCP ${pageStand})`;
 
       return `
         <span class="rubric">${lpRubric}</span>
@@ -1842,14 +1861,17 @@
     }
 
     function renderBcpSuffragesAndStatePrayers(collectOfDay, isMorning) {
+      const pagePrayers = isMorning ? '10' : '23';
+      const pageSuffrages = isMorning ? '11' : '23';
+
       const salutationHtml = soloPrayerMode ? `
-        <span class="rubric">Kneel and say these prayers and suffrages:</span>
+        <span class="rubric">And after the Creed these prayers following, devoutly kneeling (BCP p. ${pagePrayers}):</span>
         <div class="space-y-1.5 my-3">
           ${bcpVersicleRow("V.", "R.", "Lord, hear our prayer;", "And let our cry come unto thee.")}
           <div class="versicle"><span class="versicle-label"></span><span class="italic">Let us pray.</span></div>
         </div>
       ` : `
-        <span class="rubric">And after the Creed these prayers following, all devoutly kneeling, the Minister first pronouncing:</span>
+        <span class="rubric">And after the Creed these prayers following, all devoutly kneeling, the Minister first pronouncing: (BCP p. ${pagePrayers})</span>
         <div class="space-y-1.5 my-3">
           <div class="versicle"><span class="versicle-label">Minister.</span><span>The Lord be with you;</span></div>
           <div class="versicle"><span class="versicle-label">People.</span><span class="font-bold">And with thy spirit.</span></div>
@@ -1872,20 +1894,28 @@
       `;
 
       const suffragesRubric = soloPrayerMode
-        ? "Continue with the Suffrages:"
-        : "Then the Priest standing up shall say:";
+        ? `Then, standing up (or remaining kneeling), say the Suffrages (BCP p. ${pageSuffrages}):`
+        : `Then the Priest standing up shall say: (BCP p. ${pageSuffrages})`;
 
       const collectsRubric = soloPrayerMode
-        ? "Say the Collect of the Day, followed by the two appointed Collects:"
-        : "Then shall follow THE COLLECT OF THE DAY, together with any other Collects appointed to be said, and these two prayers in order.";
+        ? `Then shall follow, kneeling, THE COLLECT OF THE DAY, together with any other Collects appointed to be said, and these two prayers in order (BCP p. ${pageSuffrages}):`
+        : `Then shall follow THE COLLECT OF THE DAY, together with any other Collects appointed to be said, and these two prayers in order. (BCP p. ${pageSuffrages})`;
 
-      const statePrayersRubric = soloPrayerMode
-        ? "Say the concluding intercessory prayers (on weekdays, you may proceed directly to the Prayer for the Clergy and People, the General Thanksgiving, the Prayer of St Chrysostom, and the Grace — BCP p. lvi):"
-        : "Here may follow an Anthem or a Hymn. Then shall be read one of the Prayers for the Sovereign, and the Prayer for the Clergy and People. (Upon any weekday which is not an occasion of National Thanksgiving, all that follows the Third Collect may be omitted except the Prayer for the Clergy and People, the Prayer of St Chrysostom, and the Grace — BCP p. lvi &amp; pp. 12–15, 24, 48–49.)";
+      const statePrayersRubric = isMorning
+        ? (soloPrayerMode
+            ? "Here may follow an Anthem or a Hymn. Then read one of the Prayers for the Sovereign, and the Prayer for the Clergy and People. (Upon any weekday which is not an occasion of National Thanksgiving, all that follows the Third Collect may be omitted except the Prayer for the Clergy and People, the Prayer of St Chrysostom, and the Grace — BCP p. lvi, pp. 12–15):"
+            : "Here may follow an Anthem or a Hymn. Then shall be read one of the Prayers for the Queen, and the Prayer for the Clergy and People. (Upon any weekday which is not an occasion of National Thanksgiving, all that follows the Third Collect may be omitted except the Prayer for the Clergy and People, the Prayer of St Chrysostom, and the Grace — BCP p. lvi, pp. 12–15.)")
+        : (soloPrayerMode
+            ? "Here may follow an Anthem or a Hymn. Here may be said the prayers found at this point in Morning Prayer or selections from the Prayers and Thanksgivings or such other prayers as are contained in the Book of Common Prayer, always ending with the Prayer of St Chrysostom and the Grace (BCP p. 24):"
+            : "Here may follow an Anthem or a Hymn. Here may be said the prayers found at this point in Morning Prayer or selections from the Prayers and Thanksgivings or such other prayers as are contained in this Book or set forth by lawful authority, always ending with the Prayer of St Chrysostom and the Grace. (BCP p. 24)");
+
+      const occasionalRubric = soloPrayerMode
+        ? "Then may be read any of the Occasional Prayers or Thanksgivings, always ending with the Prayer of St Chrysostom and the Grace; and before any of the prayers may be said ‘Let us pray for —’, and before any of the thanksgivings, ‘Let us give thanks for —’ (BCP p. 14):"
+        : "Then may be read any of the Occasional Prayers or Thanksgivings, or any prayers sanctioned by the Ordinary, always ending with the Prayer of St Chrysostom and the Grace; and before any of the prayers may be said Let us pray for —, and before any of the thanksgivings, Let us give thanks for —. (BCP p. 14)";
 
       const thanksgivingRubric = soloPrayerMode
-        ? "Say the General Thanksgiving:"
-        : "To be said by the Minister alone, or by the Minister and people together.";
+        ? "A General Thanksgiving (BCP p. 14):"
+        : "A General Thanksgiving, to be said by the Minister alone, or by the Minister and people together. (BCP p. 14)";
 
       const secondAndThirdCollects = isMorning ? `
         <div>
@@ -1909,12 +1939,12 @@
 
       return `
         <section class="mb-8">
-          <h3 class="section-header text-stone-900 dark:text-stone-100">The Prayers &amp; Suffrages (BCP p. ${isMorning ? '10' : '23'})</h3>
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Prayers &amp; Suffrages (BCP p. ${pagePrayers})</h3>
           ${salutationHtml}
           ${kyrieHtml}
 
           <div class="my-4 font-medium">
-            <h3 class="section-header text-stone-900 dark:text-stone-100">The Lord's Prayer (BCP p. ${isMorning ? '11' : '23'})</h3>
+            <h3 class="section-header text-stone-900 dark:text-stone-100">The Lord's Prayer (BCP p. ${pageSuffrages})</h3>
             <p>
               ${bcpRolePrefix("Minister and People.")}OUR Father who art in heaven, Hallowed be thy Name, Thy kingdom come, Thy will be done, on earth as it is in heaven. Give us this day our daily bread; And forgive us our trespasses, As we forgive them that trespass against us; And lead us not into temptation, But deliver us from evil. <span class="font-bold">Amen.</span>
             </p>
@@ -1956,6 +1986,7 @@
               <div>
                 <h4 class="font-bold text-stone-800 dark:text-stone-200">Or, A Prayer for the Queen [or King] and all in Authority (BCP p. 13)</h4>
                 <p>${bcpRolePrefix("Minister.")}O LORD God Almighty, who rulest the nations of the earth, we humbly beseech thee with thy favour to behold our Sovereign Lady, Queen ELIZABETH <em>[or Sovereign Lord, King CHARLES]</em>, that in all things she <em>[he]</em> may be led by thy guidance and protected by thy power. We pray thee also to bless all the Royal Family. Endue with wisdom the Governor-General of this Dominion, the Lieutenant-Governors of the Provinces, the Legislators of the Commonwealth, and all who are set in authority; that all things may be so ordered and settled by their endeavours upon the best and surest foundations, that peace and happiness, truth and justice, religion and piety, may be established among us for all generations; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+                <span class="rubric" style="margin-bottom:0;">Or there may be said the prayer For the Queen, For the Royal Family, or For the Commonwealth: Prayers and Thanksgivings, 21, 22, 23, pages 48 and 49.</span>
               </div>
             </div>
 
@@ -1964,6 +1995,8 @@
               <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer for the Clergy and People (BCP p. 13)</h3>
               <p>${bcpRolePrefix("Minister.")}ALMIGHTY and everlasting God, from whom cometh every good and perfect gift: Send down upon our Bishops and Clergy, and all Congregations committed to their charge, the healthful Spirit of thy grace; and that they may truly please thee, pour upon them the continual dew of thy blessing. Grant this, O Lord, for the honour of our Advocate and Mediator, Jesus Christ. <span class="font-bold">Amen.</span></p>
             </div>
+
+            <span class="rubric">${occasionalRubric}</span>
 
             <!-- PRAYER FOR ALL CONDITIONS OF MEN -->
             <div>
@@ -1980,14 +2013,17 @@
 
             <!-- A PRAYER OF ST CHRYSOSTOM -->
             <div>
-              <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer of Saint Chrysostom (BCP p. 15)</h3>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">A Prayer of Saint Chrysostom (BCP p. ${isMorning ? '15' : '24'})</h3>
               <p>${bcpRolePrefix("Minister.")}ALMIGHTY God, who hast given us grace at this time with one accord to make our common supplications unto thee; and dost promise that when two or three are gathered together in thy Name thou wilt grant their requests: Fulfil now, O Lord, the desires and petitions of thy servants, as may be most expedient for them; granting us in this world knowledge of thy truth, and in the world to come life everlasting. <span class="font-bold">Amen.</span></p>
             </div>
           </div>
 
           <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800">
-            <span class="rubric" style="margin-top:0;">Conclude with the Grace (2 Corinthians 13. 14):</span>
+            <span class="rubric" style="margin-top:0;">2 Corinthians 13. 14. (BCP p. ${isMorning ? '15' : '24'})</span>
             <p class="font-bold">${bcpRolePrefix("Minister and People.")}THE grace of our Lord Jesus Christ, and the love of God, and the fellowship of the Holy Ghost, be with us all evermore. Amen.</p>
+            <span class="rubric" style="margin-bottom:0;">${soloPrayerMode
+              ? 'Here ends the Order for ' + (isMorning ? 'Morning' : 'Evening') + ' Prayer (rise from kneeling).'
+              : 'A Sermon may be preached here and the offerings of the people received and presented at the Lord’s Table. Or the Sermon may be preached immediately after the Hymn or Anthem following the Third Collect. The Minister shall then proceed to the intercessions and thanksgivings, ending with the Prayer of St Chrysostom and the Grace. (BCP p. ' + (isMorning ? '15' : '24') + ')'}</span>
           </div>
         </section>
       `;
@@ -1999,24 +2035,24 @@
       const collectOfDay = getCollectOfTheDay(lit, true);
 
       const openingRubric = soloPrayerMode
-        ? "Begin by reading the Opening Sentence of Scripture (or on weekdays except Ash Wednesday and Good Friday, you may proceed directly to ‘O Lord, open thou our lips’ — BCP p. lvi):"
+        ? "Read aloud one or more of the Sentences of the Scriptures that follow. (General Rubric, BCP p. lvi: Upon any weekday except Ash Wednesday and Good Friday, the Order for Morning Prayer may be shortened by the omission of all that precedes the versicle, ‘O Lord, open thou our lips’.)"
         : "The Minister shall read aloud one or more of these Sentences of the Scriptures that follow. (Upon any weekday except Ash Wednesday and Good Friday, the Order for Morning Prayer may be shortened by the omission of all that precedes the versicle, O Lord, open thou our lips — BCP p. lvi.)";
 
       const veniteRubric = soloPrayerMode
-        ? "Say or sing the Venite (Psalm 95) with its seasonal Invitatory (on the nineteenth day of the month, omit Psalm 95 in the ordinary course of the Psalms):"
-        : "Then shall be said or sung this Psalm following; except on days for which Proper Anthems are provided. On the nineteenth day of the month, this Psalm shall be omitted in the ordinary course of the Psalms. Invitatories may be said or sung before this Psalm and after the Gloria Patri which follows it (BCP p. 25).";
+        ? "Then shall be said or sung this Psalm following, standing; except on days for which Proper Anthems are provided (such as Easter Day, p. 166). On the nineteenth day of the month, this Psalm shall be omitted in the ordinary course of the Psalms. The last four verses (vv. 8–11) may be omitted. Invitatories may be said or sung before this Psalm and after the Gloria Patri which follows it, as provided on page 25 (BCP p. 6):"
+        : "Then shall be said or sung this Psalm following; except on days for which Proper Anthems are provided. On the nineteenth day of the month, this Psalm shall be omitted in the ordinary course of the Psalms. At the discretion of the Minister the last four verses may be omitted. Invitatories may be said or sung before this Psalm and after the Gloria Patri which follows it, as provided on page 25. (BCP p. 6)";
 
       const teDeumRubric = soloPrayerMode
-        ? "After the First Lesson, say or sing the Te Deum Laudamus (or Benedicite, Omnia Opera, p. 26):"
-        : "After the First Lesson shall be sung or said the Hymn Te Deum Laudamus (or Benedicite, Omnia Opera, p. 26).";
+        ? "After the First Lesson shall be sung or said, standing, the Hymn Te Deum Laudamus. But the Canticle Benedicite, Omnia Opera, page 26, is suitable for use in Advent, in Lent, on Ember Days (except those in Whitsun Week), on Rogation Days, and when the third chapter of Daniel is read as the First Lesson. The third section of Te Deum (beginning ‘O Lord, save thy people’) may be omitted (BCP p. 7):"
+        : "After the First Lesson shall be sung or said the Hymn Te Deum Laudamus. But the Canticle Benedicite, Omnia Opera, page 26, is suitable for use in Advent, in Lent, on Ember Days (except those in Whitsun Week), on Rogation Days, and when the third chapter of Daniel is read as the First Lesson. At the discretion of the Minister, the third section of Te Deum may be omitted. (BCP p. 7)";
 
       const benedictusRubric = soloPrayerMode
-        ? "After the Second Lesson, say or sing the Benedictus (or Jubilate Deo, Psalm 100, p. 457):"
-        : "Then shall be read in like manner the Second Lesson as appointed; and after that the following Canticle (or Jubilate Deo, Psalm 100, p. 457).";
+        ? "After the Second Lesson, say or sing, standing, the following Canticle, except when it forms part of the Gospel or Second Lesson appointed for the day (or instead Jubilate Deo, the 100th Psalm, page 457 — BCP pp. 9–10):"
+        : "Then shall be read in like manner THE SECOND LESSON as appointed; and after that the following Canticle, except when it forms part of the Gospel or Second Lesson appointed for the day. Or instead Jubilate Deo, the 100th Psalm, page 457. (BCP pp. 9–10)";
 
       const creedRubric = soloPrayerMode
-        ? "Stand and say the Apostles' Creed:"
-        : "Then shall be said or sung the Confession of the Faith, called the Apostles' Creed, all standing.";
+        ? "Then shall be said or sung the Confession of the Faith, called the Apostles' Creed, standing (BCP p. 10):"
+        : "Then shall be said or sung the Confession of the Faith, called the Apostles' Creed. (BCP p. 10)";
 
       prayerContainer.innerHTML = `
         <header class="text-center mb-8 pb-4 border-b border-stone-200 dark:border-stone-800">
@@ -2029,8 +2065,8 @@
           <span class="rubric">${openingRubric}</span>
           <p class="italic mb-4 text-purple-900 dark:text-purple-300 font-serif">${bcpRolePrefix("Minister.")}“${openingSentence}”</p>
 
-          ${renderBcpPenitentialSection()}
-          ${renderBcpPrecesSection()}
+          ${renderBcpPenitentialSection(true)}
+          ${renderBcpPrecesSection(true)}
         </section>
 
         <!-- VENITE -->
@@ -2057,10 +2093,11 @@
 
         <!-- PSALMS & LESSONS -->
         <section class="mb-8">
+          <span class="rubric">Then shall follow THE PSALMS (BCP p. 7):</span>
           ${renderPsalmsSection(lectionary.mPsalms, lectionary.scheduleLabel)}
 
           <div class="mt-6 mb-2 flex items-center justify-between flex-wrap gap-2">
-            <span class="rubric" style="margin:0;">${soloPrayerMode ? 'Read the Lessons appointed in the 1962 Canadian BCP Table of Lessons (pp. xvi–xlvii):' : 'Lessons Appointed in the 1962 Canadian BCP Table of Lessons (pp. xvi–xlvii)'}</span>
+            <span class="rubric" style="margin:0;">Lessons Appointed in the 1962 Canadian BCP Table of Lessons (pp. xvi–xlvii)</span>
             <span class="font-sans text-xs px-2.5 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 font-medium">${lectionary.bcpTableTitle || 'BCP Table of Lessons'}</span>
           </div>
 
@@ -2090,7 +2127,8 @@
               <p>We believe that thou shalt come to be our Judge.</p>
               <p>We therefore pray thee, help thy servants, whom thou hast redeemed with thy precious blood.</p>
               <p>Make them to be numbered with thy Saints, in glory everlasting.</p>
-              <p class="pt-2">O LORD, save thy people, and bless thine heritage;</p>
+              <span class="rubric" style="margin-top:0.5em; margin-bottom:0.2em;">(The third section of Te Deum following may be omitted — BCP p. 7)</span>
+              <p>O LORD, save thy people, and bless thine heritage;</p>
               <p>Govern them, and lift them up for ever.</p>
               <p>Day by day we magnify thee;</p>
               <p>And we worship thy Name, ever world without end.</p>
@@ -2145,20 +2183,20 @@
       const collectOfDay = getCollectOfTheDay(lit, true);
 
       const openingRubric = soloPrayerMode
-        ? "Begin by reading the Opening Sentence of Scripture (BCP p. 17):"
-        : "The Minister shall read aloud one or more of these Sentences of the Scriptures that follow. (BCP p. 17)";
+        ? "Read aloud one or more of the Sentences of the Scriptures that follow, or at special seasons the appropriate Sentences provided in Morning Prayer (BCP p. 17):"
+        : "The Minister shall read aloud one or more of these Sentences of the Scriptures that follow, or at special seasons the appropriate Sentences provided in Morning Prayer. (BCP p. 17)";
 
       const magnificatRubric = soloPrayerMode
-        ? "After the First Lesson, say or sing the Magnificat (or Cantate Domino, Psalm 98, p. 455):"
-        : "And after the First Lesson shall be sung or said Magnificat (or the Song of the Blessed Virgin Mary), or else Cantate Domino (Psalm 98, p. 455).";
+        ? "And after the First Lesson shall be sung or said, standing, Magnificat (or the Song of the Blessed Virgin Mary), or Cantate Domino, Psalm 98, page 455 (BCP pp. 21–22):"
+        : "And after the First Lesson shall be sung or said Magnificat (or the Song of the Blessed Virgin Mary). Or Cantate Domino, Psalm 98, page 455. (BCP pp. 21–22)";
 
       const nuncDimittisRubric = soloPrayerMode
-        ? "After the Second Lesson, say or sing the Nunc Dimittis (or Deus Misereatur, Psalm 67, p. 409):"
-        : "And after the Second Lesson shall be sung or said Nunc Dimittis (or the Song of Simeon), or else Deus Misereatur (Psalm 67, p. 409).";
+        ? "And after the Second Lesson shall be sung or said, standing, Nunc Dimittis (or the Song of Simeon), or else Deus Misereatur, Psalm 67, page 409 (BCP p. 22):"
+        : "And after the Second Lesson shall be sung or said Nunc Dimittis (or the Song of Simeon). Or else Deus Misereatur, Psalm 67, page 409. (BCP p. 22)";
 
       const creedRubric = soloPrayerMode
-        ? "Stand and say the Apostles' Creed:"
-        : "Then shall be said or sung the Confession of the Faith, called the Apostles' Creed, all standing.";
+        ? "Then shall be said or sung the Confession of the Faith, called the Apostles' Creed, standing (BCP p. 22):"
+        : "Then shall be said or sung the Confession of the Faith, called the Apostles' Creed. (BCP p. 22)";
 
       const firstEvensongBanner = lectionary.firstEvensongNote ? `
         <div class="my-4 p-3.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/70">
@@ -2180,16 +2218,17 @@
           <span class="rubric">${openingRubric}</span>
           <p class="italic mb-4 text-purple-900 dark:text-purple-300 font-serif">${bcpRolePrefix("Minister.")}“${openingSentence}”</p>
 
-          ${renderBcpPenitentialSection()}
-          ${renderBcpPrecesSection()}
+          ${renderBcpPenitentialSection(false)}
+          ${renderBcpPrecesSection(false)}
         </section>
 
         <!-- PSALMS & READINGS -->
         <section class="mb-8">
+          <span class="rubric">Then shall follow THE PSALMS (BCP p. 21):</span>
           ${renderPsalmsSection(lectionary.ePsalms, lectionary.scheduleLabel)}
 
           <div class="mt-6 mb-2 flex items-center justify-between flex-wrap gap-2">
-            <span class="rubric" style="margin:0;">${soloPrayerMode ? 'Read the Lessons appointed in the 1962 Canadian BCP Table of Lessons (pp. xvi–xlvii):' : 'Lessons Appointed in the 1962 Canadian BCP Table of Lessons (pp. xvi–xlvii)'}</span>
+            <span class="rubric" style="margin:0;">Lessons Appointed in the 1962 Canadian BCP Table of Lessons (pp. xvi–xlvii)</span>
             <span class="font-sans text-xs px-2.5 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 font-medium">${lectionary.bcpTableTitle || 'BCP Table of Lessons'}</span>
           </div>
 
@@ -2247,52 +2286,165 @@
     }
 
     function renderBcpCompline(lit) {
+      const isEaster = (lit.season === "Easter");
+      const anthemText = isEaster
+        ? "Alleluia, Alleluia, Alleluia."
+        : "Preserve us, O Lord, waking, and guard us sleeping, that awake we may watch with Christ, and asleep we may rest in peace.";
+
       prayerContainer.innerHTML = `
         <header class="text-center mb-8 pb-4 border-b border-stone-200 dark:border-stone-800">
           <h2 class="office-title tracking-tight text-stone-900 dark:text-stone-100">An Order for Compline</h2>
-          <p class="font-sans font-medium text-stone-500 dark:text-stone-400">Night Prayer • Book of Common Prayer (1962 Canada), p. 722</p>
+          <p class="font-sans font-medium text-stone-500 dark:text-stone-400">Night Prayer • Book of Common Prayer (1962 Canada), pp. 722–728</p>
         </header>
 
         <section class="mb-8">
-          <h3 class="section-header text-stone-900 dark:text-stone-100">The Gathering (${lit.dayName} Night)</h3>
-          <span class="rubric">${soloPrayerMode ? 'Begin with the opening blessing and versicles:' : 'The Minister shall begin:'}</span>
-          <div class="space-y-1.5 my-3">
-            ${bcpVersicleRow("Minister.", "People.", "The Lord Almighty grant us a quiet night and a perfect end.", "Amen.")}
-            ${bcpVersicleRow("Minister.", "People.", "Turn us then, O God our Saviour;", "And let thine anger cease from us.")}
-            ${bcpVersicleRow("Minister.", "People.", "O God, make speed to save us;", "O Lord, make haste to help us.")}
-          </div>
+          <span class="rubric">This Service may be used when Evening Prayer has been previously said. (BCP p. 722)</span>
+          <span class="rubric">${soloPrayerMode ? 'Standing up, say (BCP p. 722):' : 'All standing up, the Minister shall say: (BCP p. 722)'}</span>
+          <p class="my-3 font-medium">${bcpRolePrefix("Minister.")}THE Lord Almighty grant us a quiet night and a perfect end. <span class="font-bold">Amen.</span></p>
 
-          <div class="my-3">
-            <p>${bcpRolePrefix("Minister.")}Glory be to the Father, and to the Son : and to the Holy Ghost;</p>
-            <p class="font-bold">${bcpRolePrefix("People.")}As it was in the beginning, is now, and ever shall be : world without end. Amen.</p>
+          <div class="space-y-1.5 my-3">
+            ${bcpVersicleRow("Minister.", "Answer.", "O God, make speed to save us;", "O Lord, make haste to help us.")}
+            ${bcpVersicleRow("Minister.", "Answer.", "Glory be to the Father, and to the Son, and to the Holy Ghost;", "As it was in the beginning, is now, and ever shall be, world without end. Amen.")}
+            ${bcpVersicleRow("Minister.", "Answer.", "Praise ye the Lord;", "The Lord’s Name be praised.")}
           </div>
         </section>
 
         <!-- PSALMS -->
         <section class="mb-8">
+          <span class="rubric">Then shall be said or sung one or more of the following Psalms: Psalm 4; Psalm 31. 1–6; Psalm 91; Psalm 134; or any other Psalm or Psalms. (BCP p. 722)</span>
           ${renderPsalmBlock("Psalm 4")}
+          ${renderPsalmBlock("Psalm 31:1-6")}
           ${renderPsalmBlock("Psalm 91")}
           ${renderPsalmBlock("Psalm 134")}
         </section>
 
-        <!-- PRAYERS -->
+        <!-- SHORT LESSON, RESPOND, HYMN & NUNC DIMITTIS -->
         <section class="mb-8">
-          <h3 class="section-header text-stone-900 dark:text-stone-100">The Prayers</h3>
-          <span class="rubric">${soloPrayerMode ? 'Say the Responsory and Collect:' : 'Then shall be said:'}</span>
-          <div class="space-y-2 my-4">
-            ${bcpVersicleRow("Minister.", "People.", "Into thy hands, O Lord, I commend my spirit;", "For thou hast redeemed me, O Lord, thou God of truth.")}
-            ${bcpVersicleRow("Minister.", "People.", "Keep me as the apple of an eye;", "Hide me under the shadow of thy wings.")}
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Short Lesson &amp; Respond (BCP pp. 722–723)</h3>
+          <span class="rubric">${soloPrayerMode ? 'Then read one of the following short Lessons, or some other passage of holy Scripture (BCP p. 722):' : 'Then shall be read one of the following short Lessons, or some other passage of holy Scripture at the discretion of the Minister: (BCP p. 722)'}</span>
+          <div class="my-4 p-4 rounded-xl bg-stone-50 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 space-y-3">
+            <p>THOU, O LORD, art in the midst of us, and we are called by thy name. Leave us not, O LORD our God. <span class="italic text-stone-500">(Jeremiah 14. 9)</span></p>
+            <p class="italic text-red-700 dark:text-red-400">Or</p>
+            <p>COME unto me, all ye that labour and are heavy laden, and I will give you rest. Take my yoke upon you, and learn of me; for I am meek and lowly in heart; and ye shall find rest unto your souls. For my yoke is easy, and my burden is light. <span class="italic text-stone-500">(St Matthew 11. 28–30)</span></p>
+            <p class="italic text-red-700 dark:text-red-400">Or</p>
+            <p>NOW the God of peace, that brought again from the dead our Lord Jesus, that great Shepherd of the sheep, through the blood of the everlasting covenant, make you perfect in every good work to do his will, working in you that which is well-pleasing in his sight; through Jesus Christ, to whom be glory for ever and ever. Amen. <span class="italic text-stone-500">(Hebrews 13. 20, 21)</span></p>
+          </div>
+          <span class="rubric">${soloPrayerMode ? 'Answer:' : 'To which the people shall answer:'}</span>
+          <p class="font-bold mb-4">Thanks be to God.</p>
+
+          <span class="rubric">Then may be said the following Respond (BCP p. 723):</span>
+          <div class="space-y-1.5 my-3">
+            ${bcpVersicleRow("Minister.", "Answer.", "Into thy hands, O Lord, I commend my spirit;", "Into thy hands, O Lord, I commend my spirit.")}
+            ${bcpVersicleRow("Minister.", "Answer.", "For thou hast redeemed me, O Lord, thou God of truth;", "I commend my spirit.")}
+            ${bcpVersicleRow("Minister.", "Answer.", "Glory be to the Father, and to the Son, and to the Holy Ghost;", "Into thy hands, O Lord, I commend my spirit.")}
           </div>
 
-          <div class="my-6 space-y-4">
+          <span class="rubric">Here may follow this or some other Hymn (BCP p. 723):</span>
+          <div class="my-4 p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-white/60 dark:bg-stone-900/40 space-y-2">
+            <h4 class="font-bold italic text-stone-800 dark:text-stone-200">Te lucis ante terminum</h4>
+            <p>BEFORE the ending of the day,<br>Creator of the world, we pray<br>That with thy wonted favour thou<br>Wouldst be our guard and keeper now.</p>
+            <p>From all ill dreams defend our eyes,<br>From nightly fears and fantasies;<br>Tread under foot our ghostly foe,<br>That no pollution we may know.</p>
+            <p>O Father, that we ask be done,<br>Through Jesus Christ, thine only Son;<br>Who, with the Holy Ghost and thee,<br>Doth live and reign eternally. <span class="font-bold">Amen.</span></p>
+          </div>
+
+          <div class="space-y-1.5 my-4">
+            ${bcpVersicleRow("Minister.", "Answer.", "Keep us as the apple of an eye;", "Hide us under the shadow of thy wings.")}
+          </div>
+
+          <h3 class="section-header text-stone-900 dark:text-stone-100">Nunc Dimittis (BCP p. 724)</h3>
+          <span class="rubric">In Eastertide in place of the Anthem “Preserve us, O Lord” may be said or sung: Alleluia, Alleluia, Alleluia.</span>
+          <p class="mb-3 font-semibold text-purple-800 dark:text-purple-300">Anthem: ${anthemText}</p>
+          <div class="space-y-2 mb-3">
+            <p>LORD, now lettest thou thy servant depart in peace, / according to thy word.</p>
+            <p>For mine eyes have seen thy salvation, / which thou hast prepared before the face of all people;</p>
+            <p>To be a light to lighten the Gentiles, / and to be the glory of thy people Israel.</p>
+            <p>GLORY be to the Father, and to the Son, / and to the Holy Ghost;<br><span class="font-bold">As it was in the beginning, is now, and ever shall be, / world without end. Amen.</span></p>
+          </div>
+          <p class="font-semibold text-purple-800 dark:text-purple-300 mb-6">Anthem: ${anthemText}</p>
+
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Apostles' Creed (BCP pp. 724–725)</h3>
+          <span class="rubric">${soloPrayerMode ? 'Then say the Apostles’ Creed, standing (BCP p. 724):' : 'Then shall be said the Apostles’ Creed by the Minister and people, standing. (BCP p. 724)'}</span>
+          <p class="font-medium">
+            ${bcpRolePrefix("Minister and People.")}I BELIEVE in God the Father Almighty, Maker of heaven and earth:<br>
+            And in Jesus Christ his only Son our Lord, Who was conceived by the Holy Ghost, Born of the Virgin Mary, Suffered under Pontius Pilate, Was crucified, dead, and buried: He descended into hell; The third day he rose again from the dead; He ascended into heaven, And sitteth on the right hand of God the Father Almighty; From thence he shall come to judge the quick and the dead.<br>
+            I believe in the Holy Ghost; The holy Catholic Church; The Communion of Saints; The Forgiveness of sins; The Resurrection of the body, And the Life everlasting. <span class="font-bold">Amen.</span>
+          </p>
+        </section>
+
+        <!-- PRAYERS, CONFESSION & COLLECTS -->
+        <section class="mb-8">
+          <h3 class="section-header text-stone-900 dark:text-stone-100">The Prayers, Confession &amp; Collects (BCP pp. 725–728)</h3>
+          <span class="rubric">${soloPrayerMode ? 'And after that these prayers following, devoutly kneeling (BCP p. 725):' : 'And after that these prayers following, all devoutly kneeling: (BCP p. 725)'}</span>
+          <div class="space-y-1.5 my-3">
+            <p class="italic">${bcpRolePrefix("Minister.")}Let us pray.</p>
+            <p>Lord, have mercy upon us.</p>
+            <p class="font-bold">Christ, have mercy upon us.</p>
+            <p>Lord, have mercy upon us.</p>
+          </div>
+
+          <p class="my-4 font-medium">
+            OUR Father who art in heaven, Hallowed be thy Name, Thy kingdom come, Thy will be done, on earth as it is in heaven. Give us this day our daily bread; And forgive us our trespasses, As we forgive them that trespass against us; And lead us not into temptation, But deliver us from evil. <span class="font-bold">Amen.</span>
+          </p>
+
+          <div class="space-y-1.5 my-4">
+            ${bcpVersicleRow("Minister.", "Answer.", "Blessed art thou, Lord God of our fathers;", "To be praised and glorified above all for ever.")}
+            ${bcpVersicleRow("Minister.", "Answer.", "Let us bless the Father, the Son, and the Holy Ghost;", "Let us praise him and magnify him for ever.")}
+            ${bcpVersicleRow("Minister.", "Answer.", "Blessed art thou, O Lord, in the firmament of heaven;", "To be praised and glorified above all for ever.")}
+            ${bcpVersicleRow("Minister.", "Answer.", "The Almighty and most merciful Lord guard us and give us his blessing.", "Amen.")}
+          </div>
+
+          <span class="rubric">${soloPrayerMode ? 'Say the Confession and the Prayer for Forgiveness following (BCP pp. 725–726):' : 'Then shall the Minister and people say together the Confession and the Prayer for Forgiveness following. (BCP pp. 725–726)'}</span>
+          <div class="my-4 p-4 rounded-xl bg-stone-100/70 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 space-y-3">
+            <p class="font-medium">
+              WE confess to God Almighty, the Father, the Son, and the Holy Ghost, that we have sinned in thought, word, and deed, through our own grievous fault. Wherefore we pray God to have mercy upon us.
+            </p>
+            <p class="font-medium">
+              Almighty God, have mercy upon us, forgive us all our sins and deliver us from all evil, confirm and strengthen us in all goodness, and bring us to life everlasting; through Jesus Christ our Lord. <span class="font-bold">Amen.</span>
+            </p>
+          </div>
+
+          ${!soloPrayerMode ? `
+            <span class="rubric">If a Priest be present, he shall stand and pronounce the following Absolution (BCP p. 726):</span>
+            <p class="italic mb-4"><span class="not-italic font-bold text-red-700 dark:text-red-400">Priest.</span> MAY the Almighty and merciful Lord grant unto you pardon and remission of all your sins, time for amendment of life, and the grace and comfort of the Holy Spirit. <span class="not-italic font-bold">Amen.</span></p>
+          ` : ''}
+
+          <span class="rubric">Then shall be said (BCP p. 726):</span>
+          <div class="space-y-1.5 my-4">
+            ${bcpVersicleRow("Minister.", "Answer.", "Wilt thou not turn again and quicken us;", "That thy people may rejoice in thee?")}
+            ${bcpVersicleRow("Minister.", "Answer.", "O Lord, show thy mercy upon us;", "And grant us thy salvation.")}
+            ${bcpVersicleRow("Minister.", "Answer.", "Vouchsafe, O Lord, to keep us this night without sin;", "O Lord, have mercy upon us, have mercy upon us.")}
+            ${bcpVersicleRow("Minister.", "Answer.", "O Lord, hear our prayer;", "And let our cry come unto thee.")}
+          </div>
+
+          <span class="rubric">Then shall follow the Collect for Protection, with which may be said the Collect of the Day (BCP pp. 726–727):</span>
+          <div class="my-5 space-y-4">
             <div>
-              <h3 class="section-header text-stone-900 dark:text-stone-100">The Collect</h3>
+              <h3 class="section-header text-stone-900 dark:text-stone-100">The Collect for Protection (BCP p. 726)</h3>
               <p>${bcpRolePrefix("Minister.")}VISIT, we beseech thee, O Lord, this place, and drive from it all the snares of the enemy; let thy holy angels dwell herein to preserve us in peace; and may thy blessing be upon us evermore; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <h4 class="font-bold text-stone-800 dark:text-stone-200">Or (BCP p. 727)</h4>
+              <p>${bcpRolePrefix("Minister.")}LIGHTEN our darkness, we beseech thee, O Lord; and by thy great mercy defend us from all perils and dangers of this night; for the love of thy only Son, our Saviour Jesus Christ. <span class="font-bold">Amen.</span></p>
+            </div>
+            <div>
+              <span class="rubric">The following prayers may be added (BCP p. 727):</span>
+              <p class="mb-3">O LORD Jesus Christ, Son of the living God, who at this evening hour didst rest in the sepulchre, and didst thereby sanctify the grave to be a bed of hope to thy people: Make us so to abound in sorrow for our sins, which were the cause of thy passion, that when our bodies lie in the dust, our souls may live with thee; who livest and reignest with the Father and the Holy Ghost, one God, world without end. <span class="font-bold">Amen.</span></p>
+              <p class="mb-3">LOOK down, O Lord, from thy heavenly throne, illuminate the darkness of this night with thy celestial brightness, and from the sons of light banish the deeds of darkness; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
+              <p>BE present, O merciful God, and protect us through the silent hours of this night, so that we who are wearied by the changes and chances of this fleeting world, may repose upon thy eternal changelessness; through Jesus Christ our Lord. <span class="font-bold">Amen.</span></p>
             </div>
           </div>
 
-          <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800">
-            <p class="font-bold">THE Almighty and merciful Lord, the Father, the Son, and the Holy Ghost, bless us and keep us. Amen.</p>
+          <div class="space-y-1.5 my-4 pt-4 border-t border-stone-200 dark:border-stone-800">
+            ${bcpVersicleRow("Minister.", "Answer.", "We will lay us down in peace and take our rest;", "For it is thou, Lord, only, that makest us dwell in safety.")}
+            ${soloPrayerMode
+              ? bcpVersicleRow("V.", "R.", "O Lord, hear our prayer;", "And let our cry come unto thee.")
+              : bcpVersicleRow("Minister.", "Answer.", "The Lord be with you;", "And with thy spirit.")}
+            ${bcpVersicleRow("Minister.", "Answer.", "Let us bless the Lord;", "Thanks be to God.")}
+          </div>
+
+          <div class="mt-4">
+            <p class="font-bold">THE Almighty and merciful Lord, the Father, the Son, and the Holy Ghost, bless and preserve us. Amen.</p>
+            ${soloPrayerMode ? `<span class="rubric" style="margin-bottom:0;">Here ends the Order for Compline (rise from kneeling).</span>` : ''}
           </div>
         </section>
       `;
@@ -3027,7 +3179,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js?v=17', { scope: '/', updateViaCache: 'none' }).catch(err => {
+        navigator.serviceWorker.register('/sw.js?v=18', { scope: '/', updateViaCache: 'none' }).catch(err => {
           console.log('SW registration skipped in preview frame.');
         });
       });
